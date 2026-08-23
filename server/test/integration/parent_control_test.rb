@@ -22,12 +22,13 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert @device.reload.expires_at.future?
   end
 
-  test "dashboard offers a five-minute grant" do
+  test "dashboard offers one- and five-minute grants" do
     sign_in_and_select_profile
 
     get root_path
 
     assert_response :success
+    assert_select "button", text: "+1 min"
     assert_select "button", text: "+5 min"
   end
 

@@ -12,7 +12,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 
 ## Timer and synchronization
 
-- Grant 5, 15, 30, and 60 minutes from each parent's installed PWA and verify attribution/history.
+- Grant 1, 5, 15, 30, and 60 minutes from each parent's installed PWA and verify attribution/history.
 - Send two distinct grants concurrently; verify both accumulate. Retry the same idempotency key; verify it applies once.
 - Confirm a normal WebSocket grant reaches the PC within two seconds.
 - Disconnect the network while active; confirm monotonic local countdown continues. Reconnect and confirm authoritative convergence.
