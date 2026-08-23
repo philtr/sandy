@@ -19,7 +19,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="Velopack" />
   </ItemGroup>
   <ItemGroup>
