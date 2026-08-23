@@ -15,7 +15,7 @@
   <section class="device-grid" data-controller="dashboard">
     <% @devices.each do |device| %>
       <% now = Time.current; status = device.dashboard_status(at: now) %>
-      <article class="device-card status-<%= status %>" data-device-id="<%= device.id %>" data-expires-at="<%= device.expires_at&.iso8601(3) %>" data-last-heartbeat-at="<%= device.last_heartbeat_at&.iso8601(3) %>">
+      <article class="device-card status-<%= status %>" data-device-id="<%= device.id %>" data-revoked="<%= device.revoked_at? %>" data-expires-at="<%= device.expires_at&.iso8601(3) %>" data-last-heartbeat-at="<%= device.last_heartbeat_at&.iso8601(3) %>">
         <div class="device-title"><div><h2><%= link_to device.name, device_path(device) %></h2><p><%= device.agent_version.presence || "Agent version unknown" %></p></div><span class="status"><%= status %></span></div>
         <div class="remaining" data-role="remaining"><%= device.timer_status(at: now) == "active" ? distance_of_time_in_words(now, device.expires_at) : "Time’s up" %></div>
         <% if status == "offline" %><p class="stale">Offline · last deadline <%= device.expires_at ? l(device.expires_at, format: :short) : "not set" %></p><% end %>

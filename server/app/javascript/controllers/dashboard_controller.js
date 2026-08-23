@@ -45,6 +45,12 @@ export default class extends Controller {
   }
 
   renderCard(card) {
+    if (card.dataset.revoked === "true") {
+      card.className = "device-card status-revoked"
+      card.querySelector(".status").textContent = "revoked"
+      return
+    }
+
     const now = Date.now()
     const heartbeat = Date.parse(card.dataset.lastHeartbeatAt || "")
     const expires = Date.parse(card.dataset.expiresAt || "")
