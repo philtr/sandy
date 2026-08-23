@@ -14,11 +14,21 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     patch parent_profile_path, params: { id: @profile.id }
     assert_redirected_to root_path
 
-    post device_time_grants_path(@device), params: { duration_seconds: 15.minutes.to_i, idempotency_key: "phone-submit-1" }
+    post device_time_grants_path(@device), params: { duration_seconds: 5.minutes.to_i, idempotency_key: "phone-submit-1" }
     assert_redirected_to root_path
     assert_equal 1, @device.time_grants.count
     assert_equal @profile, @device.time_grants.first.parent_profile
+    assert_equal 5.minutes.to_i, @device.time_grants.first.duration_seconds
     assert @device.reload.expires_at.future?
+  end
+
+  test "dashboard offers a five-minute grant" do
+    sign_in_and_select_profile
+
+    get root_path
+
+    assert_response :success
+    assert_select "button", text: "+5 min"
   end
 
   test "family scope prevents access to another family device" do

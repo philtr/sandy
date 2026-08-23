@@ -1,5 +1,6 @@
 class TimeGrant < ApplicationRecord
-  ALLOWED_DURATIONS = [ 15.minutes.to_i, 30.minutes.to_i, 60.minutes.to_i ].freeze
+  QUICK_GRANT_MINUTES = [ 5, 15, 30, 60 ].freeze
+  ALLOWED_DURATIONS = QUICK_GRANT_MINUTES.map { |minutes| minutes.minutes.to_i }.freeze
 
   belongs_to :device
   belongs_to :parent_profile

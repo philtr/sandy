@@ -21,7 +21,7 @@
         <% if status == "offline" %><p class="stale">Offline · last deadline <%= device.expires_at ? l(device.expires_at, format: :short) : "not set" %></p><% end %>
         <% if current_parent_profile && !device.revoked_at? %>
           <div class="grant-buttons">
-            <% [15, 30, 60].each do |minutes| %>
+            <% TimeGrant::QUICK_GRANT_MINUTES.each do |minutes| %>
               <%= button_to "+#{minutes} min", device_time_grants_path(device), params: { duration_seconds: minutes.minutes.to_i, idempotency_key: SecureRandom.uuid }, class: "grant-button" %>
             <% end %>
           </div>

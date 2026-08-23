@@ -65,7 +65,7 @@ Posts a bounded batch of events. Each event has a client-generated UUID, type, o
 
 ### `POST /devices/:id/time_grants`
 
-This browser/session endpoint accepts a duration of 15, 30, or 60 minutes, a parent profile belonging to the current family, and an idempotency key. It creates the audit record and authoritative state atomically, then broadcasts after commit.
+This browser/session endpoint accepts a duration of 5, 15, 30, or 60 minutes, a parent profile belonging to the current family, and an idempotency key. Five-minute grants can be repeated to make any five-minute increment. It creates the audit record and authoritative state atomically, then broadcasts after commit.
 
 ## Action Cable
 
