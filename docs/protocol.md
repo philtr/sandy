@@ -67,6 +67,10 @@ Posts a bounded batch of events. Each event has a client-generated UUID, type, o
 
 This browser/session endpoint accepts a duration of 5, 15, 30, or 60 minutes, a parent profile belonging to the current family, and an idempotency key. Five-minute grants can be repeated to make any five-minute increment. It creates the audit record and authoritative state atomically, then broadcasts after commit.
 
+### `POST /devices/:id/screen_time_revocation`
+
+This browser/session endpoint immediately replaces a future deadline with server-now, increments `state_version`, records the selected parent and prior deadline in the audit history, and broadcasts the resulting expired snapshot after commit. It is an idempotent end-current-allowance action, not pause/resume; a later time grant starts from server-now as usual.
+
 ## Action Cable
 
 An authenticated agent subscribes to `DeviceChannel`; the server derives the device from the connection and ignores a client-supplied device ID. Messages have an explicit type and complete payload:

@@ -31,6 +31,22 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_select "button", text: "+5 min"
   end
 
+  test "selected parent can revoke remaining screen time" do
+    @device.update!(expires_at: 30.minutes.from_now)
+    sign_in_and_select_profile
+
+    get root_path
+    assert_select "button[role='switch']", text: /Revoke screen time/
+
+    post device_screen_time_revocation_path(@device), params: { idempotency_key: "revoke-submit-1" }
+
+    assert_redirected_to root_path
+    assert_equal "expired", @device.reload.timer_status
+    assert_equal 1, @device.state_version
+    event = @device.device_events.find_by!(kind: "screen_time_revoked")
+    assert_equal @profile.name, event.details["parent_profile"]
+  end
+
   test "family scope prevents access to another family device" do
     other = Family.new(name: "Other", timezone: "UTC")
     other.enrollment_code = "OTHERFAMILY"

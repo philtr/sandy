@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   resource :enrollment_code, only: :update
   resources :devices, only: [ :show, :destroy ] do
     resources :time_grants, only: :create
+    resource :screen_time_revocation, only: :create
   end
 
   namespace :api do

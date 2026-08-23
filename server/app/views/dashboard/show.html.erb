@@ -25,6 +25,12 @@
               <%= button_to "+#{minutes} min", device_time_grants_path(device), params: { duration_seconds: minutes.minutes.to_i, idempotency_key: SecureRandom.uuid }, class: "grant-button" %>
             <% end %>
           </div>
+          <% if device.timer_status(at: now) == "active" %>
+            <%= button_to device_screen_time_revocation_path(device), params: { idempotency_key: SecureRandom.uuid }, class: "revoke-time-switch", role: "switch", aria: { checked: false }, form: { data: { turbo_confirm: "End all remaining screen time for #{device.name}? This cannot be undone." } } do %>
+              <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+              <span>Revoke screen time</span>
+            <% end %>
+          <% end %>
         <% else %>
           <p class="choose-profile">Choose a parent profile above to add time.</p>
         <% end %>
@@ -37,7 +43,13 @@
   <h2>Recent activity</h2>
   <% if @recent_grants.empty? && @recent_events.empty? %><p>Nothing recorded yet.</p><% end %>
   <% @recent_grants.each do |grant| %><p><strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> min to <%= grant.device.name %> <time><%= time_ago_in_words(grant.created_at) %> ago</time></p><% end %>
-  <% @recent_events.first(10).each do |event| %><p><strong><%= event.device.name %></strong> reported <%= event.kind.humanize.downcase %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p><% end %>
+  <% @recent_events.first(10).each do |event| %>
+    <% if event.kind == "screen_time_revoked" %>
+      <p><strong><%= event.details["parent_profile"] %></strong> revoked screen time for <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
+    <% else %>
+      <p><strong><%= event.device.name %></strong> reported <%= event.kind.humanize.downcase %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
+    <% end %>
+  <% end %>
 </section>
 
 <% if current_parent_profile %>

@@ -18,6 +18,8 @@ new deadline = max(current deadline, server time) + grant duration
 
 The transaction records its before/after values and parent attribution, increments the device version, and broadcasts the complete resulting state only after commit. A unique idempotency key makes an HTTP retry return the existing grant rather than add time twice. Database serialization or a row lock ensures two distinct simultaneous grants both accumulate.
 
+A parent can revoke the current allowance immediately. Rails atomically replaces the deadline with server-now, increments the same state version, records the parent and prior deadline as a device event, and broadcasts an expired snapshot. Revocation does not bank or pause unused time; a subsequent grant resumes from server-now.
+
 The agent records a received server timestamp, absolute deadline, local UTC timestamp, monotonic timestamp, and state version. It advances normally from monotonic elapsed time and compares corrected wall-clock time after suspend/resume. A valid cached snapshot lets enforcement continue while Rails is unavailable. Reconnection always fetches or receives a complete snapshot; a higher `state_version` supersedes local state. A heartbeat every 30 seconds repairs a missed WebSocket notification.
 
 Wall-clock time is intentional: sleep, reboot, logout, and network loss do not pause or bank gaming time.
@@ -29,7 +31,7 @@ Wall-clock time is intentional: sleep, reboot, logout, and network loss do not p
 - **ParentProfile** — one of the two attribution identities selected on each parent's phone.
 - **Device** — the credential digest, deadline, state version, last heartbeat, reported agent/overlay state, and revocation state.
 - **TimeGrant** — immutable duration, prior/resulting deadline, parent, timestamp, and idempotency key.
-- **DeviceEvent** — an idempotent agent observation such as startup, warning, reconnect, overlay, or update lifecycle.
+- **DeviceEvent** — an idempotent agent observation or parent action such as startup, warning, reconnect, overlay, update lifecycle, or immediate screen-time revocation.
 
 Timer state and connection state are orthogonal. A heartbeat no older than 75 seconds is `online`; otherwise the device is `offline`. An online device is `active` when its deadline is in the future and `expired` otherwise. The parent UI labels an offline countdown as stale and shows the last authoritative deadline.
 

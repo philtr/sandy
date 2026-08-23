@@ -79,4 +79,38 @@ class Device < ApplicationRecord
   def revoke!
     update!(revoked_at: Time.current, token_digest: nil, state_version: state_version + 1)
   end
+
+  def revoke_screen_time!(parent_profile:, idempotency_key:, now: Time.current)
+    event_id = "screen-time-revocation:#{Digest::SHA256.hexdigest(idempotency_key.to_s)}"
+    existing = device_events.find_by(event_id:)
+    return existing if existing
+
+    event = transaction do
+      lock!
+      existing = device_events.find_by(event_id:)
+      if existing
+        existing
+      else
+        previous = expires_at
+        event = device_events.create!(
+          event_id:,
+          kind: "screen_time_revoked",
+          occurred_at: now,
+          details: {
+            parent_profile_id: parent_profile.id,
+            parent_profile: parent_profile.name,
+            previous_expires_at: previous&.iso8601(3),
+            resulting_expires_at: now.iso8601(3)
+          }
+        )
+        update!(expires_at: now, state_version: state_version + 1)
+        event
+      end
+    end
+
+    broadcast_timer_state!
+    event
+  rescue ActiveRecord::RecordNotUnique
+    device_events.find_by!(event_id:)
+  end
 end
