@@ -16,6 +16,7 @@ namespace Sandy.Agent;
 
 public partial class App : System.Windows.Application
 {
+    private const string DefaultUpdateRepository = "https://github.com/philtr/sandy";
     private static Mutex? _singleInstance;
     private readonly CancellationTokenSource _shutdown = new();
     private AgentController? _controller;
@@ -88,9 +89,8 @@ public partial class App : System.Windows.Application
 
         var eventQueue = new DeviceEventQueue(api, credentialStore);
         var updateUrl = Environment.GetEnvironmentVariable("SANDY_UPDATE_URL");
-        IUpdateService updateService = string.IsNullOrWhiteSpace(updateUrl)
-            ? new DisabledUpdateService()
-            : new VelopackUpdateService(updateUrl);
+        IUpdateService updateService = new VelopackUpdateService(
+            string.IsNullOrWhiteSpace(updateUrl) ? DefaultUpdateRepository : updateUrl);
 
         var statusWindow = new StatusWindow();
         _controller = new AgentController(timer, synchronization, eventQueue, updateService, statusWindow);

@@ -22,11 +22,11 @@ Package a release with Velopack 1.2.0:
 vpk pack --packId Sandy.Agent --packVersion 1.2.3 --packDir .\artifacts\agent --mainExe Sandy.Agent.exe
 ```
 
-Set the per-user or machine `SANDY_UPDATE_URL` environment variable to the
-public GitHub repository URL (for example, `https://github.com/family/sandy`).
-When it is absent, update checks are disabled. Updates download in the
-background, auto-apply on the next launch, or apply after the timer has been
-expired for 60 seconds and the server confirms it is still expired.
+Updates use `https://github.com/philtr/sandy` by default. Set the per-user or
+machine `SANDY_UPDATE_URL` environment variable only to override the public
+GitHub repository URL. Updates download in the background, auto-apply on the
+next launch, or apply after the timer has been expired for 60 seconds and the
+server confirms it is still expired.
 
 ## Wire contract
 
