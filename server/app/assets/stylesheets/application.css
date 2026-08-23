@@ -1,8 +1,9 @@
 :root { color-scheme: light; --ink: #17233d; --muted: #647089; --paper: #fff; --bg: #f4f6fb; --accent: #3158d4; --green: #16794a; --red: #ba2f3a; --amber: #a76108; }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; }
+html { background: var(--ink); }
+body { margin: 0; min-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); background: var(--bg); color: var(--ink); font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; }
 a { color: inherit; }
-.site-header { min-height: 64px; padding: 0 5vw; display: flex; align-items: center; justify-content: space-between; background: var(--ink); color: white; }
+.site-header { min-height: calc(64px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) max(5vw, env(safe-area-inset-right)) 0 max(5vw, env(safe-area-inset-left)); display: flex; align-items: center; justify-content: space-between; background: var(--ink); color: white; }
 .brand { font-size: 1.35rem; font-weight: 800; text-decoration: none; }
 .page-shell { width: min(1050px, 92vw); margin: 2rem auto 5rem; }
 .panel, .device-card { background: var(--paper); border-radius: 18px; padding: 1.4rem; box-shadow: 0 8px 30px rgba(23,35,61,.08); }

@@ -1,3 +1,9 @@
-<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="256" cy="256" r="256" fill="red"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Sandy hourglass</title>
+  <rect width="512" height="512" fill="#17233d"/>
+  <circle cx="256" cy="256" r="172" fill="#3158d4"/>
+  <path d="M168 132h176M168 380h176" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="32"/>
+  <path d="M196 148c0 62 21 86 60 108-39 22-60 46-60 108h120c0-62-21-86-60-108 39-22 60-46 60-108z" fill="#fff"/>
+  <path d="M220 180h72c-4 25-15 39-36 52-21-13-32-27-36-52zM219 332c6-27 18-39 37-50 19 11 31 23 37 50z" fill="#f5b642"/>
+  <circle cx="256" cy="260" r="9" fill="#f5b642"/>
 </svg>
