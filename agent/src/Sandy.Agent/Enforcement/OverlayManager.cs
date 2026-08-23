@@ -16,8 +16,16 @@ public sealed class OverlayManager : IDisposable
         if (_active)
             return;
         _active = true;
-        _keyboardBlocker = new KeyboardBlocker();
         CreateWindows();
+        try
+        {
+            _keyboardBlocker = new KeyboardBlocker();
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // Keep the blocking overlay visible even if Windows refuses the
+            // best-effort keyboard hook in this session.
+        }
     }
 
     public void Hide()

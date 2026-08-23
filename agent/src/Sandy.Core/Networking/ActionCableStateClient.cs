@@ -20,6 +20,7 @@ public sealed class ActionCableStateClient : IRealtimeStateClient
         using var socket = new ClientWebSocket();
         socket.Options.AddSubProtocol("actioncable-v1-json");
         socket.Options.SetRequestHeader("Authorization", $"Bearer {token}");
+        socket.Options.SetRequestHeader("Origin", HttpOrigin(cableUri));
         socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(20);
         await socket.ConnectAsync(cableUri, cancellationToken);
 
@@ -52,6 +53,17 @@ public sealed class ActionCableStateClient : IRealtimeStateClient
                            ?? throw new ProtocolException("Action Cable delivered an invalid timer state.");
             await onSnapshot(snapshot, cancellationToken);
         }
+    }
+
+    private static string HttpOrigin(Uri cableUri)
+    {
+        var origin = new UriBuilder(cableUri)
+        {
+            Scheme = cableUri.Scheme == "wss" ? Uri.UriSchemeHttps : Uri.UriSchemeHttp,
+            Path = string.Empty,
+            Query = string.Empty
+        };
+        return origin.Uri.GetLeftPart(UriPartial.Authority);
     }
 
     private static async Task<string?> ReceiveMessageAsync(ClientWebSocket socket, CancellationToken cancellationToken)
