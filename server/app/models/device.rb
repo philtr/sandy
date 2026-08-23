@@ -37,6 +37,8 @@ class Device < ApplicationRecord
   end
 
   def dashboard_status(at: Time.current)
+    return "revoked" if revoked_at?
+
     online?(at:) ? timer_status(at:) : "offline"
   end
 
@@ -72,5 +74,9 @@ class Device < ApplicationRecord
       metadata: self.metadata.merge(metadata.to_h.slice("os_version", "machine_name"))
     )
     FamilyChannel.broadcast_to(family, type: "heartbeat", device_id: id, connectivity: dashboard_status)
+  end
+
+  def revoke!
+    update!(revoked_at: Time.current, token_digest: nil, state_version: state_version + 1)
   end
 end

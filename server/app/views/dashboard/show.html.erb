@@ -19,7 +19,7 @@
         <div class="device-title"><div><h2><%= link_to device.name, device_path(device) %></h2><p><%= device.agent_version.presence || "Agent version unknown" %></p></div><span class="status"><%= status %></span></div>
         <div class="remaining" data-role="remaining"><%= device.timer_status(at: now) == "active" ? distance_of_time_in_words(now, device.expires_at) : "Time’s up" %></div>
         <% if status == "offline" %><p class="stale">Offline · last deadline <%= device.expires_at ? l(device.expires_at, format: :short) : "not set" %></p><% end %>
-        <% if current_parent_profile %>
+        <% if current_parent_profile && !device.revoked_at? %>
           <div class="grant-buttons">
             <% [15, 30, 60].each do |minutes| %>
               <%= button_to "+#{minutes} min", device_time_grants_path(device), params: { duration_seconds: minutes.minutes.to_i, idempotency_key: SecureRandom.uuid }, class: "grant-button" %>
@@ -39,3 +39,11 @@
   <% @recent_grants.each do |grant| %><p><strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> min to <%= grant.device.name %> <time><%= time_ago_in_words(grant.created_at) %> ago</time></p><% end %>
   <% @recent_events.first(10).each do |event| %><p><strong><%= event.device.name %></strong> reported <%= event.kind.humanize.downcase %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p><% end %>
 </section>
+
+<% if current_parent_profile %>
+  <section class="panel family-tools">
+    <h2>PC enrollment</h2>
+    <p>Rotate the family join code if it was shared accidentally. Existing PCs stay enrolled.</p>
+    <%= button_to "Rotate join code", enrollment_code_path, method: :patch, class: "secondary-button", form: { data: { turbo_confirm: "Replace the current PC join code?" } } %>
+  </section>
+<% end %>

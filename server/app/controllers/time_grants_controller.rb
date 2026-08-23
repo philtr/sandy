@@ -3,7 +3,7 @@ class TimeGrantsController < ApplicationController
   before_action :require_parent_profile
 
   def create
-    device = current_family.devices.find(params[:device_id])
+    device = current_family.devices.not_revoked.find(params[:device_id])
     grant = TimeGrant.grant!(
       device: device,
       parent_profile: current_parent_profile,
