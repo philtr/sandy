@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/Sandy.Core/Sandy.Core.csproj" />
+  <Project Path="src/Sandy.Agent/Sandy.Agent.csproj" />
+  <Project Path="tests/Sandy.Core.Tests/Sandy.Core.Tests.csproj" />
+</Solution>
