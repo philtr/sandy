@@ -1,0 +1,30 @@
+.DS_Store
+.idea/
+.vscode/
+
+# Local secrets and deployment state
+.env
+.env.*
+!.env.example
+deploy/.env
+deploy/backups/
+deploy/data/
+
+# Rails runtime files and secrets
+server/config/master.key
+server/log/*
+!server/log/.keep
+server/storage/*
+!server/storage/.keep
+server/tmp/*
+!server/tmp/.keep
+server/vendor/bundle/
+
+# .NET build and packaging output
+agent/**/bin/
+agent/**/obj/
+agent/artifacts/
+artifacts/
+Releases/
+*.user
+*.suo

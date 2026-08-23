@@ -1,0 +1,82 @@
+name: Release Windows agent
+
+on:
+  push:
+    tags: ["agent-v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer package version (for example 1.2.3)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      SIGNING_CERTIFICATE_BASE64: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_BASE64 }}
+      SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $version = if ("${{ github.event_name }}" -eq "workflow_dispatch") { "${{ inputs.version }}" } else { "${{ github.ref_name }}" -replace '^agent-v', '' }
+          if ($version -notmatch '^\d+\.\d+\.\d+([-.][0-9A-Za-z.-]+)?$') { throw "Invalid SemVer: $version" }
+          "version=$version" >> $env:GITHUB_OUTPUT
+      - name: Restore and test
+        run: |
+          dotnet restore agent/Sandy.slnx
+          dotnet test agent/Sandy.slnx -c Release --no-restore
+      - name: Publish self-contained agent
+        run: dotnet publish agent/src/Sandy.Agent/Sandy.Agent.csproj -c Release -r win-x64 --self-contained true --no-restore -p:Version=${{ steps.version.outputs.version }} -o artifacts/agent
+      - name: Install Velopack CLI
+        run: dotnet tool install --global vpk --version 1.2.0
+      - name: Prepare optional signing certificate
+        if: env.SIGNING_CERTIFICATE_BASE64 != ''
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/signing | Out-Null
+          [IO.File]::WriteAllBytes("artifacts/signing/certificate.pfx", [Convert]::FromBase64String($env:SIGNING_CERTIFICATE_BASE64))
+      - name: Package Velopack release
+        shell: pwsh
+        run: |
+          $arguments = @(
+            "pack",
+            "--packId", "Sandy.Agent",
+            "--packVersion", "${{ steps.version.outputs.version }}",
+            "--packDir", "artifacts/agent",
+            "--mainExe", "Sandy.Agent.exe",
+            "--channel", "win-x64"
+          )
+          if ($env:SIGNING_CERTIFICATE_BASE64) {
+            $certificate = (Resolve-Path "artifacts/signing/certificate.pfx").Path
+            $signParams = "/fd SHA256 /tr http://timestamp.digicert.com /td SHA256 /f `"$certificate`" /p `"$env:SIGNING_CERTIFICATE_PASSWORD`""
+            $arguments += @("--signParams", $signParams)
+          }
+          & vpk @arguments
+          if ($LASTEXITCODE -ne 0) { throw "Velopack packaging failed with exit code $LASTEXITCODE" }
+      - name: Remove signing material
+        if: always()
+        shell: pwsh
+        run: Remove-Item -Recurse -Force artifacts/signing -ErrorAction SilentlyContinue
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandy-agent-${{ steps.version.outputs.version }}-win-x64
+          path: Releases/**
+          if-no-files-found: error
+      - name: Publish GitHub release
+        if: github.event_name == 'push'
+        shell: pwsh
+        env:
+          VPK_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          vpk upload github --repoUrl "https://github.com/${{ github.repository }}" --outputDir Releases --channel win-x64 --publish --tag "${{ github.ref_name }}" --releaseName "Sandy Agent ${{ steps.version.outputs.version }}"

@@ -1,0 +1,33 @@
+name: sandy
+
+services:
+  app:
+    image: ${SANDY_IMAGE:?Set SANDY_IMAGE in deploy/.env}
+    restart: unless-stopped
+    init: true
+    environment:
+      RAILS_ENV: production
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set SECRET_KEY_BASE in deploy/.env}
+      SETUP_TOKEN: ${SETUP_TOKEN:?Set SETUP_TOKEN in deploy/.env}
+      APP_HOST: ${APP_HOST:?Set APP_HOST in deploy/.env}
+      APP_ORIGIN: ${APP_ORIGIN:?Set APP_ORIGIN in deploy/.env}
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+      RAILS_LOG_TO_STDOUT: "true"
+      RAILS_SERVE_STATIC_FILES: "true"
+    ports:
+      - "127.0.0.1:${SANDY_PORT:-3000}:80"
+    volumes:
+      - sandy_storage:/rails/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent --show-error http://127.0.0.1/up >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  sandy_storage:
+    name: sandy_storage

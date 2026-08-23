@@ -1,0 +1,71 @@
+name: Rails CI
+
+on:
+  pull_request:
+    paths:
+      - "server/**"
+      - ".github/workflows/rails-ci.yml"
+  push:
+    branches: [main, master]
+    paths:
+      - "server/**"
+      - ".github/workflows/rails-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install native dependencies
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libvips
+      - uses: ruby/setup-ruby@v1
+        with:
+          working-directory: server
+          bundler-cache: true
+      - name: Prepare test databases
+        working-directory: server
+        env:
+          RAILS_ENV: test
+        run: bin/rails db:test:prepare
+      - name: Run tests
+        working-directory: server
+        env:
+          RAILS_ENV: test
+        run: bin/rails test
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ruby/setup-ruby@v1
+        with:
+          working-directory: server
+          bundler-cache: true
+      - name: Lint Ruby
+        working-directory: server
+        run: bin/rubocop --format github
+      - name: Scan application
+        working-directory: server
+        run: bin/brakeman --no-pager
+      - name: Audit gems
+        working-directory: server
+        run: bin/bundler-audit
+      - name: Audit import map
+        working-directory: server
+        run: bin/importmap audit
+
+  image-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
+      - name: Build production image
+        uses: docker/build-push-action@v6
+        with:
+          context: server
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

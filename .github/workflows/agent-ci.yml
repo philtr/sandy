@@ -1,0 +1,36 @@
+name: Windows agent CI
+
+on:
+  pull_request:
+    paths:
+      - "agent/**"
+      - ".github/workflows/agent-ci.yml"
+  push:
+    branches: [main, master]
+    paths:
+      - "agent/**"
+      - ".github/workflows/agent-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore agent/Sandy.slnx
+      - name: Test
+        run: dotnet test agent/Sandy.slnx -c Release --no-restore
+      - name: Publish self-contained agent
+        run: dotnet publish agent/src/Sandy.Agent/Sandy.Agent.csproj -c Release -r win-x64 --self-contained true --no-restore -o artifacts/agent
+      - name: Upload smoke-build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandy-agent-win-x64
+          path: artifacts/agent
+          if-no-files-found: error
