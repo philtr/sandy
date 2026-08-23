@@ -1,0 +1,8 @@
+<% content_for :title, "Family created" %>
+<section class="panel narrow center">
+  <p class="eyebrow">Setup complete</p>
+  <h1>Save the PC join code</h1>
+  <p>The Windows agent asks for this code on first launch. It is shown only now.</p>
+  <div class="join-code"><%= @join_code %></div>
+  <%= link_to "Open dashboard", root_path, class: "primary-button" %>
+</section>

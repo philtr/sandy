@@ -1,0 +1,41 @@
+<% content_for :title, "#{current_family.name} · Sandy" %>
+<section class="dashboard-heading">
+  <div><p class="eyebrow"><%= current_family.name %></p><h1>Gaming time</h1></div>
+  <div class="profile-picker">
+    <span>This phone is:</span>
+    <% @profiles.each do |profile| %>
+      <%= button_to profile.name, parent_profile_path, method: :patch, params: { id: profile.id }, class: current_parent_profile == profile ? "profile active" : "profile" %>
+    <% end %>
+  </div>
+</section>
+
+<% if @devices.empty? %>
+  <section class="panel empty"><h2>No PC enrolled yet</h2><p>Launch the Sandy agent on the gaming PC and enter your family join code.</p></section>
+<% else %>
+  <section class="device-grid" data-controller="dashboard">
+    <% @devices.each do |device| %>
+      <% now = Time.current; status = device.dashboard_status(at: now) %>
+      <article class="device-card status-<%= status %>" data-device-id="<%= device.id %>" data-expires-at="<%= device.expires_at&.iso8601(3) %>" data-last-heartbeat-at="<%= device.last_heartbeat_at&.iso8601(3) %>">
+        <div class="device-title"><div><h2><%= link_to device.name, device_path(device) %></h2><p><%= device.agent_version.presence || "Agent version unknown" %></p></div><span class="status"><%= status %></span></div>
+        <div class="remaining" data-role="remaining"><%= device.timer_status(at: now) == "active" ? distance_of_time_in_words(now, device.expires_at) : "Time’s up" %></div>
+        <% if status == "offline" %><p class="stale">Offline · last deadline <%= device.expires_at ? l(device.expires_at, format: :short) : "not set" %></p><% end %>
+        <% if current_parent_profile %>
+          <div class="grant-buttons">
+            <% [15, 30, 60].each do |minutes| %>
+              <%= button_to "+#{minutes} min", device_time_grants_path(device), params: { duration_seconds: minutes.minutes.to_i, idempotency_key: SecureRandom.uuid }, class: "grant-button" %>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="choose-profile">Choose a parent profile above to add time.</p>
+        <% end %>
+      </article>
+    <% end %>
+  </section>
+<% end %>
+
+<section class="panel history">
+  <h2>Recent activity</h2>
+  <% if @recent_grants.empty? && @recent_events.empty? %><p>Nothing recorded yet.</p><% end %>
+  <% @recent_grants.each do |grant| %><p><strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> min to <%= grant.device.name %> <time><%= time_ago_in_words(grant.created_at) %> ago</time></p><% end %>
+  <% @recent_events.first(10).each do |event| %><p><strong><%= event.device.name %></strong> reported <%= event.kind.humanize.downcase %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p><% end %>
+</section>

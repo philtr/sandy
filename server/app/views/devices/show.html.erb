@@ -1,0 +1,5 @@
+<% content_for :title, "#{@device.name} · Sandy" %>
+<%= link_to "← Dashboard", root_path %>
+<section class="panel"><h1><%= @device.name %></h1><p>Status: <strong><%= @device.dashboard_status %></strong> · Agent <%= @device.agent_version || "unknown" %> · State version <%= @device.state_version %></p></section>
+<section class="panel history"><h2>Time grants</h2><% @grants.each do |grant| %><p><%= l(grant.created_at, format: :short) %> — <strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> minutes; deadline <%= l(grant.resulting_expires_at, format: :short) %>.</p><% end %></section>
+<section class="panel history"><h2>Agent events</h2><% @events.each do |event| %><p><%= l(event.occurred_at, format: :short) %> — <strong><%= event.kind.humanize %></strong><% if event.details.present? %>: <%= event.details.to_json %><% end %></p><% end %></section>

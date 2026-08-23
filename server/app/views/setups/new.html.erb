@@ -1,0 +1,25 @@
+<% content_for :title, "Set up Sandy" %>
+<section class="panel narrow">
+  <p class="eyebrow">First run</p>
+  <h1>Set up your family</h1>
+  <p>Create the shared parent login. The deployment setup token is required only once.</p>
+  <%= form_with url: setup_path, class: "stack" do |form| %>
+    <%= form.label :setup_token, "Setup token" %>
+    <%= form.password_field :setup_token, required: true, autocomplete: "one-time-code" %>
+    <%= form.label :family_name, "Family name" %>
+    <%= form.text_field :family_name, required: true, value: params[:family_name] %>
+    <%= form.label :timezone %>
+    <%= form.time_zone_select :timezone, nil, default: params[:timezone] || "Central Time (US & Canada)" %>
+    <%= form.label :email, "Shared parent email" %>
+    <%= form.email_field :email, required: true, autocomplete: "email", value: params[:email] %>
+    <%= form.label :password %>
+    <%= form.password_field :password, required: true, minlength: 10, autocomplete: "new-password" %>
+    <%= form.label :password_confirmation %>
+    <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password" %>
+    <div class="two-columns">
+      <div><%= form.label :parent_one_name, "First parent" %><%= form.text_field :parent_one_name, required: true, value: params[:parent_one_name] %></div>
+      <div><%= form.label :parent_two_name, "Second parent" %><%= form.text_field :parent_two_name, required: true, value: params[:parent_two_name] %></div>
+    </div>
+    <%= form.submit "Create family", class: "primary-button" %>
+  <% end %>
+</section>
