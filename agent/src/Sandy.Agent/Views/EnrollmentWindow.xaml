@@ -1,7 +1,7 @@
 <Window x:Class="Sandy.Agent.Views.EnrollmentWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Set up Sandy" Width="460" Height="440" ResizeMode="NoResize"
+        Title="Set up Sandy" Width="460" Height="520" ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen" Background="#151923" Foreground="White">
   <Grid Margin="32">
     <Grid.RowDefinitions>
@@ -28,7 +28,10 @@
       <TextBox x:Name="DeviceName" Margin="0,6,0,20" Padding="10" />
     </StackPanel>
     <StackPanel Grid.Row="5">
-      <Button x:Name="ConnectButton" Height="44" Content="Connect" IsDefault="True" Click="Connect_Click" />
+      <Button x:Name="ConnectButton" Height="44" Content="Connect" IsDefault="True"
+              Background="{StaticResource AccentBrush}" Foreground="#0B2117"
+              BorderThickness="0" FontSize="16" FontWeight="SemiBold"
+              VerticalContentAlignment="Center" Click="Connect_Click" />
       <TextBlock x:Name="ErrorText" Margin="0,14,0,0" Foreground="#FF8A80" TextWrapping="Wrap" />
     </StackPanel>
   </Grid>
