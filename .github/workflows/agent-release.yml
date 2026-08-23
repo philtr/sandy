@@ -68,7 +68,7 @@ jobs:
         shell: pwsh
         run: Remove-Item -Recurse -Force artifacts/signing -ErrorAction SilentlyContinue
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sandy-agent-${{ steps.version.outputs.version }}-win-x64
           path: Releases/**
