@@ -14,11 +14,11 @@
       </div>
       <% if current_family.allow_revoked_devices? %>
         <p>Revoked PCs receive a standard active timer state so Sandy 1.1.0 and newer agents release the screen-time lock.</p>
-        <% if @legacy_revoked_count.positive? %><p class="setting-warning"><strong>Emergency release is active:</strong> because <%= pluralize(@legacy_revoked_count, "older revoked PC") %> no longer has a stored token digest, any bearer token can receive the release state from timer endpoints. Re-enroll and archive those old records, or turn this setting off, after recovering the PCs.</p><% end %>
+        <p class="setting-warning"><strong>Recovery mode is active:</strong> any bearer token can receive the release state from timer endpoints, even when its PC record is archived or no longer exists. Other device endpoints remain protected.</p>
         <%= button_to "Deny revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: false }, class: "danger-button", form: { data: { turbo_confirm: "Stop releasing revoked PCs? A released PC may remain usable until its cached deadline expires." } } %>
       <% else %>
         <p>Revoked PCs are denied server access and Sandy continues enforcing their last known timer state.</p>
-        <%= button_to "Allow revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: true }, class: "primary-button", form: { data: { turbo_confirm: "Allow every revoked PC? This also enables emergency release for older revoked PCs whose token digest was erased." } } %>
+        <%= button_to "Allow revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: true }, class: "primary-button", form: { data: { turbo_confirm: "Allow every revoked PC? Recovery mode will return an unlocked timer state for any bearer token, including PCs whose records were archived or removed." } } %>
       <% end %>
     </div>
   </section>

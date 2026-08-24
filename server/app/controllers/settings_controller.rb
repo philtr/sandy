@@ -5,7 +5,6 @@ class SettingsController < ApplicationController
   def show
     @revoked_devices = current_family.devices.revoked.not_archived.order(revoked_at: :desc)
     @archived_devices = current_family.devices.where.not(archived_at: nil).order(archived_at: :desc)
-    @legacy_revoked_count = current_family.devices.revoked.not_archived.where(token_digest: nil).count
   end
 
   def update

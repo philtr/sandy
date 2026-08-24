@@ -75,6 +75,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert @family.reload.allow_revoked_devices?
     get settings_path
     assert_select ".release-setting .status", text: "allow"
+    assert_select ".setting-warning", text: /any bearer token.*archived or no longer exists/i
     assert_select "button", text: "Deny revoked PCs"
 
     patch archive_device_path(revoked)

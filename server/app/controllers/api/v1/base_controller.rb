@@ -12,21 +12,19 @@ module Api
         @current_device = Device.authenticate_token(token)
         return if @current_device
 
-        family = legacy_revoked_release_family(token)
+        family = revoked_release_family(token)
         return render json: family.revoked_device_release_snapshot if family
 
         render json: { error: "unauthorized" }, status: :unauthorized
       end
 
-      def legacy_revoked_release_family(token)
+      def revoked_release_family(token)
         return if token.blank? || !%w[states heartbeats].include?(controller_name)
 
-        # Older server releases erased the token digest on revoke, making the
-        # locked agent impossible to identify. This deliberately narrow fallback
-        # is enabled by the parent UI and ends when the legacy record is archived.
-        Family.where(allow_revoked_devices: true).find do |family|
-          family.devices.revoked.not_archived.where(token_digest: nil).exists?
-        end
+        # Recovery mode deliberately does not identify the device. This lets an
+        # agent whose token digest was erased by an older revoke receive a release
+        # snapshot even if its old dashboard record was archived or removed.
+        Family.find_by(allow_revoked_devices: true)
       end
     end
   end
