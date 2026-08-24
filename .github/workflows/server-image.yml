@@ -8,6 +8,11 @@ on:
       - "server/**"
       - ".github/workflows/server-image.yml"
   workflow_dispatch:
+    inputs:
+      version:
+        description: SemVer image version (for example 1.2.3)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -29,15 +34,42 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Resolve release version
+        id: version
+        shell: bash
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
+        run: |
+          version=""
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            version="$DISPATCH_VERSION"
+          elif [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#server-v}"
+          fi
+
+          if [[ -n "$version" ]]; then
+            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Invalid SemVer: $version" >&2
+              exit 1
+            fi
+            echo "major=${version%%.*}" >> "$GITHUB_OUTPUT"
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          else
+            version="0.0.0"
+            echo "major=0" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Compute image metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository }}-server
           tags: |
-            type=ref,event=tag
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release == 'true' }}
+            type=raw,value=latest,enable=${{ steps.version.outputs.release == 'true' }}
+            type=raw,value=v${{ steps.version.outputs.major }}-latest,enable=${{ steps.version.outputs.release == 'true' }}
             type=sha,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and publish
         uses: docker/build-push-action@v6
         with:

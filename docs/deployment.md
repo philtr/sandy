@@ -38,6 +38,8 @@ docker compose --env-file deploy/.env -f deploy/compose.yml ps
 
 The Rails image entrypoint prepares databases before boot. Review release notes for exceptional migration instructions. Do not run two app versions against the same SQLite volume during an upgrade.
 
+Server images are released from `server-vX.Y.Z` Git tags or a manual workflow run with an `X.Y.Z` version. Each release publishes the exact `X.Y.Z` image tag, the moving `latest` tag, and the moving `vX-latest` tag for consumers that want updates within one major version. Default-branch builds publish only an immutable `sha-*` tag.
+
 Windows releases are published from `agent-v*` Git tags. Set the installed agent's `SANDY_UPDATE_URL` to the public repository URL, such as `https://github.com/OWNER/REPOSITORY`. The agent checks that source at startup and every six hours, downloads quietly, and applies at a safe boundary. Stable artifacts should be Authenticode-signed; unsigned development builds can trigger SmartScreen.
 
 ## Operations
