@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: SemVer image version (for example 1.2.3)
+        description: SemVer image version (for example 1.2.3 or 2.0.0-alpha1)
         required: true
         type: string
 
@@ -48,16 +48,22 @@ jobs:
           fi
 
           if [[ -n "$version" ]]; then
-            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$ ]]; then
               echo "Invalid SemVer: $version" >&2
               exit 1
             fi
             echo "major=${version%%.*}" >> "$GITHUB_OUTPUT"
             echo "release=true" >> "$GITHUB_OUTPUT"
+            if [[ "$version" == *-* ]]; then
+              echo "stable=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "stable=true" >> "$GITHUB_OUTPUT"
+            fi
           else
             version="0.0.0"
             echo "major=0" >> "$GITHUB_OUTPUT"
             echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "stable=false" >> "$GITHUB_OUTPUT"
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Compute image metadata
@@ -67,8 +73,8 @@ jobs:
           images: ghcr.io/${{ github.repository }}-server
           tags: |
             type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release == 'true' }}
-            type=raw,value=latest,enable=${{ steps.version.outputs.release == 'true' }}
-            type=raw,value=v${{ steps.version.outputs.major }}-latest,enable=${{ steps.version.outputs.release == 'true' }}
+            type=raw,value=latest,enable=${{ steps.version.outputs.stable == 'true' }}
+            type=raw,value=v${{ steps.version.outputs.major }}-latest,enable=${{ steps.version.outputs.stable == 'true' }}
             type=sha,prefix=sha-
       - name: Build and publish
         uses: docker/build-push-action@v6

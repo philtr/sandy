@@ -21,7 +21,7 @@ public sealed class OverlayManager : IDisposable
         CreateWindows();
         try
         {
-            _keyboardBlocker = new KeyboardBlocker();
+            _keyboardBlocker = new KeyboardBlocker(FocusOverlays);
         }
         catch (System.ComponentModel.Win32Exception)
         {
@@ -58,6 +58,12 @@ public sealed class OverlayManager : IDisposable
             _windows.Add(window);
             window.Show();
         }
+    }
+
+    private void FocusOverlays()
+    {
+        foreach (var window in _windows)
+            window.BringToFront();
     }
 
     private void DisplaySettingsChanged(object? sender, EventArgs e)

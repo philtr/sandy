@@ -1,5 +1,7 @@
 using System.Windows.Threading;
 using Sandy.Agent.Enforcement;
+using Sandy.Agent.Launcher;
+using Sandy.Agent.Shell;
 using Sandy.Agent.Updates;
 using Sandy.Agent.Views;
 using Sandy.Core.Events;
@@ -14,7 +16,7 @@ public sealed class AgentController : IDisposable
     private readonly TimerSynchronizationService _synchronization;
     private readonly IDeviceEventSink _events;
     private readonly IUpdateService _updates;
-    private readonly StatusWindow _statusWindow;
+    private readonly LauncherDesktopManager _launcher;
     private readonly OverlayManager _overlay = new();
     private readonly WarningTransitions _transitions = new();
     private readonly DispatcherTimer _timerTick = new() { Interval = TimeSpan.FromMilliseconds(250) };
@@ -27,20 +29,19 @@ public sealed class AgentController : IDisposable
         TimerSynchronizationService synchronization,
         IDeviceEventSink events,
         IUpdateService updates,
-        StatusWindow statusWindow)
+        LauncherDesktopManager launcher)
     {
         _timer = timer;
         _synchronization = synchronization;
         _events = events;
         _updates = updates;
-        _statusWindow = statusWindow;
+        _launcher = launcher;
         _timerTick.Tick += Tick;
         _synchronization.ConnectionStateChanged += ConnectionChanged;
     }
 
     public void Start()
     {
-        _statusWindow.Show();
         _timerTick.Start();
         Tick(this, EventArgs.Empty);
     }
@@ -68,7 +69,7 @@ public sealed class AgentController : IDisposable
         _synchronization.ConnectionStateChanged -= ConnectionChanged;
         _countdownWindow?.Close();
         _overlay.Dispose();
-        _statusWindow.ClosePermanently();
+        _launcher.Dispose();
     }
 
     private async void Tick(object? sender, EventArgs e)
@@ -81,12 +82,14 @@ public sealed class AgentController : IDisposable
             _countdownWindow?.Close();
             _countdownWindow = null;
             _overlay.Show();
+            _launcher.SetAvailable(false);
             _synchronization.SetOverlayActive(true);
             _expiredSince ??= DateTimeOffset.UtcNow;
         }
         else
         {
             _overlay.Hide();
+            _launcher.SetAvailable(true);
             _synchronization.SetOverlayActive(false);
             _expiredSince = null;
             if (reading.Phase == TimerPhase.FinalMinute)
@@ -101,7 +104,7 @@ public sealed class AgentController : IDisposable
             }
         }
 
-        _statusWindow.UpdateTimer(reading);
+        _launcher.UpdateTimer(reading);
 
         foreach (var notification in _transitions.Observe(reading))
             HandleNotification(notification);
@@ -136,11 +139,11 @@ public sealed class AgentController : IDisposable
         switch (notification)
         {
             case TimerNotification.FifteenMinutes:
-                new WarningWindow("15 minutes of PC screentime remain").Show();
+                new WarningWindow("15 minutes of PC screentime remain", TopLevelWindowTracker.ForegroundScreen()).Show();
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 15 });
                 break;
             case TimerNotification.FiveMinutes:
-                new WarningWindow("5 minutes of PC screentime remain").Show();
+                new WarningWindow("5 minutes of PC screentime remain", TopLevelWindowTracker.ForegroundScreen()).Show();
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 5 });
                 break;
             case TimerNotification.FinalMinute:
@@ -157,11 +160,11 @@ public sealed class AgentController : IDisposable
 
     private CountdownWindow ShowCountdown()
     {
-        var window = new CountdownWindow();
+        var window = new CountdownWindow(TopLevelWindowTracker.ForegroundScreen());
         window.Show();
         return window;
     }
 
     private void ConnectionChanged(object? sender, ConnectionState state) =>
-        _statusWindow.Dispatcher.Invoke(() => _statusWindow.UpdateConnection(state));
+        System.Windows.Application.Current.Dispatcher.Invoke(() => _launcher.UpdateConnection(state));
 }

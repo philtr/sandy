@@ -1,0 +1,41 @@
+<Window x:Class="Sandy.Agent.Views.SandyTaskbarWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False" Height="82"
+        Background="#F20D131E" Foreground="White" WindowStartupLocation="Manual">
+  <Border BorderBrush="#3D71808F" BorderThickness="1,1,1,0" CornerRadius="14,14,0,0">
+    <Grid Margin="16,8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+
+      <Button x:Name="HomeButton" Width="64" Height="58" FontSize="27" Content="⌂" Foreground="#67A8FF"
+              Background="#2B173A6A" BorderBrush="#67A8FF" BorderThickness="1" Click="Home_Click" />
+      <StackPanel x:Name="PinnedPanel" Grid.Column="1" Margin="14,0,0,0" Orientation="Horizontal" />
+      <Border Grid.Column="2" Width="1" Margin="14,7" Background="#6671808F" />
+      <StackPanel x:Name="RunningPanel" Grid.Column="3" Orientation="Horizontal" />
+
+      <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button Width="42" Height="42" FontSize="19" Content="🔊" ToolTip="Volume" Click="Volume_Click" />
+        <Button Width="42" Height="42" FontSize="18" Content="◉" ToolTip="Network status" Click="Network_Click" />
+        <Border Margin="8,0,4,0" Padding="8,5" CornerRadius="14" BorderBrush="#6671808F" BorderThickness="1">
+          <StackPanel Orientation="Horizontal">
+            <Ellipse x:Name="TaskbarConnectionDot" Width="8" Height="8" Margin="0,0,6,0" Fill="#F4B942" />
+            <TextBlock x:Name="TaskbarConnectionText" Text="Connecting" FontSize="11" VerticalAlignment="Center" />
+          </StackPanel>
+        </Border>
+        <StackPanel Margin="10,0" VerticalAlignment="Center">
+          <TextBlock x:Name="TaskbarRemainingText" Text="--:--" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" />
+          <TextBlock x:Name="EditLeaseText" Foreground="#67A8FF" FontSize="10" HorizontalAlignment="Center" />
+        </StackPanel>
+        <TextBlock x:Name="TaskbarClockText" Margin="9,0" Text="8:42" FontSize="17" VerticalAlignment="Center" />
+        <Button Width="42" Height="42" FontSize="20" Content="●" ToolTip="Account" Click="Account_Click" />
+        <Button Width="42" Height="42" Margin="8,0,0,0" FontSize="22" Content="⏻" ToolTip="Power" Click="Power_Click" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</Window>

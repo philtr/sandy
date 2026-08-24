@@ -1,0 +1,46 @@
+<Window x:Class="Sandy.Agent.Views.EditAppsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit Sandy apps" Width="760" Height="650" WindowStartupLocation="CenterOwner"
+        Background="#0D131E" Foreground="White" AllowDrop="True">
+  <Grid Margin="28">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <StackPanel>
+      <TextBlock FontSize="30" FontWeight="SemiBold" Text="Edit launcher apps" />
+      <TextBlock x:Name="AuthorizationText" Margin="0,7,0,0" Foreground="{StaticResource MutedBrush}"
+                 Text="Ask a parent to unlock app editing from Sandy." />
+    </StackPanel>
+
+    <WrapPanel x:Name="EditActions" Grid.Row="1" Margin="0,20,0,16">
+      <Button Margin="0,0,10,0" Padding="15,9" Content="Choose from Start" Click="ChooseStart_Click" />
+      <Button Margin="0,0,10,0" Padding="15,9" Content="Choose a file" Click="ChooseFile_Click" />
+      <Button Padding="15,9" Content="Add a link" Click="AddLink_Click" />
+    </WrapPanel>
+
+    <ListBox x:Name="PinsList" Grid.Row="2" Background="#99161D27" Foreground="White" AllowDrop="True"
+             BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" DisplayMemberPath="DisplayName"
+             PreviewMouseLeftButtonDown="PinsList_PreviewMouseLeftButtonDown"
+             PreviewMouseMove="PinsList_PreviewMouseMove" DragOver="PinsList_DragOver" Drop="PinsList_Drop" />
+
+    <Grid Grid.Row="3" Margin="0,16,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <Button x:Name="MoveUpButton" Padding="15,9" Content="Move up" Click="MoveUp_Click" />
+      <Button x:Name="MoveDownButton" Grid.Column="1" Margin="10,0,0,0" Padding="15,9" Content="Move down" Click="MoveDown_Click" />
+      <Button x:Name="RemoveButton" Grid.Column="2" Margin="10,0,0,0" Padding="15,9" Content="Unpin" Click="Remove_Click" />
+      <TextBlock x:Name="CountText" Grid.Column="3" Margin="14,0" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
+      <Button Grid.Column="4" Padding="20,9" Content="Done" IsDefault="True" Click="Done_Click" />
+    </Grid>
+  </Grid>
+</Window>

@@ -1,0 +1,69 @@
+<Window x:Class="Sandy.Agent.Views.LauncherWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None" ResizeMode="NoResize" ShowInTaskbar="False"
+        Background="#090E16" Foreground="White" WindowStartupLocation="Manual">
+  <Grid>
+    <Grid.Background>
+      <RadialGradientBrush Center="0.5,0.42" GradientOrigin="0.5,0.42" RadiusX="0.72" RadiusY="0.8">
+        <GradientStop Color="#173A6A" Offset="0" />
+        <GradientStop Color="#0C1727" Offset="0.42" />
+        <GradientStop Color="#090E16" Offset="1" />
+      </RadialGradientBrush>
+    </Grid.Background>
+
+    <Grid Margin="30,24,30,102">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <Border Width="38" Height="38" CornerRadius="10" Background="#173A6A" BorderBrush="#67A8FF" BorderThickness="1">
+            <TextBlock Text="S" FontSize="23" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#67A8FF" />
+          </Border>
+          <TextBlock Margin="12,0,0,0" Text="Sandy" FontSize="28" FontWeight="SemiBold" VerticalAlignment="Center" />
+        </StackPanel>
+        <TextBlock x:Name="ClockText" Grid.Column="1" Text="8:42 PM" FontSize="24"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Border Grid.Column="2" Padding="16,8" CornerRadius="24" BorderBrush="#6671808F" BorderThickness="1"
+                Background="#55161D27" HorizontalAlignment="Right">
+          <StackPanel Orientation="Horizontal">
+            <Ellipse x:Name="ConnectionDot" Width="11" Height="11" Fill="#F4B942" Margin="0,0,10,0" />
+            <TextBlock x:Name="ConnectionText" Text="Connecting" FontSize="17" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Grid x:Name="PrimaryContent" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="22" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border Width="470" Padding="22,16" CornerRadius="20" BorderBrush="#555A9FF5" BorderThickness="1"
+                Background="#D9161D27">
+          <StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+              <TextBlock x:Name="RemainingText" Text="Checking…" FontSize="58" FontWeight="Bold" />
+              <TextBlock Text=" remaining" Margin="18,0,0,7" FontSize="22" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Bottom" />
+            </StackPanel>
+            <Grid Height="11" Margin="0,12,0,0" ClipToBounds="True">
+              <Border CornerRadius="8" Background="#4B5563" />
+              <ProgressBar x:Name="AllowanceProgress" Minimum="0" Maximum="1" Value="0"
+                           Foreground="{StaticResource AccentBrush}" Background="Transparent" BorderThickness="0" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <UniformGrid x:Name="AppsGrid" Grid.Row="2" Rows="3" Columns="4" Width="1010" Height="570" />
+      </Grid>
+    </Grid>
+  </Grid>
+</Window>

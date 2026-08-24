@@ -30,9 +30,10 @@ public sealed class EnrollmentService(
 
         // The token and authoritative state are saved before UI transitions. If the
         // process stops between these writes, startup fails closed and fetches state.
+        var generation = Guid.NewGuid();
         await credentialStore.SaveAsync(
-            new DeviceCredential(response.DeviceId, serverUri, response.DeviceToken), cancellationToken);
-        await snapshotStore.SaveAsync(response.TimerState, cancellationToken);
+            new DeviceCredential(response.DeviceId, serverUri, response.DeviceToken, generation), cancellationToken);
+        await snapshotStore.SaveAsync(response.TimerState, generation, cancellationToken);
         return response;
     }
 }

@@ -14,6 +14,8 @@ Action Cable authenticates with the same token in the WebSocket connection URL o
 
 Common responses are `401` for an absent, invalid, or denied revoked-device token, `409` for an idempotency conflict, `422` for invalid input, and `429` for enrollment/login throttling.
 
+A revoked token receives `403` with `{ "error": "device_revoked" }`. An unknown token receives `401` with `{ "error": "unauthorized" }`; agents must not infer revocation from network failures or a generic unauthorized response.
+
 ## Authoritative snapshot
 
 Every state fetch, heartbeat response, enrollment response, and `timer_state` broadcast carries a complete snapshot:
@@ -24,15 +26,19 @@ Every state fetch, heartbeat response, enrollment response, and `timer_state` br
   "state_version": 4,
   "server_time": "2026-08-23T21:00:00Z",
   "expires_at": "2026-08-23T21:30:00Z",
+  "allowance_started_at": "2026-08-23T20:30:00Z",
+  "launcher_edit_unlocked_until": null,
   "remaining_seconds": 1800,
   "timer_status": "active",
   "heartbeat_interval_seconds": 30
 }
 ```
 
-`expires_at` is nullable and is the authority. `remaining_seconds` is a display/bootstrap convenience calculated at `server_time`; clients must not repeatedly decrement that transmitted number. `timer_status` is `active` or `expired`. `state_version` increases whenever the authoritative deadline or device revocation state changes.
+`expires_at` is nullable and is the authority. `remaining_seconds` is a display/bootstrap convenience calculated at `server_time`; clients must not repeatedly decrement that transmitted number. `timer_status` is `active` or `expired`.
 
-The family setting for revoked-PC behavior defaults to deny. When a parent changes it to allow, revoked devices receive a schema-1 active snapshot with a long deadline so agent 1.1.0 and newer releases stop enforcement. New revocations retain the token digest so this choice can be changed later. While allow is enabled, state and heartbeat endpoints provide the same recovery snapshot to any request carrying a bearer token, without requiring a matching device record. This recovers agents whose token digest was erased by an older revoke even if their dashboard record was archived or removed. Other device endpoints remain denied.
+`allowance_started_at` is the beginning of the current contiguous allowance and lets the launcher render whole-allowance progress. `launcher_edit_unlocked_until` is a nullable, absolute 30-minute lease granted by a parent. Agents permit pin changes only while that lease is current, the timer is active, and the server connection is online. `state_version` increases whenever authoritative timer or launcher-edit state changes.
+
+The family revoked-PC recovery setting applies only to agents older than 2.0. When enabled, their state and heartbeat requests receive a schema-1 active snapshot with a long deadline, including pre-tombstone credentials whose device record is gone. Agent 2.0 and newer receive `device_revoked` for known revoked credentials and `unauthorized` for unknown credentials regardless of that legacy setting. Other device endpoints remain denied.
 
 An agent accepts a snapshot when it has a greater version, or when it has the same version and refreshes clock calibration. It never restores an older deadline from a lower-version message. After process restart it may enforce a valid cached snapshot immediately, but must reconnect and reconcile without waiting for its normal heartbeat interval.
 
@@ -73,6 +79,14 @@ This browser/session endpoint accepts a duration of 1, 5, 15, 30, or 60 minutes,
 
 This browser/session endpoint immediately replaces a future deadline with server-now, increments `state_version`, records the selected parent and prior deadline in the audit history, and broadcasts the resulting expired snapshot after commit. It is an idempotent end-current-allowance action, not pause/resume; a later time grant starts from server-now as usual.
 
+### `POST /devices/:id/launcher_edit_unlock`
+
+This parent-session endpoint replaces `launcher_edit_unlocked_until` with exactly 30 minutes from server-now. It does not stack with an existing lease. The device must be active and not revoked. The transaction increments `state_version`, records `launcher_edit_unlocked` with parent attribution, and broadcasts a complete snapshot.
+
+### `DELETE /devices/:id/launcher_edit_unlock`
+
+This parent-session endpoint clears the edit lease immediately, increments `state_version`, records `launcher_edit_locked`, and broadcasts a complete snapshot. Neither endpoint grants Windows elevation or changes screen time.
+
 ## Action Cable
 
 An authenticated agent subscribes to `DeviceChannel`; the server derives the device from the connection and ignores a client-supplied device ID. Messages have an explicit type and complete payload:
@@ -85,11 +99,21 @@ An authenticated agent subscribes to `DeviceChannel`; the server derives the dev
     "state_version": 5,
     "server_time": "2026-08-23T21:05:00Z",
     "expires_at": "2026-08-23T22:05:00Z",
+    "allowance_started_at": "2026-08-23T20:30:00Z",
+    "launcher_edit_unlocked_until": "2026-08-23T21:35:00Z",
     "remaining_seconds": 3600,
     "timer_status": "active",
     "heartbeat_interval_seconds": 30
   }
 }
 ```
+
+Before disconnecting an authenticated revoked device, Rails may send:
+
+```json
+{ "type": "device_revoked" }
+```
+
+This is the only realtime message that clears enrollment. Disconnects, malformed frames, timeouts, and ordinary network failures remain fail-closed and must not be treated as revocation.
 
 WebSocket delivery is an optimization, not a correctness dependency. Reconnect uses exponential backoff with jitter; the HTTP state request and recurring heartbeat close any gap.

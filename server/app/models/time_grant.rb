@@ -27,6 +27,7 @@ class TimeGrant < ApplicationRecord
 
       previous = device.expires_at
       resulting = [ previous, now ].compact.max + duration_seconds.to_i.seconds
+      allowance_started_at = previous.present? && previous > now ? (device.allowance_started_at || now) : now
       grant = create!(
         device: device,
         parent_profile: parent_profile,
@@ -36,7 +37,11 @@ class TimeGrant < ApplicationRecord
         idempotency_key: idempotency_key
       )
       grant.create_device_event!
-      device.update!(expires_at: resulting, state_version: device.state_version + 1)
+      device.update!(
+        expires_at: resulting,
+        allowance_started_at: allowance_started_at,
+        state_version: device.state_version + 1
+      )
       grant
     end
   rescue ActiveRecord::RecordNotUnique

@@ -13,12 +13,12 @@
         <span class="status"><%= current_family.allow_revoked_devices? ? "allow" : "deny" %></span>
       </div>
       <% if current_family.allow_revoked_devices? %>
-        <p>Revoked PCs receive a standard active timer state so Sandy 1.1.0 and newer agents release the screen-time lock.</p>
-        <p class="setting-warning"><strong>Recovery mode is active:</strong> any bearer token can receive the release state from timer endpoints, even when its PC record is archived or no longer exists. Other device endpoints remain protected.</p>
+        <p>Revoked PCs running Sandy 1.x receive a standard active timer state so they release the screen-time lock. Sandy 2.0 and newer always use current-code re-enrollment.</p>
+        <p class="setting-warning"><strong>Legacy recovery mode is active:</strong> Sandy 1.x timer requests carrying any bearer token can receive the release state, even when the PC record is archived or no longer exists. Sandy 2.0 and other device endpoints remain protected.</p>
         <%= button_to "Deny revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: false }, class: "danger-button", form: { data: { turbo_confirm: "Stop releasing revoked PCs? A released PC may remain usable until its cached deadline expires." } } %>
       <% else %>
-        <p>Revoked PCs are denied server access and Sandy continues enforcing their last known timer state.</p>
-        <%= button_to "Allow revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: true }, class: "primary-button", form: { data: { turbo_confirm: "Allow every revoked PC? Recovery mode will return an unlocked timer state for any bearer token, including PCs whose records were archived or removed." } } %>
+        <p>Revoked PCs are denied timer access. Sandy 2.0 shows re-enrollment; legacy agents continue enforcing their last known timer state.</p>
+        <%= button_to "Allow revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: true }, class: "primary-button", form: { data: { turbo_confirm: "Allow revoked PCs running Sandy 1.x? Legacy recovery will return an unlocked timer state for their timer requests, including PCs whose records were archived or removed." } } %>
       <% end %>
     </div>
   </section>

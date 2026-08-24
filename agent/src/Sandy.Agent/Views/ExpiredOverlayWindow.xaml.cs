@@ -26,6 +26,14 @@ public partial class ExpiredOverlayWindow : Window
         Close();
     }
 
+    public void BringToFront()
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        SetWindowPos(handle, HwndTopmost, _bounds.X, _bounds.Y, _bounds.Width, _bounds.Height, SwpShowWindow);
+        Activate();
+        Focus();
+    }
+
     protected override void OnClosing(CancelEventArgs e)
     {
         e.Cancel = !_allowClose;

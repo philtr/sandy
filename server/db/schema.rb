@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_24_020000) do
   create_table "accounts", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -37,20 +37,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_010000) do
   create_table "devices", force: :cascade do |t|
     t.string "agent_version"
     t.datetime "archived_at"
+    t.datetime "allowance_started_at"
     t.datetime "created_at", null: false
     t.datetime "expires_at"
     t.integer "family_id", null: false
     t.datetime "last_heartbeat_at"
+    t.datetime "launcher_edit_unlocked_until"
     t.json "metadata", default: {}, null: false
     t.string "name", null: false
     t.boolean "overlay_active", default: false, null: false
     t.string "platform", default: "windows", null: false
     t.datetime "revoked_at"
+    t.string "revoked_token_digest"
     t.integer "state_version", default: 0, null: false
     t.string "token_digest"
     t.datetime "updated_at", null: false
     t.index ["family_id", "archived_at"], name: "index_devices_on_family_id_and_archived_at"
     t.index ["family_id"], name: "index_devices_on_family_id"
+    t.index ["revoked_token_digest"], name: "index_devices_on_revoked_token_digest", unique: true
     t.index ["token_digest"], name: "index_devices_on_token_digest", unique: true
   end
 

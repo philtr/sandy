@@ -49,6 +49,15 @@
               <% end %>
             </div>
           </div>
+          <% if device.timer_status(at: now) == "active" %><div class="launcher-edit-panel">
+            <p>Launcher apps</p>
+            <% if device.launcher_edit_unlocked?(at: now) %>
+              <p class="launcher-edit-status">Editing unlocked · <%= distance_of_time_in_words(now, device.launcher_edit_unlocked_until) %> remaining (until <%= l(device.launcher_edit_unlocked_until, format: :short) %>)</p>
+              <%= button_to "Lock app editing now", device_launcher_edit_unlock_path(device), method: :delete, class: "secondary-button" %>
+            <% else %>
+              <%= button_to "Unlock app editing for 30 minutes", device_launcher_edit_unlock_path(device), class: "secondary-button" %>
+            <% end %>
+          </div><% end %>
           <% if device.timer_status(at: now) == "active" %>
             <%= button_to device_screen_time_revocation_path(device), params: { idempotency_key: SecureRandom.uuid }, class: "revoke-time-switch", role: "switch", aria: { checked: false }, form: { data: { turbo_confirm: "End all remaining screen time for #{device.name}? This cannot be undone." } } do %>
               <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
@@ -79,6 +88,10 @@
           <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.details["parent_profile"] %></strong> added <%= event.details["duration_seconds"].to_i / 60 %> min to <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
         <% elsif event.kind == "screen_time_revoked" %>
           <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.details["parent_profile"] %></strong> revoked screen time for <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
+        <% elsif event.kind == "launcher_edit_unlocked" %>
+          <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.details["parent_profile"] %></strong> unlocked app editing for <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
+        <% elsif event.kind == "launcher_edit_locked" %>
+          <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.details["parent_profile"] %></strong> locked app editing for <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
         <% else %>
           <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.device.name %></strong> reported <%= event.kind.humanize.downcase %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
         <% end %>

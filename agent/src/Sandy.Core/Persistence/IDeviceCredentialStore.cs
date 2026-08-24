@@ -1,6 +1,10 @@
 namespace Sandy.Core.Persistence;
 
-public sealed record DeviceCredential(long DeviceId, Uri ServerUri, string Token);
+public sealed record DeviceCredential(
+    long DeviceId,
+    Uri ServerUri,
+    string Token,
+    Guid EnrollmentGeneration = default);
 
 public interface IDeviceCredentialStore
 {

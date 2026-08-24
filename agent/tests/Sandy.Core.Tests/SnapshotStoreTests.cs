@@ -31,6 +31,26 @@ public sealed class SnapshotStoreTests
     }
 
     [Fact]
+    public async Task Generation_bound_load_rejects_another_enrollment()
+    {
+        var directory = CreateTemporaryDirectory();
+        try
+        {
+            var path = Path.Combine(directory, "state.json");
+            var store = new SnapshotStore(path, new FixedTimeProvider(Now));
+            var generation = Guid.NewGuid();
+            await store.SaveAsync(TestSnapshot.Active(Now), generation);
+
+            Assert.NotNull(await store.LoadAsync(generation));
+            Assert.Null(await store.LoadAsync(Guid.NewGuid()));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task Corrupt_cache_returns_null_and_fails_closed()
     {
         var directory = CreateTemporaryDirectory();

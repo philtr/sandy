@@ -14,7 +14,7 @@ public sealed class ActionCableStateClient : IRealtimeStateClient
     public async Task RunAsync(
         Uri cableUri,
         string token,
-        Func<TimerSnapshot, CancellationToken, Task> onSnapshot,
+        Func<RealtimeStateMessage, CancellationToken, Task> onMessage,
         CancellationToken cancellationToken)
     {
         using var socket = new ClientWebSocket();
@@ -45,13 +45,21 @@ public sealed class ActionCableStateClient : IRealtimeStateClient
             if (!root.TryGetProperty("message", out var message))
                 continue;
 
+            if (message.ValueKind == JsonValueKind.Object
+                && message.TryGetProperty("type", out var messageType)
+                && messageType.GetString() == "device_revoked")
+            {
+                await onMessage(new RealtimeStateMessage(null, DeviceRevoked: true), cancellationToken);
+                return;
+            }
+
             var payload = message;
             if (message.ValueKind == JsonValueKind.Object && message.TryGetProperty("timer_state", out var nested))
                 payload = nested;
 
             var snapshot = payload.Deserialize<TimerSnapshot>(JsonDefaults.Options)?.Validate()
                            ?? throw new ProtocolException("Action Cable delivered an invalid timer state.");
-            await onSnapshot(snapshot, cancellationToken);
+            await onMessage(new RealtimeStateMessage(snapshot), cancellationToken);
         }
     }
 

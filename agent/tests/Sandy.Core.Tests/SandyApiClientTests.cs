@@ -88,6 +88,21 @@ public sealed class SandyApiClientTests
         Assert.True(exception.Message.Length < 600);
     }
 
+    [Fact]
+    public async Task Revoked_error_is_machine_readable()
+    {
+        using var http = new HttpClient(new StubHandler(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Forbidden)
+        {
+            Content = new StringContent("{\"error\":\"device_revoked\"}", Encoding.UTF8, "application/json")
+        })));
+
+        var exception = await Assert.ThrowsAsync<SandyApiException>(() =>
+            new SandyApiClient(http).GetStateAsync(new Uri("https://sandy.test"), "revoked"));
+
+        Assert.True(exception.IsDeviceRevoked);
+        Assert.Equal("device_revoked", exception.ErrorCode);
+    }
+
     private static HttpResponseMessage JsonResponse<T>(T value) => new(HttpStatusCode.OK)
     {
         Content = new StringContent(JsonSerializer.Serialize(value, JsonDefaults.Options), Encoding.UTF8, "application/json")

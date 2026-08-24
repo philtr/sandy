@@ -19,15 +19,10 @@ class DevicesController < ApplicationController
     )
     if device.family.allow_revoked_devices?
       device.broadcast_timer_state!
-    else
-      ActionCable.server.remote_connections.where(current_device: device, current_account: nil).disconnect
     end
-    notice = if device.family.allow_revoked_devices?
-      "Revoked #{device.name} and released its Sandy screen-time lock."
-    else
-      "Revoked #{device.name}. Re-enrollment requires the current join code."
-    end
-    redirect_to root_path, notice:
+    DeviceChannel.broadcast_to(device, type: "device_revoked")
+    ActionCable.server.remote_connections.where(current_device: device, current_account: nil).disconnect
+    redirect_to root_path, notice: "Revoked #{device.name}. Agent 2.0 requires the current join code."
   end
 
   def archive

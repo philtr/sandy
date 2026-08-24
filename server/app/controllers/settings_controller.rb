@@ -12,13 +12,13 @@ class SettingsController < ApplicationController
     current_family.update!(allow_revoked_devices:)
 
     if allow_revoked_devices
-      current_family.devices.revoked.where.not(token_digest: nil).find_each(&:broadcast_timer_state!)
-      notice = "Revoked PCs will now be released from Sandy enforcement."
+      current_family.devices.revoked.find_each(&:broadcast_timer_state!)
+      notice = "Legacy Sandy 1.x agents on revoked PCs will now be released from enforcement."
     else
-      current_family.devices.revoked.where.not(token_digest: nil).find_each do |device|
+      current_family.devices.revoked.find_each do |device|
         ActionCable.server.remote_connections.where(current_device: device, current_account: nil).disconnect
       end
-      notice = "Revoked PCs now require re-enrollment."
+      notice = "All revoked PCs now require re-enrollment."
     end
 
     redirect_to settings_path, notice:

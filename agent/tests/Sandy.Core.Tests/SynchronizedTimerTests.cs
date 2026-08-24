@@ -31,6 +31,23 @@ public sealed class SynchronizedTimerTests
     }
 
     [Fact]
+    public void Reports_whole_allowance_progress_and_edit_lease()
+    {
+        var clock = new FakeClock(Now);
+        var timer = new SynchronizedTimer(clock);
+        timer.Synchronize(TestSnapshot.Active(Now, 1800) with
+        {
+            AllowanceStartedAt = Now.AddMinutes(-30),
+            LauncherEditUnlockedUntil = Now.AddMinutes(10)
+        });
+
+        var reading = timer.Read();
+
+        Assert.Equal(.5, reading.AllowanceProgress!.Value, 3);
+        Assert.True(reading.LauncherEditLeaseActive);
+    }
+
+    [Fact]
     public void Wall_clock_progress_handles_sleep_when_monotonic_clock_does_not_advance()
     {
         var clock = new FakeClock(Now);
@@ -52,6 +69,22 @@ public sealed class SynchronizedTimerTests
         clock.SetWall(Now.AddHours(-1));
 
         Assert.Equal(TimeSpan.FromMinutes(8), timer.Read().Remaining);
+    }
+
+    [Fact]
+    public void Backwards_wall_clock_does_not_extend_launcher_edit_lease()
+    {
+        var clock = new FakeClock(Now);
+        var timer = new SynchronizedTimer(clock);
+        timer.Synchronize(TestSnapshot.Active(Now) with
+        {
+            LauncherEditUnlockedUntil = Now.AddMinutes(30)
+        });
+
+        clock.Advance(TimeSpan.FromMinutes(31));
+        clock.SetWall(Now.AddHours(-2));
+
+        Assert.False(timer.Read().LauncherEditLeaseActive);
     }
 
     [Fact]

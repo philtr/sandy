@@ -5,7 +5,8 @@ namespace Sandy.Core.Persistence;
 
 public sealed record CachedSnapshot(
     TimerSnapshot Snapshot,
-    DateTimeOffset CachedAtUtc)
+    DateTimeOffset CachedAtUtc,
+    Guid EnrollmentGeneration = default)
 {
     public TimerSnapshot Rehydrate(DateTimeOffset now)
     {
@@ -24,7 +25,10 @@ public sealed record CachedSnapshot(
 public interface ISnapshotStore
 {
     Task<CachedSnapshot?> LoadAsync(CancellationToken cancellationToken = default);
+    Task<CachedSnapshot?> LoadAsync(Guid enrollmentGeneration, CancellationToken cancellationToken = default);
     Task SaveAsync(TimerSnapshot snapshot, CancellationToken cancellationToken = default);
+    Task SaveAsync(TimerSnapshot snapshot, Guid enrollmentGeneration, CancellationToken cancellationToken = default);
+    Task ClearAsync(CancellationToken cancellationToken = default);
 }
 
 public sealed class SnapshotStore(string path, TimeProvider? timeProvider = null) : ISnapshotStore
@@ -53,7 +57,21 @@ public sealed class SnapshotStore(string path, TimeProvider? timeProvider = null
         }
     }
 
+    public async Task<CachedSnapshot?> LoadAsync(
+        Guid enrollmentGeneration,
+        CancellationToken cancellationToken = default)
+    {
+        var cached = await LoadAsync(cancellationToken);
+        return cached?.EnrollmentGeneration == enrollmentGeneration ? cached : null;
+    }
+
     public async Task SaveAsync(TimerSnapshot snapshot, CancellationToken cancellationToken = default)
+        => await SaveAsync(snapshot, Guid.Empty, cancellationToken);
+
+    public async Task SaveAsync(
+        TimerSnapshot snapshot,
+        Guid enrollmentGeneration,
+        CancellationToken cancellationToken = default)
     {
         snapshot.Validate();
         var directory = Path.GetDirectoryName(path)
@@ -68,7 +86,7 @@ public sealed class SnapshotStore(string path, TimeProvider? timeProvider = null
             {
                 await JsonSerializer.SerializeAsync(
                     stream,
-                    new CachedSnapshot(snapshot, _timeProvider.GetUtcNow()),
+                    new CachedSnapshot(snapshot, _timeProvider.GetUtcNow(), enrollmentGeneration),
                     JsonDefaults.Options,
                     cancellationToken);
                 await stream.FlushAsync(cancellationToken);
@@ -81,5 +99,13 @@ public sealed class SnapshotStore(string path, TimeProvider? timeProvider = null
             if (File.Exists(temporary))
                 File.Delete(temporary);
         }
+    }
+
+    public Task ClearAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (File.Exists(path))
+            File.Delete(path);
+        return Task.CompletedTask;
     }
 }

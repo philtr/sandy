@@ -1,6 +1,19 @@
 require "test_helper"
 
 class TimeGrantTest < ActiveSupport::TestCase
+  test "grant starts an allowance window and extensions preserve its start" do
+    family = create_family
+    profile = family.parent_profiles.create!(name: "Alex")
+    device = family.devices.create!(name: "Gaming PC")
+    now = Time.zone.parse("2026-08-24 12:00:00")
+
+    TimeGrant.grant!(device:, parent_profile: profile, duration_seconds: 15.minutes, idempotency_key: "first", now:)
+    TimeGrant.grant!(device:, parent_profile: profile, duration_seconds: 5.minutes, idempotency_key: "second", now: now + 2.minutes)
+
+    assert_equal now, device.reload.allowance_started_at
+    assert_equal now + 20.minutes, device.expires_at
+  end
+
   test "grants extend from now when expired and accumulate when active" do
     family = create_family
     profile = family.parent_profiles.create!(name: "Alex")

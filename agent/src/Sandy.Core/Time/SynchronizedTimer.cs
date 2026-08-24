@@ -17,7 +17,29 @@ public sealed record TimerReading(
     TimeSpan Remaining,
     long StateVersion,
     DateTimeOffset? ExpiresAt,
-    bool HasAuthoritativeState);
+    bool HasAuthoritativeState,
+    DateTimeOffset? AllowanceStartedAt = null,
+    DateTimeOffset? LauncherEditUnlockedUntil = null,
+    DateTimeOffset? EstimatedServerNow = null)
+{
+    public double? AllowanceProgress
+    {
+        get
+        {
+            if (AllowanceStartedAt is null || ExpiresAt is null || EstimatedServerNow is null)
+                return null;
+            var total = ExpiresAt.Value - AllowanceStartedAt.Value;
+            if (total <= TimeSpan.Zero)
+                return null;
+            return Math.Clamp((ExpiresAt.Value - EstimatedServerNow.Value).TotalSeconds / total.TotalSeconds, 0, 1);
+        }
+    }
+
+    public bool LauncherEditLeaseActive =>
+        LauncherEditUnlockedUntil is not null
+        && EstimatedServerNow is not null
+        && LauncherEditUnlockedUntil > EstimatedServerNow;
+}
 
 public sealed class SynchronizedTimer(IMonotonicClock clock)
 {
@@ -64,23 +86,53 @@ public sealed class SynchronizedTimer(IMonotonicClock clock)
         if (_snapshot is null)
             return new(TimerPhase.Unknown, TimeSpan.Zero, 0, null, false);
 
-        if (_snapshot.ExpiresAt is null || _snapshot.TimerStatus == "expired")
-            return new(TimerPhase.Expired, TimeSpan.Zero, _snapshot.StateVersion, _snapshot.ExpiresAt, true);
+        var monotonicElapsed = clock.Elapsed(_receivedTimestamp, timestamp);
+        var wallElapsed = localNow - _localReceivedAt;
+        // A backwards local clock change must not extend either screen time or the
+        // launcher-edit lease. Wall time can still advance farther across sleep on
+        // platforms whose monotonic source pauses while suspended.
+        var correctedElapsed = monotonicElapsed >= wallElapsed ? monotonicElapsed : wallElapsed;
+        var projectedServerNow = _snapshot.ServerTime + correctedElapsed;
 
-        var monotonicRemaining = TimeSpan.FromSeconds(_snapshot.RemainingSeconds)
-            - clock.Elapsed(_receivedTimestamp, timestamp);
+        if (_snapshot.ExpiresAt is null || _snapshot.TimerStatus == "expired")
+            return new(
+                TimerPhase.Expired,
+                TimeSpan.Zero,
+                _snapshot.StateVersion,
+                _snapshot.ExpiresAt,
+                true,
+                _snapshot.AllowanceStartedAt,
+                _snapshot.LauncherEditUnlockedUntil,
+                projectedServerNow);
+
+        var monotonicRemaining = TimeSpan.FromSeconds(_snapshot.RemainingSeconds) - monotonicElapsed;
 
         // Project server time using local wall time so suspend/resume is reflected even
         // on platforms whose monotonic source pauses during sleep. Taking the minimum
         // prevents a backwards wall-clock change from granting extra time.
-        var projectedServerNow = _snapshot.ServerTime + (localNow - _localReceivedAt);
         var wallRemaining = _snapshot.ExpiresAt.Value - projectedServerNow;
         var remaining = monotonicRemaining <= wallRemaining ? monotonicRemaining : wallRemaining;
 
         if (remaining <= TimeSpan.Zero)
-            return new(TimerPhase.Expired, TimeSpan.Zero, _snapshot.StateVersion, _snapshot.ExpiresAt, true);
+            return new(
+                TimerPhase.Expired,
+                TimeSpan.Zero,
+                _snapshot.StateVersion,
+                _snapshot.ExpiresAt,
+                true,
+                _snapshot.AllowanceStartedAt,
+                _snapshot.LauncherEditUnlockedUntil,
+                projectedServerNow);
 
-        return new(PhaseFor(remaining), remaining, _snapshot.StateVersion, _snapshot.ExpiresAt, true);
+        return new(
+            PhaseFor(remaining),
+            remaining,
+            _snapshot.StateVersion,
+            _snapshot.ExpiresAt,
+            true,
+            _snapshot.AllowanceStartedAt,
+            _snapshot.LauncherEditUnlockedUntil,
+            projectedServerNow);
     }
 
     public static TimerPhase PhaseFor(TimeSpan remaining) => remaining switch

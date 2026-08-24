@@ -80,12 +80,25 @@ public sealed class SandyApiClient(HttpClient httpClient) : ISandyApiClient
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
         if (body.Length > 512)
             body = body[..512];
-        throw new SandyApiException((int)response.StatusCode, body);
+        string? errorCode = null;
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            if (document.RootElement.TryGetProperty("error", out var error))
+                errorCode = error.GetString();
+        }
+        catch (JsonException)
+        {
+            // Preserve the bounded response for diagnostics when it is not JSON.
+        }
+        throw new SandyApiException((int)response.StatusCode, body, errorCode);
     }
 }
 
-public sealed class SandyApiException(int statusCode, string responseBody)
+public sealed class SandyApiException(int statusCode, string responseBody, string? errorCode = null)
     : Exception($"Sandy API returned HTTP {statusCode}: {responseBody}")
 {
     public int StatusCode { get; } = statusCode;
+    public string? ErrorCode { get; } = errorCode;
+    public bool IsDeviceRevoked => StatusCode == 403 && ErrorCode == "device_revoked";
 }

@@ -42,6 +42,8 @@ Server images are released from `server-vX.Y.Z` Git tags or a manual workflow ru
 
 Windows releases are published from `agent-v*` Git tags. Set the installed agent's `SANDY_UPDATE_URL` to the public repository URL, such as `https://github.com/OWNER/REPOSITORY`. The agent checks that source at startup and every six hours, downloads quietly, and applies at a safe boundary. Stable artifacts should be Authenticode-signed; unsigned development builds can trigger SmartScreen.
 
+For the launcher/revocation migration, publish and allow uptake of the recovery-capable Windows agent before operators begin relying on revoked-token tombstone responses. Old rows whose token digest was already cleared cannot be identified retroactively; those agents use the generic unauthorized, current-join-code recovery flow. Existing installations retain credentials and cached timer state, begin with an empty manual pin grid, and keep app editing locked until a parent grants a lease.
+
 ## Operations
 
 - `GET /up` is a liveness/boot check. Also alert on the parent dashboard being unreachable and inspect device heartbeat age for end-to-end health.

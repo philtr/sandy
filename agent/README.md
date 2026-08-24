@@ -2,8 +2,23 @@
 
 The agent is a per-user .NET 10 WPF application. `Sandy.Core` contains the
 platform-neutral protocol, timer, persistence, and synchronization logic;
-`Sandy.Agent` owns WPF, DPAPI, registry startup, Win32 keyboard hooks, monitor
-overlays, and Velopack integration.
+`Sandy.Agent` owns WPF, DPAPI, registry startup, the launcher desktop and AppBars,
+Win32 keyboard hooks, monitor overlays, taskbar recovery, and Velopack integration.
+
+While time is available, Sandy displays its launcher on every monitor and uses a
+Sandy-owned bottom AppBar instead of Explorer's visible taskbar. A child guardian
+process restores Explorer taskbars if the UI process exits or stops renewing its
+lease. Explorer remains the shell and no persistent shell/auto-hide setting is
+changed.
+
+Pins are intentionally manual. With a parent-issued 30-minute edit lease and a
+current online connection, **More** can enumerate Start shortcuts or AppsFolder
+on demand, select or drop `.lnk`, `.url`, and `.exe` files, or accept a validated
+absolute URI. Sandy performs no startup application scan, Steam parsing, catalog
+watching, or application allowlisting. Up to 15 pins are stored atomically in
+`%LocalAppData%\Sandy\launcher-pins.json`; icons extracted from explicitly chosen
+files are kept in the adjacent `launcher-icons` directory so stale targets can
+still render recognizably.
 
 ## Build and test
 
@@ -92,7 +107,14 @@ snapshots are atomically replaced under `%LocalAppData%\Sandy`. A missing or
 invalid cache produces an unknown state, which the WPF host treats as expired
 until an authenticated server response arrives.
 
-The keyboard hook is intentionally non-hardened. It filters Win shortcuts,
-Alt-Tab, Alt-Esc, Alt-F4, Ctrl-Esc, and Ctrl-Shift-Esc while the overlay is
-active. Ctrl-Alt-Delete remains handled by Windows and is the deliberate manual
+The keyboard hook is intentionally non-hardened. While time is available, a
+Windows-key tap invokes Sandy Home and Windows-key chords are consumed; Alt-Tab
+and ordinary non-Windows-key shortcuts remain available. While expired, the
+existing Alt-Tab, Alt-Esc, Alt-F4, Ctrl-Esc, and Ctrl-Shift-Esc restrictions also
+apply. Ctrl-Alt-Delete remains handled by Windows and is the deliberate manual
 escape hatch.
+
+Revoked credentials receive the explicit `device_revoked` protocol response.
+Sandy clears only the matching enrollment/cache, restores Explorer taskbars, and
+shows current-code re-enrollment. A generic unauthorized response and all network
+failures remain fail-closed.

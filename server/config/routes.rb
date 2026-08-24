@@ -10,6 +10,7 @@ Rails.application.routes.draw do
     patch :archive, on: :member
     resources :time_grants, only: :create
     resource :screen_time_revocation, only: :create
+    resource :launcher_edit_unlock, only: [ :create, :destroy ]
   end
 
   namespace :api do

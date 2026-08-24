@@ -7,6 +7,8 @@ public interface IRealtimeStateClient
     Task RunAsync(
         Uri cableUri,
         string token,
-        Func<TimerSnapshot, CancellationToken, Task> onSnapshot,
+        Func<RealtimeStateMessage, CancellationToken, Task> onMessage,
         CancellationToken cancellationToken);
 }
+
+public sealed record RealtimeStateMessage(TimerSnapshot? TimerSnapshot, bool DeviceRevoked = false);

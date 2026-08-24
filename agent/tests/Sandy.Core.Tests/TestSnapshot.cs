@@ -13,6 +13,7 @@ internal static class TestSnapshot
         StateVersion = version,
         ServerTime = serverTime,
         ExpiresAt = serverTime.AddSeconds(remainingSeconds),
+        AllowanceStartedAt = serverTime.AddMinutes(-30),
         RemainingSeconds = remainingSeconds,
         TimerStatus = "active",
         HeartbeatIntervalSeconds = 30

@@ -36,12 +36,12 @@ class DeviceApiTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
   end
 
-  test "revoked device receives a 1.1-compatible active state when allowed in family settings" do
+  test "revoked device receives a compatible active state for legacy agents when allowed" do
     @family.update!(allow_revoked_devices: true)
     device = @family.devices.create!(name: "Retired PC", expires_at: 30.minutes.from_now)
     token = device.issue_token!
     device.revoke!
-    headers = { "Authorization" => "Bearer #{token}" }
+    headers = { "Authorization" => "Bearer #{token}", "User-Agent" => "Sandy-Agent/1.1.0" }
 
     get api_v1_state_path, headers:, as: :json
 
@@ -55,9 +55,12 @@ class DeviceApiTest < ActionDispatch::IntegrationTest
     assert_equal "active", response.parsed_body["timer_status"]
   end
 
-  test "recovery release does not require a matching device record" do
+  test "legacy recovery release does not require a matching device record" do
     @family.update!(allow_revoked_devices: true)
-    headers = { "Authorization" => "Bearer token-from-an-archived-or-removed-pc" }
+    headers = {
+      "Authorization" => "Bearer token-from-an-archived-or-removed-pc",
+      "User-Agent" => "Sandy-Agent/1.1.0"
+    }
 
     get api_v1_state_path, headers:, as: :json
     assert_response :success
@@ -71,6 +74,28 @@ class DeviceApiTest < ActionDispatch::IntegrationTest
 
     post api_v1_events_path, params: { events: [] }, headers:, as: :json
     assert_response :unauthorized
+  end
+
+  test "revoked credentials receive a machine readable forbidden response" do
+    device = @family.devices.create!(name: "Gaming PC")
+    token = device.issue_token!
+    device.revoke!
+
+    headers = { "Authorization" => "Bearer #{token}", "User-Agent" => "Sandy-Agent/2.0.0-alpha1" }
+    get api_v1_state_path, headers:, as: :json
+
+    assert_response :forbidden
+    assert_equal "device_revoked", response.parsed_body["error"]
+  end
+
+  test "unknown credentials remain unauthorized for agent 2 even in legacy recovery mode" do
+    @family.update!(allow_revoked_devices: true)
+    headers = { "Authorization" => "Bearer unknown", "User-Agent" => "Sandy-Agent/2.0.0-alpha1" }
+
+    get api_v1_state_path, headers:, as: :json
+
+    assert_response :unauthorized
+    assert_equal "unauthorized", response.parsed_body["error"]
   end
 
   test "event batch is idempotent" do

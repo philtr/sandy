@@ -1,6 +1,9 @@
 class Device < ApplicationRecord
+  class InactiveTimerError < StandardError; end
+
   ONLINE_WINDOW = 75.seconds
   HEARTBEAT_INTERVAL_SECONDS = 30
+  LAUNCHER_EDIT_DURATION = 30.minutes
 
   belongs_to :family
   has_many :time_grants, dependent: :destroy
@@ -23,10 +26,17 @@ class Device < ApplicationRecord
   def self.authenticate_token(token)
     return if token.blank?
 
-    device = find_by(token_digest: digest_token(token))
-    return if device&.revoked_at? && !device.family.allow_revoked_devices?
+    not_revoked.find_by(token_digest: digest_token(token))
+  end
 
-    device
+  def self.revoked_token?(token)
+    revoked_token_device(token).present?
+  end
+
+  def self.revoked_token_device(token)
+    return if token.blank?
+
+    find_by(revoked_token_digest: digest_token(token))
   end
 
   def issue_token!
@@ -63,6 +73,8 @@ class Device < ApplicationRecord
       state_version: state_version,
       server_time: at.iso8601(3),
       expires_at: expires_at&.iso8601(3),
+      allowance_started_at: allowance_started_at&.iso8601(3),
+      launcher_edit_unlocked_until: launcher_edit_unlocked_until&.iso8601(3),
       remaining_seconds: remaining_seconds(at:),
       timer_status: timer_status(at:),
       heartbeat_interval_seconds: HEARTBEAT_INTERVAL_SECONDS
@@ -86,7 +98,58 @@ class Device < ApplicationRecord
   end
 
   def revoke!
-    update!(revoked_at: Time.current, state_version: state_version + 1)
+    transaction do
+      lock!
+      update!(
+        revoked_at: Time.current,
+        revoked_token_digest: token_digest,
+        token_digest: nil,
+        launcher_edit_unlocked_until: nil,
+        state_version: state_version + 1
+      )
+    end
+  end
+
+  def launcher_edit_unlocked?(at: Time.current)
+    launcher_edit_unlocked_until.present? && launcher_edit_unlocked_until > at
+  end
+
+  def unlock_launcher_edit!(parent_profile:, now: Time.current)
+    transaction do
+      lock!
+      raise InactiveTimerError unless timer_status(at: now) == "active" && !revoked_at?
+
+      unlocked_until = now + LAUNCHER_EDIT_DURATION
+      update!(launcher_edit_unlocked_until: unlocked_until, state_version: state_version + 1)
+      device_events.create!(
+        event_id: SecureRandom.uuid,
+        kind: "launcher_edit_unlocked",
+        occurred_at: now,
+        details: {
+          parent_profile_id: parent_profile.id,
+          parent_profile: parent_profile.name,
+          unlocked_until: unlocked_until.iso8601(3)
+        }
+      )
+      unlocked_until
+    end.tap { broadcast_timer_state! }
+  end
+
+  def lock_launcher_edit!(parent_profile:, now: Time.current)
+    transaction do
+      lock!
+      update!(launcher_edit_unlocked_until: nil, state_version: state_version + 1)
+      device_events.create!(
+        event_id: SecureRandom.uuid,
+        kind: "launcher_edit_locked",
+        occurred_at: now,
+        details: {
+          parent_profile_id: parent_profile.id,
+          parent_profile: parent_profile.name
+        }
+      )
+    end
+    broadcast_timer_state!
   end
 
   def archive!
@@ -116,7 +179,7 @@ class Device < ApplicationRecord
             resulting_expires_at: now.iso8601(3)
           }
         )
-        update!(expires_at: now, state_version: state_version + 1)
+        update!(expires_at: now, allowance_started_at: nil, state_version: state_version + 1)
         event
       end
     end

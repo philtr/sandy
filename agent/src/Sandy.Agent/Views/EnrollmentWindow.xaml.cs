@@ -9,13 +9,20 @@ public partial class EnrollmentWindow : Window
 {
     private readonly EnrollmentService _enrollmentService;
     private readonly string _agentVersion;
+    private readonly bool _recovery;
 
-    public EnrollmentWindow(EnrollmentService enrollmentService, string agentVersion)
+    public EnrollmentWindow(EnrollmentService enrollmentService, string agentVersion, bool recovery = false)
     {
         InitializeComponent();
         _enrollmentService = enrollmentService;
         _agentVersion = agentVersion;
+        _recovery = recovery;
         DeviceName.Text = Environment.MachineName;
+        if (recovery)
+        {
+            Title = "Reconnect Sandy";
+            Topmost = true;
+        }
     }
 
     private async void Connect_Click(object sender, RoutedEventArgs e)

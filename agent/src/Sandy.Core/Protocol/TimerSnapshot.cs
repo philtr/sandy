@@ -16,6 +16,12 @@ public sealed record TimerSnapshot
     [JsonPropertyName("expires_at")]
     public DateTimeOffset? ExpiresAt { get; init; }
 
+    [JsonPropertyName("allowance_started_at")]
+    public DateTimeOffset? AllowanceStartedAt { get; init; }
+
+    [JsonPropertyName("launcher_edit_unlocked_until")]
+    public DateTimeOffset? LauncherEditUnlockedUntil { get; init; }
+
     [JsonPropertyName("remaining_seconds")]
     public required long RemainingSeconds { get; init; }
 
@@ -39,6 +45,8 @@ public sealed record TimerSnapshot
             throw new ProtocolException($"Unknown timer status '{TimerStatus}'.");
         if (TimerStatus == "active" && (ExpiresAt is null || RemainingSeconds == 0))
             throw new ProtocolException("An active snapshot must include a future expiration.");
+        if (AllowanceStartedAt is not null && ExpiresAt is not null && AllowanceStartedAt > ExpiresAt)
+            throw new ProtocolException("Allowance start cannot be after expiration.");
         return this;
     }
 }

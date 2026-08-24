@@ -13,6 +13,17 @@ public enum ConnectionState
     Online
 }
 
+public enum EnrollmentFailureReason
+{
+    Revoked,
+    Unauthorized
+}
+
+public sealed class EnrollmentFailureEventArgs(EnrollmentFailureReason reason) : EventArgs
+{
+    public EnrollmentFailureReason Reason { get; } = reason;
+}
+
 public sealed class TimerSynchronizationService(
     ISandyApiClient apiClient,
     IRealtimeStateClient realtimeClient,
@@ -24,14 +35,19 @@ public sealed class TimerSynchronizationService(
     private readonly RetryPolicy _retry = new(options.MaximumRetryDelay);
     private readonly SemaphoreSlim _snapshotGate = new(1, 1);
     private volatile bool _overlayActive;
+    private int _revocationRaised;
 
     public event EventHandler<ConnectionState>? ConnectionStateChanged;
+    public event EventHandler<EnrollmentFailureEventArgs>? EnrollmentRejected;
 
     public void SetOverlayActive(bool active) => _overlayActive = active;
 
     public async Task<bool> RestoreCachedStateAsync(CancellationToken cancellationToken = default)
     {
-        var cached = await snapshotStore.LoadAsync(cancellationToken);
+        var credential = await credentialStore.LoadAsync(cancellationToken);
+        if (credential is null)
+            return false;
+        var cached = await snapshotStore.LoadAsync(credential.EnrollmentGeneration, cancellationToken);
         return cached is not null && timer.Synchronize(cached.Rehydrate(DateTimeOffset.UtcNow));
     }
 
@@ -40,9 +56,17 @@ public sealed class TimerSynchronizationService(
         var credential = await credentialStore.LoadAsync(cancellationToken)
                          ?? throw new InvalidOperationException("The agent is not enrolled.");
 
-        await Task.WhenAll(
-            RunHeartbeatLoopAsync(credential, cancellationToken),
-            RunRealtimeLoopAsync(credential, cancellationToken));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        try
+        {
+            await Task.WhenAll(
+                RunHeartbeatLoopAsync(credential, linked, linked.Token),
+                RunRealtimeLoopAsync(credential, linked, linked.Token));
+        }
+        catch (OperationCanceledException) when (linked.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            // A confirmed revocation terminates both synchronization transports.
+        }
     }
 
     public async Task<TimerSnapshot> RefreshAsync(CancellationToken cancellationToken = default)
@@ -54,7 +78,10 @@ public sealed class TimerSynchronizationService(
         return snapshot;
     }
 
-    private async Task RunHeartbeatLoopAsync(DeviceCredential credential, CancellationToken cancellationToken)
+    private async Task RunHeartbeatLoopAsync(
+        DeviceCredential credential,
+        CancellationTokenSource linked,
+        CancellationToken cancellationToken)
     {
         var attempt = 0;
         while (!cancellationToken.IsCancellationRequested)
@@ -73,6 +100,18 @@ public sealed class TimerSynchronizationService(
                 var interval = TimeSpan.FromSeconds(snapshot.HeartbeatIntervalSeconds);
                 await Task.Delay(interval, cancellationToken);
             }
+            catch (SandyApiException exception) when (exception.IsDeviceRevoked)
+            {
+                RaiseEnrollmentFailure(EnrollmentFailureReason.Revoked);
+                linked.Cancel();
+                return;
+            }
+            catch (SandyApiException exception) when (exception.StatusCode == 401 && exception.ErrorCode == "unauthorized")
+            {
+                RaiseEnrollmentFailure(EnrollmentFailureReason.Unauthorized);
+                linked.Cancel();
+                return;
+            }
             catch (Exception) when (!cancellationToken.IsCancellationRequested)
             {
                 ConnectionStateChanged?.Invoke(this, ConnectionState.Offline);
@@ -81,7 +120,10 @@ public sealed class TimerSynchronizationService(
         }
     }
 
-    private async Task RunRealtimeLoopAsync(DeviceCredential credential, CancellationToken cancellationToken)
+    private async Task RunRealtimeLoopAsync(
+        DeviceCredential credential,
+        CancellationTokenSource linked,
+        CancellationToken cancellationToken)
     {
         var attempt = 0;
         while (!cancellationToken.IsCancellationRequested)
@@ -89,7 +131,20 @@ public sealed class TimerSynchronizationService(
             try
             {
                 await realtimeClient.RunAsync(
-                    CableUri(credential.ServerUri), credential.Token, AcceptAsync, cancellationToken);
+                    CableUri(credential.ServerUri),
+                    credential.Token,
+                    async (message, token) =>
+                    {
+                        if (message.DeviceRevoked)
+                        {
+                            RaiseEnrollmentFailure(EnrollmentFailureReason.Revoked);
+                            linked.Cancel();
+                            return;
+                        }
+                        if (message.TimerSnapshot is not null)
+                            await AcceptAsync(message.TimerSnapshot, credential.EnrollmentGeneration, token);
+                    },
+                    cancellationToken);
                 attempt = 0;
             }
             catch (Exception) when (!cancellationToken.IsCancellationRequested)
@@ -99,19 +154,38 @@ public sealed class TimerSynchronizationService(
         }
     }
 
-    private async Task AcceptAsync(TimerSnapshot snapshot, CancellationToken cancellationToken)
+    private Task AcceptAsync(TimerSnapshot snapshot, CancellationToken cancellationToken)
+        => AcceptWithCurrentCredentialAsync(snapshot, cancellationToken);
+
+    private async Task AcceptWithCurrentCredentialAsync(TimerSnapshot snapshot, CancellationToken cancellationToken)
+    {
+        var credential = await credentialStore.LoadAsync(cancellationToken)
+                         ?? throw new InvalidOperationException("The agent is not enrolled.");
+        await AcceptAsync(snapshot, credential.EnrollmentGeneration, cancellationToken);
+    }
+
+    private async Task AcceptAsync(
+        TimerSnapshot snapshot,
+        Guid enrollmentGeneration,
+        CancellationToken cancellationToken)
     {
         await _snapshotGate.WaitAsync(cancellationToken);
         try
         {
             if (!timer.Synchronize(snapshot))
                 return;
-            await snapshotStore.SaveAsync(snapshot, cancellationToken);
+            await snapshotStore.SaveAsync(snapshot, enrollmentGeneration, cancellationToken);
         }
         finally
         {
             _snapshotGate.Release();
         }
+    }
+
+    private void RaiseEnrollmentFailure(EnrollmentFailureReason reason)
+    {
+        if (Interlocked.Exchange(ref _revocationRaised, 1) == 0)
+            EnrollmentRejected?.Invoke(this, new EnrollmentFailureEventArgs(reason));
     }
 
     private static Uri CableUri(Uri serverUri)

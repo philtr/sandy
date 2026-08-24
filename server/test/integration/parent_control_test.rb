@@ -24,6 +24,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
   end
 
   test "dashboard offers one- and five-minute grants" do
+    @device.update!(expires_at: 5.minutes.from_now)
     sign_in_and_select_profile
 
     get root_path
@@ -32,6 +33,30 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_select "h1", text: "Family PCs"
     assert_select "button", text: "+1 min"
     assert_select "button", text: "+5 min"
+    assert_select "button", text: "Unlock app editing for 30 minutes"
+  end
+
+  test "selected parent can unlock and lock launcher editing" do
+    @device.update!(expires_at: 5.minutes.from_now)
+    sign_in_and_select_profile
+
+    post device_launcher_edit_unlock_path(@device)
+
+    assert_redirected_to root_path
+    assert @device.reload.launcher_edit_unlocked?
+    assert_in_delta 30.minutes.from_now.to_f, @device.launcher_edit_unlocked_until.to_f, 2
+    assert_equal 1, @device.state_version
+    assert_equal @profile.name, @device.device_events.find_by!(kind: "launcher_edit_unlocked").details["parent_profile"]
+
+    get root_path
+    assert_select ".launcher-edit-status", text: /30 minutes remaining/
+
+    delete device_launcher_edit_unlock_path(@device)
+
+    assert_redirected_to root_path
+    assert_nil @device.reload.launcher_edit_unlocked_until
+    assert_equal 2, @device.state_version
+    assert_equal @profile.name, @device.device_events.find_by!(kind: "launcher_edit_locked").details["parent_profile"]
   end
 
   test "dashboard exposes stable semantic device statuses" do
@@ -75,7 +100,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert @family.reload.allow_revoked_devices?
     get settings_path
     assert_select ".release-setting .status", text: "allow"
-    assert_select ".setting-warning", text: /any bearer token.*archived or no longer exists/i
+    assert_select ".setting-warning", text: /Sandy 1\.x.*any bearer token.*archived or no longer exists/i
     assert_select "button", text: "Deny revoked PCs"
 
     patch archive_device_path(revoked)
@@ -216,6 +241,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path
     assert @device.reload.revoked_at?
     assert_nil Device.authenticate_token(token)
+    assert Device.revoked_token?(token)
     assert_equal "device_revoked", @device.device_events.last.kind
   end
 

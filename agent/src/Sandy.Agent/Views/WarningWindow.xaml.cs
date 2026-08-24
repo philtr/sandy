@@ -8,23 +8,18 @@ namespace Sandy.Agent.Views;
 public partial class WarningWindow : Window
 {
     private static readonly TimeSpan AutoDismissAfter = TimeSpan.FromSeconds(10);
-    private const double ScreenMargin = 20;
-
     private readonly Stopwatch _visibleFor = new();
     private readonly DispatcherTimer _dismissTimer = new()
     {
         Interval = TimeSpan.FromMilliseconds(100)
     };
 
-    public WarningWindow(string message)
+    public WarningWindow(string message, System.Windows.Forms.Screen screen)
     {
         InitializeComponent();
         MessageText.Text = message;
         _dismissTimer.Tick += DismissTimer_Tick;
-
-        var workArea = SystemParameters.WorkArea;
-        Left = workArea.Right - Width - ScreenMargin;
-        Top = workArea.Top + ScreenMargin;
+        SourceInitialized += (_, _) => ForegroundNoticePosition.Apply(this, screen);
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();

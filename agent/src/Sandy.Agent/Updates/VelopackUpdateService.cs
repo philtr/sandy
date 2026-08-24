@@ -7,9 +7,9 @@ public sealed class VelopackUpdateService : IUpdateService
 {
     private readonly UpdateManager _manager;
 
-    public VelopackUpdateService(string publicGitHubRepositoryUrl)
+    public VelopackUpdateService(string publicGitHubRepositoryUrl, bool prerelease)
     {
-        var source = new GithubSource(publicGitHubRepositoryUrl, accessToken: null, prerelease: false);
+        var source = new GithubSource(publicGitHubRepositoryUrl, accessToken: null, prerelease);
         _manager = new UpdateManager(source);
     }
 

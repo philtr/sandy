@@ -31,7 +31,7 @@
     <p class="eyebrow">Danger zone</p>
     <h2 id="danger-title">Revoke this PC</h2>
     <% if current_family.allow_revoked_devices? %>
-      <p>The PC will be removed from parental control and receive a long-lived active state. Re-enrollment is required before Sandy can manage it again.</p>
+      <p>Sandy 1.x will receive a long-lived active state. Sandy 2.0 will show current-code re-enrollment immediately.</p>
     <% else %>
       <p>The agent will lose access immediately and must be enrolled again with the current family join code.</p>
     <% end %>

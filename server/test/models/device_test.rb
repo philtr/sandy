@@ -18,8 +18,42 @@ class DeviceTest < ActiveSupport::TestCase
     token = device.issue_token!
     assert_equal device, Device.authenticate_token(token)
 
-    device.update!(revoked_at: Time.current)
+    device.revoke!
     assert_nil Device.authenticate_token(token)
+    assert Device.revoked_token?(token)
+  end
+
+  test "launcher editing uses a renewable fixed lease and records attribution" do
+    family = create_family
+    profile = family.parent_profiles.create!(name: "Alex")
+    now = Time.zone.parse("2026-08-24 12:00:00")
+    device = family.devices.create!(name: "Gaming PC", expires_at: now + 1.hour)
+
+    first = device.unlock_launcher_edit!(parent_profile: profile, now:)
+    renewed = device.unlock_launcher_edit!(parent_profile: profile, now: now + 10.minutes)
+
+    assert_equal now + 30.minutes, first
+    assert_equal now + 40.minutes, renewed
+    assert device.reload.launcher_edit_unlocked?(at: now + 39.minutes)
+    assert_equal 2, device.state_version
+    assert_equal 2, device.device_events.where(kind: "launcher_edit_unlocked").count
+
+    device.lock_launcher_edit!(parent_profile: profile, now: now + 11.minutes)
+    assert_not device.reload.launcher_edit_unlocked?(at: now + 11.minutes)
+    assert_equal 3, device.state_version
+    assert_equal profile.name, device.device_events.find_by!(kind: "launcher_edit_locked").details["parent_profile"]
+  end
+
+  test "launcher editing cannot be unlocked without active screen time" do
+    family = create_family
+    profile = family.parent_profiles.create!(name: "Alex")
+    now = Time.zone.parse("2026-08-24 12:00:00")
+    device = family.devices.create!(name: "Gaming PC", expires_at: now)
+
+    assert_raises(Device::InactiveTimerError) do
+      device.unlock_launcher_edit!(parent_profile: profile, now:)
+    end
+    assert_nil device.reload.launcher_edit_unlocked_until
   end
 
   test "family allow setting returns a schema-one active snapshot for revoked devices" do
@@ -30,8 +64,9 @@ class DeviceTest < ActiveSupport::TestCase
 
     device.revoke!
 
-    assert_equal device, Device.authenticate_token(token)
-    assert device.token_digest.present?
+    assert_nil Device.authenticate_token(token)
+    assert_nil device.token_digest
+    assert device.revoked_token_digest.present?
     snapshot = device.timer_snapshot
     assert_equal 1, snapshot[:schema_version]
     assert_equal "active", snapshot[:timer_status]
@@ -60,6 +95,7 @@ class DeviceTest < ActiveSupport::TestCase
 
     assert_equal event.id, repeated.id
     assert_equal now, device.reload.expires_at
+    assert_nil device.allowance_started_at
     assert_equal 1, device.state_version
     assert_equal 1, device.device_events.where(kind: "screen_time_revoked").count
     assert_equal profile.name, event.details["parent_profile"]
