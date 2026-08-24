@@ -12,7 +12,7 @@
       </RadialGradientBrush>
     </Grid.Background>
 
-    <Grid Margin="30,24,30,102">
+    <Grid Margin="24,20,24,78">
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
@@ -25,45 +25,46 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <Border Width="38" Height="38" CornerRadius="10" Background="#173A6A" BorderBrush="#67A8FF" BorderThickness="1">
-            <TextBlock Text="S" FontSize="23" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#67A8FF" />
+          <Border Width="32" Height="32" CornerRadius="9" Background="#173A6A" BorderBrush="#67A8FF" BorderThickness="1">
+            <TextBlock Text="S" FontSize="19" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#67A8FF" />
           </Border>
-          <TextBlock Margin="12,0,0,0" Text="Sandy" FontSize="28" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <TextBlock Margin="10,0,0,0" Text="Sandy" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
         </StackPanel>
-        <TextBlock x:Name="ClockText" Grid.Column="1" Text="8:42 PM" FontSize="24"
+        <TextBlock x:Name="ClockText" Grid.Column="1" Text="8:42 PM" FontSize="20"
                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-        <Border Grid.Column="2" Padding="16,8" CornerRadius="24" BorderBrush="#6671808F" BorderThickness="1"
+        <Border Grid.Column="2" Padding="13,6" CornerRadius="20" BorderBrush="#6671808F" BorderThickness="1"
                 Background="#55161D27" HorizontalAlignment="Right">
           <StackPanel Orientation="Horizontal">
-            <Ellipse x:Name="ConnectionDot" Width="11" Height="11" Fill="#F4B942" Margin="0,0,10,0" />
-            <TextBlock x:Name="ConnectionText" Text="Connecting" FontSize="17" />
+            <Ellipse x:Name="ConnectionDot" Width="9" Height="9" Fill="#F4B942" Margin="0,0,8,0" />
+            <TextBlock x:Name="ConnectionText" Text="Connecting" FontSize="14" />
           </StackPanel>
         </Border>
       </Grid>
 
-      <Grid x:Name="PrimaryContent" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto" />
-          <RowDefinition Height="22" />
-          <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Border Width="470" Padding="22,16" CornerRadius="20" BorderBrush="#555A9FF5" BorderThickness="1"
-                Background="#D9161D27">
-          <StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-              <TextBlock x:Name="RemainingText" Text="Checking…" FontSize="58" FontWeight="Bold" />
-              <TextBlock Text=" remaining" Margin="18,0,0,7" FontSize="22" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Bottom" />
+      <Viewbox x:Name="PrimaryContent" Grid.Row="1" Margin="0,10,0,0"
+               Stretch="Uniform" StretchDirection="Both"
+               HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Width="920" HorizontalAlignment="Center">
+          <Border Width="420" MinHeight="104" Padding="20,14" CornerRadius="18"
+                  BorderBrush="#555A9FF5" BorderThickness="1" Background="#D9161D27"
+                  HorizontalAlignment="Center">
+            <StackPanel>
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock x:Name="RemainingText" Text="Checking…" FontSize="46" FontWeight="Bold" />
+                <TextBlock Text=" remaining" Margin="14,0,0,6" FontSize="18"
+                           Foreground="{StaticResource MutedBrush}" VerticalAlignment="Bottom" />
+              </StackPanel>
+              <Grid Height="9" Margin="0,10,0,0" ClipToBounds="True">
+                <Border CornerRadius="7" Background="#4B5563" />
+                <ProgressBar x:Name="AllowanceProgress" Minimum="0" Maximum="1" Value="0"
+                             Foreground="{StaticResource AccentBrush}" Background="Transparent" BorderThickness="0" />
+              </Grid>
             </StackPanel>
-            <Grid Height="11" Margin="0,12,0,0" ClipToBounds="True">
-              <Border CornerRadius="8" Background="#4B5563" />
-              <ProgressBar x:Name="AllowanceProgress" Minimum="0" Maximum="1" Value="0"
-                           Foreground="{StaticResource AccentBrush}" Background="Transparent" BorderThickness="0" />
-            </Grid>
-          </StackPanel>
-        </Border>
+          </Border>
 
-        <UniformGrid x:Name="AppsGrid" Grid.Row="2" Rows="3" Columns="4" Width="1010" Height="570" />
-      </Grid>
+          <UniformGrid x:Name="AppsGrid" Rows="1" Columns="4" Width="900" Height="148" Margin="0,16,0,0" />
+        </StackPanel>
+      </Viewbox>
     </Grid>
   </Grid>
 </Window>

@@ -51,6 +51,8 @@ Applications are never cataloged in the background. During an online parent-auth
 
 The Sandy taskbar inventories ordinary top-level windows, groups them by packaged-app identity or executable, and provides best-effort activation, minimization, and instance selection. It does not reproduce Explorer's notification area. A foreground window that stably occupies its monitor's full physical bounds causes only that monitor's Sandy AppBar to release its work area and hide; exit is debounced independently. Sandy Home restores the launcher and AppBars.
 
+While the server-issued app-editing lease is active and the agent is online, the taskbar account menu can temporarily open the normal Windows desktop. Sandy releases its AppBars and shows Explorer's taskbar without exiting or stopping timer synchronization. Sandy Home returns to the launcher; lease expiry, connection loss, or screen-time expiration returns automatically. This is a parent-authorized maintenance convenience, not Windows elevation.
+
 TLS is required outside a trusted development environment. Filter setup tokens, join codes, credentials, authorization headers, and device tokens from application logs.
 
 ## Deliberate limitations

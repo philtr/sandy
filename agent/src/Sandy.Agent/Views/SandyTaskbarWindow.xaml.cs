@@ -22,23 +22,31 @@ namespace Sandy.Agent.Views;
 
 public partial class SandyTaskbarWindow : Window
 {
-    private const int HeightPixels = 82;
+    private const int HeightDips = 56;
     private const int WmDpiChanged = 0x02E0;
     private const int AbnPosChanged = 1;
     private readonly Forms.Screen _screen;
     private readonly Action _home;
+    private readonly Action _showWindowsDesktop;
     private readonly Action _prepareForSessionExit;
     private AppBarRegistration? _appBar;
     private HwndSource? _source;
     private uint _taskbarCreatedMessage;
     private string _runningSignature = string.Empty;
-    private int _heightPixels = HeightPixels;
+    private int _heightPixels = HeightDips;
+    private bool _fullscreenHidden;
+    private bool _editingAllowed;
 
-    public SandyTaskbarWindow(Forms.Screen screen, Action home, Action prepareForSessionExit)
+    public SandyTaskbarWindow(
+        Forms.Screen screen,
+        Action home,
+        Action showWindowsDesktop,
+        Action prepareForSessionExit)
     {
         InitializeComponent();
         _screen = screen;
         _home = home;
+        _showWindowsDesktop = showWindowsDesktop;
         _prepareForSessionExit = prepareForSessionExit;
         SourceInitialized += OnSourceInitialized;
         ContentRendered += OnContentRendered;
@@ -53,19 +61,21 @@ public partial class SandyTaskbarWindow : Window
     public void SetPins(IReadOnlyList<LauncherPin> pins)
     {
         PinnedPanel.Children.Clear();
-        foreach (var pin in pins.Take(LauncherPinStore.MaximumPins))
+        const int visiblePinLimit = 6;
+        foreach (var pin in pins.Take(visiblePinLimit))
         {
             var button = new Button
             {
-                Width = 44,
-                Height = 44,
-                Margin = new Thickness(4, 0, 0, 0),
+                Style = (Style)FindResource("TaskbarButtonStyle"),
+                Width = 34,
+                Height = 34,
+                Margin = new Thickness(3, 0, 0, 0),
                 ToolTip = pin.DisplayName,
                 Content = pin.DisplayName.Length > 0 ? pin.DisplayName[..1].ToUpper(CultureInfo.CurrentCulture) : "◆"
             };
             var icon = IconLoader.Load(pin);
             if (icon is not null)
-                button.Content = new Image { Source = icon, Width = 28, Height = 28 };
+                button.Content = new Image { Source = icon, Width = 22, Height = 22 };
             button.Click += (_, _) =>
             {
                 try { PinLauncher.Launch(pin); }
@@ -76,6 +86,25 @@ public partial class SandyTaskbarWindow : Window
                 }
             };
             PinnedPanel.Children.Add(button);
+        }
+        if (pins.Count > visiblePinLimit)
+        {
+            var overflow = new Button
+            {
+                Style = (Style)FindResource("TaskbarButtonStyle"),
+                Width = 34,
+                Height = 34,
+                Margin = new Thickness(3, 0, 0, 0),
+                ToolTip = $"Show all {pins.Count} pinned apps",
+                Content = new TextBlock
+                {
+                    Text = "•••",
+                    FontSize = 15,
+                    Foreground = (System.Windows.Media.Brush)FindResource("MutedBrush")
+                }
+            };
+            overflow.Click += (_, _) => _home();
+            PinnedPanel.Children.Add(overflow);
         }
     }
 
@@ -92,18 +121,40 @@ public partial class SandyTaskbarWindow : Window
         foreach (var group in groups)
         {
             var representative = group.First();
+            var active = group.Any(window => window.Active);
+            var content = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            content.Children.Add(new TextBlock
+            {
+                Text = group.Count() > 1 ? $"{representative.Title} ({group.Count()})" : representative.Title,
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 135,
+                FontSize = 12
+            });
+            content.Children.Add(new Border
+            {
+                Height = 2,
+                Margin = new Thickness(2, 3, 2, 0),
+                CornerRadius = new CornerRadius(1),
+                Background = active
+                    ? (System.Windows.Media.Brush)FindResource("AccentBrush")
+                    : new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(72, 89, 109))
+            });
             var button = new Button
             {
-                Height = 48,
-                MinWidth = 105,
-                MaxWidth = 180,
-                Margin = new Thickness(8, 0, 0, 0),
-                Padding = new Thickness(12, 0, 12, 0),
-                Content = group.Count() > 1 ? $"{representative.Title} ({group.Count()})" : representative.Title,
+                Style = (Style)FindResource("TaskbarButtonStyle"),
+                Height = 36,
+                MinWidth = 92,
+                MaxWidth = 155,
+                Margin = new Thickness(5, 0, 0, 0),
+                Padding = new Thickness(10, 3, 10, 2),
+                Content = content,
                 ToolTip = representative.Title,
-                BorderBrush = group.Any(window => window.Active)
+                BorderBrush = active
                     ? (System.Windows.Media.Brush)FindResource("AccentBrush")
-                    : (System.Windows.Media.Brush)FindResource("BorderBrush")
+                    : (System.Windows.Media.Brush)FindResource("BorderBrush"),
+                Background = active
+                    ? new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(210, 24, 45, 70))
+                    : (System.Windows.Media.Brush)FindResource("TaskbarButtonBrush")
             };
             button.Click += (_, _) =>
             {
@@ -128,6 +179,7 @@ public partial class SandyTaskbarWindow : Window
 
     public void UpdateState(TimerReading reading, ConnectionState connection, bool editingAllowed)
     {
+        _editingAllowed = editingAllowed;
         TaskbarRemainingText.Text = reading.HasAuthoritativeState && reading.Phase != TimerPhase.Expired
             ? TimeText.Format(reading.Remaining)
             : "Time’s up";
@@ -143,11 +195,20 @@ public partial class SandyTaskbarWindow : Window
             ConnectionState.Offline => System.Windows.Media.Color.FromRgb(255, 138, 128),
             _ => System.Windows.Media.Color.FromRgb(244, 185, 66)
         });
+        var networkAvailable = NetworkInterface.GetIsNetworkAvailable();
+        var networkBrush = new System.Windows.Media.SolidColorBrush(networkAvailable
+            ? System.Windows.Media.Color.FromRgb(220, 229, 242)
+            : System.Windows.Media.Color.FromRgb(255, 138, 128));
+        NetworkWaves.Stroke = networkBrush;
+        NetworkDot.Fill = networkBrush;
+        NetworkStatusIcon.Opacity = networkAvailable ? 1 : 0.7;
+        NetworkStatusIcon.ToolTip = networkAvailable ? "Network available" : "Network unavailable";
         TaskbarClockText.Text = DateTime.Now.ToString("h:mm", CultureInfo.CurrentCulture);
     }
 
     public void SetFullscreenHidden(bool hidden)
     {
+        _fullscreenHidden = hidden;
         if (hidden)
         {
             _appBar?.Dispose();
@@ -165,9 +226,26 @@ public partial class SandyTaskbarWindow : Window
                 _appBar = new AppBarRegistration(handle, _screen, _heightPixels);
                 AppBarRegistered = _appBar.Register();
                 if (!AppBarRegistered)
+                {
+                    _appBar.Dispose();
+                    _appBar = null;
                     Hide();
+                }
+            }
+            else
+            {
+                _appBar.Position();
             }
         }
+    }
+
+    public bool EnsureAvailable()
+    {
+        if (_fullscreenHidden)
+            return false;
+        if (!IsVisible || !AppBarRegistered)
+            SetFullscreenHidden(false);
+        return IsVisible && AppBarRegistered;
     }
 
     public void ReRegisterAppBar()
@@ -192,11 +270,15 @@ public partial class SandyTaskbarWindow : Window
         _source = HwndSource.FromHwnd(handle);
         _source?.AddHook(WindowMessage);
         _taskbarCreatedMessage = RegisterWindowMessage("TaskbarCreated");
-        _heightPixels = (int)Math.Ceiling(HeightPixels * GetDpiForWindow(handle) / 96d);
+        _heightPixels = (int)Math.Ceiling(HeightDips * GetDpiForWindow(handle) / 96d);
         _appBar = new AppBarRegistration(handle, _screen, _heightPixels);
         AppBarRegistered = _appBar.Register();
         if (!AppBarRegistered)
+        {
+            _appBar.Dispose();
+            _appBar = null;
             Hide();
+        }
     }
 
     private void OnContentRendered(object? sender, EventArgs e)
@@ -215,7 +297,7 @@ public partial class SandyTaskbarWindow : Window
             _appBar?.Position();
         else if (message == WmDpiChanged)
         {
-            _heightPixels = (int)Math.Ceiling(HeightPixels * GetDpiForWindow(window) / 96d);
+            _heightPixels = (int)Math.Ceiling(HeightDips * GetDpiForWindow(window) / 96d);
             _appBar?.UpdateHeight(_heightPixels);
         }
         return nint.Zero;
@@ -223,26 +305,17 @@ public partial class SandyTaskbarWindow : Window
 
     private void Home_Click(object sender, RoutedEventArgs e) => _home();
 
-    private void Volume_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            new VolumeWindow { Owner = this }.Show();
-        }
-        catch (COMException)
-        {
-            MessageBox.Show("No audio output is currently available.", "Volume", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-    }
-
-    private void Network_Click(object sender, RoutedEventArgs e) =>
-        MessageBox.Show(NetworkInterface.GetIsNetworkAvailable() ? "Network connection available" : "No network connection",
-            "Network status", MessageBoxButton.OK, MessageBoxImage.Information);
-
     private void Account_Click(object sender, RoutedEventArgs e)
     {
         var menu = new ContextMenu();
         menu.Items.Add(new MenuItem { Header = Environment.UserName, IsEnabled = false });
+        if (_editingAllowed)
+        {
+            var windowsDesktop = new MenuItem { Header = "Open Windows desktop" };
+            windowsDesktop.Click += (_, _) => _showWindowsDesktop();
+            menu.Items.Add(windowsDesktop);
+            menu.Items.Add(new Separator());
+        }
         var lockItem = new MenuItem { Header = "Lock" };
         lockItem.Click += (_, _) => LockWorkStation();
         var signOut = new MenuItem { Header = "Sign out" };

@@ -25,6 +25,8 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Reorder and unpin entries; restart Sandy and confirm atomic persistence.
 - Renew the lease and verify it resets to 30 minutes rather than stacking; use **Lock app editing now** and verify mutations stop.
 - Disconnect networking during editing; verify editing locks immediately while committed pins remain launchable.
+- While editing is unlocked, use **Account → Open Windows desktop**; confirm Sandy's AppBars release, Explorer's taskbar appears, and timer synchronization continues. Confirm Sandy Home returns to the launcher and hides Explorer again.
+- Repeat the Windows-desktop escape, then expire the edit lease, disconnect networking, and expire screen time; each condition must close the escape automatically without a restart or sign-out.
 - Let the lease expire during editing; verify the editor closes or becomes read-only.
 - Expire screen time during editing; verify **Time's up** takes precedence immediately.
 - Confirm app editing never grants Windows elevation and never bypasses screen-time expiration.
@@ -37,12 +39,13 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Move representative windows across one to three monitors and confirm their running button follows the representative window.
 - Verify Home button, either Windows-key tap, and `Ctrl`+`Alt`+`S` all restore/focus the existing launcher without duplicate windows or flicker.
 - Verify Windows-key shell chords do not open Start, Search, Run, Settings, Explorer, or the Power User menu; a chord must not invoke Home on key-up.
+- Verify `Win`+`Space` still opens the native keyboard-layout switcher and does not invoke Sandy Home on release.
 - Confirm `Alt`+`Tab`, `Alt`+`Esc`, `Alt`+`F4`, `Ctrl`+`Esc`, and ordinary application shortcuts work while time remains.
 - Test windowed, maximized, borderless full-screen, video full-screen, and exclusive full-screen applications.
 - For borderless full-screen, verify the AppBar releases only that monitor after entry debounce and returns after exit/minimize/close/foreground loss without rapid flicker.
 - Invoke Sandy Home from full screen and verify the application backgrounds/minimizes where possible, the launcher returns, and AppBars reserve their edges again.
 - Change display resolution, scale, orientation, monitor topology, and full-screen monitor while running.
-- Verify volume, network status, account/lock/sign-out, sleep/restart/shutdown controls. Confirm Sandy does not emulate third-party notification-area icons.
+- Verify the passive network status icon, account/lock/sign-out, and sleep/restart/shutdown controls. Confirm Sandy does not emulate third-party notification-area icons.
 
 ## Timer and enforcement
 

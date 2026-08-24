@@ -7,6 +7,8 @@
     <SolidColorBrush x:Key="PageBrush" Color="#090E16" />
     <SolidColorBrush x:Key="SurfaceBrush" Color="#D9161D27" />
     <SolidColorBrush x:Key="SurfaceHoverBrush" Color="#F0202936" />
+    <SolidColorBrush x:Key="TaskbarButtonBrush" Color="#99192330" />
+    <SolidColorBrush x:Key="TaskbarButtonHoverBrush" Color="#D9253344" />
     <SolidColorBrush x:Key="BorderBrush" Color="#6671808F" />
     <SolidColorBrush x:Key="MutedBrush" Color="#B8BFCC" />
     <Style TargetType="Button" x:Key="LauncherTileStyle">
@@ -37,6 +39,47 @@
           </ControlTemplate>
         </Setter.Value>
       </Setter>
+    </Style>
+    <Style TargetType="Button" x:Key="TaskbarButtonStyle">
+      <Setter Property="Background" Value="{StaticResource TaskbarButtonBrush}" />
+      <Setter Property="Foreground" Value="#E8EEF7" />
+      <Setter Property="BorderBrush" Value="#3D71808F" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Padding" Value="8,4" />
+      <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome" Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="9" Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource TaskbarButtonHoverBrush}" />
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="#8A9FB8" />
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="Chrome" Property="Background" Value="#E12D4360" />
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.45" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style TargetType="Button" x:Key="TaskbarHomeButtonStyle" BasedOn="{StaticResource TaskbarButtonStyle}">
+      <Setter Property="Background" Value="#C5173153" />
+      <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+      <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
     </Style>
   </Application.Resources>
 </Application>

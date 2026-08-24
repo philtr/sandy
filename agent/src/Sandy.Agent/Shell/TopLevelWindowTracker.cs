@@ -88,10 +88,18 @@ public sealed class TopLevelWindowTracker
     {
         handle = GetForegroundWindow();
         monitorName = string.Empty;
-        if (handle == nint.Zero || !IsWindowVisible(handle) || IsIconic(handle))
+        if (handle == nint.Zero || handle == GetShellWindow() || !IsWindowVisible(handle) || IsIconic(handle)
+            || IsCloaked(handle))
+            return false;
+        var style = GetWindowLongPtr(handle, GwlExStyle).ToInt64();
+        if ((style & (WsExToolWindow | WsExNoActivate)) != 0)
+            return false;
+        var className = ReadClassName(handle);
+        if (className is "Shell_TrayWnd" or "Shell_SecondaryTrayWnd" or "Progman" or "WorkerW")
             return false;
         GetWindowThreadProcessId(handle, out var processId);
-        if (processId == Environment.ProcessId || !TryGetExtendedFrameBounds(handle, out var rect))
+        if (processId == 0 || processId == Environment.ProcessId || !TryGetExtendedFrameBounds(handle, out var rect)
+            || rect.Right <= rect.Left || rect.Bottom <= rect.Top)
             return false;
         var screen = System.Windows.Forms.Screen.FromHandle(handle);
         monitorName = screen.DeviceName;

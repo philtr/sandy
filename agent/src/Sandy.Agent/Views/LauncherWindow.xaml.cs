@@ -30,14 +30,15 @@ public partial class LauncherWindow : Window
         _showEditor = showEditor;
         PrimaryContent.Visibility = primary ? Visibility.Visible : Visibility.Collapsed;
         SourceInitialized += PositionOnMonitor;
+        SizeChanged += (_, _) => UpdateResponsiveContentSize();
     }
 
     public void SetPins(IReadOnlyList<LauncherPin> pins)
     {
         AppsGrid.Children.Clear();
-        var rows = Math.Max(3, (int)Math.Ceiling((pins.Count + 1) / 4d));
+        var rows = Math.Max(1, (int)Math.Ceiling((pins.Count + 1) / 4d));
         AppsGrid.Rows = rows;
-        AppsGrid.Height = Math.Min(600, rows * 190);
+        AppsGrid.Height = rows * 148;
         foreach (var pin in pins)
             AppsGrid.Children.Add(CreatePinButton(pin));
         AppsGrid.Children.Add(CreateMoreButton());
@@ -86,12 +87,12 @@ public partial class LauncherWindow : Window
         var panel = new StackPanel { HorizontalAlignment = System.Windows.HorizontalAlignment.Center };
         var source = IconLoader.Load(pin);
         if (source is not null)
-            panel.Children.Add(new WpfImage { Source = source, Width = 76, Height = 76, Margin = new Thickness(0, 0, 0, 12) });
+            panel.Children.Add(new WpfImage { Source = source, Width = 58, Height = 58, Margin = new Thickness(0, 0, 0, 9) });
         else
             panel.Children.Add(new TextBlock
             {
                 Text = pin.Kind == LauncherPinKind.Uri ? "↗" : "◆",
-                FontSize = 58,
+                FontSize = 42,
                 Foreground = (MediaBrush)FindResource("MutedBrush"),
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
                 Margin = new Thickness(0, 0, 0, 10)
@@ -99,9 +100,9 @@ public partial class LauncherWindow : Window
         panel.Children.Add(new TextBlock
         {
             Text = pin.DisplayName,
-            FontSize = 20,
+            FontSize = 16,
             TextTrimming = TextTrimming.CharacterEllipsis,
-            MaxWidth = 190,
+            MaxWidth = 170,
             HorizontalAlignment = System.Windows.HorizontalAlignment.Center
         });
 
@@ -109,7 +110,7 @@ public partial class LauncherWindow : Window
         {
             Style = (Style)FindResource("LauncherTileStyle"),
             Content = panel,
-            Margin = new Thickness(8)
+            Margin = new Thickness(6)
         };
         button.Click += (_, _) =>
         {
@@ -131,16 +132,16 @@ public partial class LauncherWindow : Window
         panel.Children.Add(new TextBlock
         {
             Text = "•••",
-            FontSize = 52,
+            FontSize = 40,
             Foreground = (MediaBrush)FindResource("MutedBrush"),
             HorizontalAlignment = System.Windows.HorizontalAlignment.Center
         });
-        panel.Children.Add(new TextBlock { Text = "More", FontSize = 20, HorizontalAlignment = System.Windows.HorizontalAlignment.Center });
+        panel.Children.Add(new TextBlock { Text = "More", FontSize = 16, HorizontalAlignment = System.Windows.HorizontalAlignment.Center });
         var button = new System.Windows.Controls.Button
         {
             Style = (Style)FindResource("LauncherTileStyle"),
             Content = panel,
-            Margin = new Thickness(8)
+            Margin = new Thickness(6)
         };
         button.Click += (_, _) => _showEditor();
         return button;
@@ -150,6 +151,14 @@ public partial class LauncherWindow : Window
     {
         var handle = new WindowInteropHelper(this).Handle;
         SetWindowPos(handle, nint.Zero, _bounds.X, _bounds.Y, _bounds.Width, _bounds.Height, SwpShowWindow);
+        UpdateResponsiveContentSize();
+    }
+
+    private void UpdateResponsiveContentSize()
+    {
+        if (PrimaryContent.Visibility != Visibility.Visible || ActualWidth <= 0)
+            return;
+        PrimaryContent.Width = Math.Clamp(ActualWidth * 0.65, 520, 1100);
     }
 
     [DllImport("user32.dll", SetLastError = true)]

@@ -26,7 +26,9 @@ public sealed class LauncherDesktopManager : IDisposable
     private EditAppsWindow? _editor;
     private bool _available;
     private bool _availabilityInitialized;
-    private string? _fullscreenCandidate;
+    private bool _nativeDesktopVisible;
+    private string? _fullscreenCandidateMonitor;
+    private nint _fullscreenCandidateWindow;
     private DateTimeOffset _fullscreenCandidateSince;
     private string? _fullscreenMonitor;
     private DateTimeOffset? _fullscreenExitSince;
@@ -68,12 +70,16 @@ public sealed class LauncherDesktopManager : IDisposable
         }
         else
         {
+            var nativeDesktopWasVisible = _nativeDesktopVisible;
+            _nativeDesktopVisible = false;
             _editor?.Close();
             _editor = null;
             _homeShortcuts?.Dispose();
             _homeShortcuts = null;
             foreach (var taskbar in _taskbars)
                 taskbar.SetFullscreenHidden(true);
+            if (nativeDesktopWasVisible)
+                NativeTaskbarController.HideAll();
         }
     }
 
@@ -83,6 +89,7 @@ public sealed class LauncherDesktopManager : IDisposable
         foreach (var launcher in _launchers)
             launcher.UpdateTimer(reading);
         UpdateTaskbarState();
+        EnforceNativeDesktopAuthorization();
     }
 
     public void UpdateConnection(ConnectionState state)
@@ -91,20 +98,26 @@ public sealed class LauncherDesktopManager : IDisposable
         foreach (var launcher in _launchers)
             launcher.UpdateConnection(state);
         UpdateTaskbarState();
+        EnforceNativeDesktopAuthorization();
     }
 
     public void ShowHome()
     {
         if (!_available)
             return;
+        _nativeDesktopVisible = false;
         if (_fullscreenWindow != nint.Zero)
             TopLevelWindowTracker.Minimize(_fullscreenWindow);
+        _fullscreenCandidateMonitor = null;
+        _fullscreenCandidateWindow = nint.Zero;
         _fullscreenMonitor = null;
         _fullscreenWindow = nint.Zero;
-        RestoreAllTaskbars();
         foreach (var launcher in _launchers.Where(window => window != _launchers.FirstOrDefault()))
             launcher.ShowBackdrop();
         _launchers.FirstOrDefault()?.ShowHome();
+        // The full-monitor launcher is activated above ordinary windows. Reposition the
+        // AppBars afterwards so the Sandy taskbar is not left behind the launcher.
+        RestoreAllTaskbars();
         HideNativeIfHealthy();
     }
 
@@ -139,7 +152,7 @@ public sealed class LauncherDesktopManager : IDisposable
             launcher.Show();
             _launchers.Add(launcher);
 
-            var taskbar = new SandyTaskbarWindow(screen, ShowHome, PrepareForSessionExit);
+            var taskbar = new SandyTaskbarWindow(screen, ShowHome, ShowWindowsDesktop, PrepareForSessionExit);
             taskbar.ExplorerTaskbarCreated += Taskbar_ExplorerTaskbarCreated;
             taskbar.Ready += Taskbar_Ready;
             taskbar.SetPins(_pins);
@@ -160,7 +173,13 @@ public sealed class LauncherDesktopManager : IDisposable
         _taskbars.Clear();
         _launchers.Clear();
         BuildWindows();
-        if (!_available)
+        if (_nativeDesktopVisible)
+        {
+            foreach (var launcher in _launchers) launcher.Hide();
+            foreach (var taskbar in _taskbars) taskbar.SetFullscreenHidden(true);
+            NativeTaskbarController.ShowAll();
+        }
+        else if (!_available)
             foreach (var taskbar in _taskbars) taskbar.SetFullscreenHidden(true);
         else
             HideNativeIfHealthy();
@@ -195,8 +214,11 @@ public sealed class LauncherDesktopManager : IDisposable
         var windows = _windowTracker.Enumerate();
         foreach (var taskbar in _taskbars) taskbar.SetRunning(windows);
         UpdateTaskbarState();
-        if (_available)
+        if (_available && !_nativeDesktopVisible)
+        {
             UpdateFullscreen();
+            EnsureTaskbarsHealthy();
+        }
     }
 
     private void UpdateFullscreen()
@@ -205,14 +227,21 @@ public sealed class LauncherDesktopManager : IDisposable
         if (TopLevelWindowTracker.IsForegroundFullscreen(out var handle, out var monitor))
         {
             _fullscreenExitSince = null;
-            if (_fullscreenCandidate != monitor)
+            if (_fullscreenMonitor == monitor)
             {
-                _fullscreenCandidate = monitor;
+                _fullscreenWindow = handle;
+                _fullscreenCandidateMonitor = null;
+                _fullscreenCandidateWindow = nint.Zero;
+                return;
+            }
+            if (_fullscreenCandidateMonitor != monitor || _fullscreenCandidateWindow != handle)
+            {
+                _fullscreenCandidateMonitor = monitor;
+                _fullscreenCandidateWindow = handle;
                 _fullscreenCandidateSince = now;
                 return;
             }
-            if (now - _fullscreenCandidateSince >= TimeSpan.FromMilliseconds(300)
-                && _fullscreenMonitor != monitor)
+            if (now - _fullscreenCandidateSince >= TimeSpan.FromMilliseconds(450))
             {
                 if (_fullscreenMonitor is not null)
                     _taskbars.FirstOrDefault(taskbar => taskbar.MonitorName == _fullscreenMonitor)
@@ -220,19 +249,18 @@ public sealed class LauncherDesktopManager : IDisposable
                 _fullscreenMonitor = monitor;
                 _fullscreenWindow = handle;
                 _taskbars.FirstOrDefault(taskbar => taskbar.MonitorName == monitor)?.SetFullscreenHidden(true);
-            }
-            else if (_fullscreenMonitor == monitor)
-            {
-                _fullscreenWindow = handle;
+                _fullscreenCandidateMonitor = null;
+                _fullscreenCandidateWindow = nint.Zero;
             }
             return;
         }
 
-        _fullscreenCandidate = null;
+        _fullscreenCandidateMonitor = null;
+        _fullscreenCandidateWindow = nint.Zero;
         if (_fullscreenMonitor is null)
             return;
         _fullscreenExitSince ??= now;
-        if (now - _fullscreenExitSince < TimeSpan.FromMilliseconds(750))
+        if (now - _fullscreenExitSince < TimeSpan.FromMilliseconds(300))
             return;
         _taskbars.FirstOrDefault(taskbar => taskbar.MonitorName == _fullscreenMonitor)?.SetFullscreenHidden(false);
         _fullscreenMonitor = null;
@@ -240,10 +268,48 @@ public sealed class LauncherDesktopManager : IDisposable
         _fullscreenExitSince = null;
     }
 
+    private void EnsureTaskbarsHealthy()
+    {
+        var neededRecovery = false;
+        foreach (var taskbar in _taskbars.Where(taskbar => taskbar.MonitorName != _fullscreenMonitor))
+        {
+            if (taskbar.IsVisible && taskbar.AppBarRegistered)
+                continue;
+            neededRecovery = true;
+            taskbar.EnsureAvailable();
+        }
+        if (neededRecovery)
+            HideNativeIfHealthy();
+    }
+
     private void RestoreAllTaskbars()
     {
         foreach (var taskbar in _taskbars)
             taskbar.SetFullscreenHidden(false);
+    }
+
+    private void ShowWindowsDesktop()
+    {
+        if (!EditingAllowed)
+            return;
+        _nativeDesktopVisible = true;
+        _fullscreenCandidateMonitor = null;
+        _fullscreenCandidateWindow = nint.Zero;
+        _fullscreenMonitor = null;
+        _fullscreenWindow = nint.Zero;
+        _fullscreenExitSince = null;
+        _editor?.Close();
+        foreach (var launcher in _launchers)
+            launcher.Hide();
+        foreach (var taskbar in _taskbars)
+            taskbar.SetFullscreenHidden(true);
+        NativeTaskbarController.ShowAll();
+    }
+
+    private void EnforceNativeDesktopAuthorization()
+    {
+        if (_nativeDesktopVisible && !EditingAllowed)
+            ShowHome();
     }
 
     private void PrepareForSessionExit()
@@ -255,6 +321,11 @@ public sealed class LauncherDesktopManager : IDisposable
 
     private void HideNativeIfHealthy()
     {
+        if (_nativeDesktopVisible)
+        {
+            NativeTaskbarController.ShowAll();
+            return;
+        }
         if (_guardian.IsHealthy && _taskbars.Count > 0
             && _taskbars.All(taskbar => taskbar.MonitorName == _fullscreenMonitor
                                         || taskbar.AppBarRegistered && taskbar.IsReady))
@@ -274,7 +345,8 @@ public sealed class LauncherDesktopManager : IDisposable
 
     private void Taskbar_ExplorerTaskbarCreated(object? sender, EventArgs e)
     {
-        if (!_available || sender is not SandyTaskbarWindow taskbar || taskbar.MonitorName == _fullscreenMonitor)
+        if (!_available || _nativeDesktopVisible || sender is not SandyTaskbarWindow taskbar
+            || taskbar.MonitorName == _fullscreenMonitor)
             return;
         taskbar.ReRegisterAppBar();
         HideNativeIfHealthy();
@@ -282,7 +354,7 @@ public sealed class LauncherDesktopManager : IDisposable
 
     private void Taskbar_Ready(object? sender, EventArgs e)
     {
-        if (_available)
+        if (_available && !_nativeDesktopVisible)
             HideNativeIfHealthy();
     }
 }
