@@ -1,0 +1,9 @@
+<% content_for :title, "PC join code" %>
+<section class="panel narrow center">
+  <p class="eyebrow">PC enrollment</p>
+  <h1>The current join code is hidden</h1>
+  <p>For security, Sandy stores only a one-way check of the join code, so the current code cannot be displayed again.</p>
+  <p>You can generate a replacement. Existing enrolled PCs will keep working, but the previous join code will no longer enroll a PC.</p>
+  <%= button_to "Generate replacement join code", enrollment_code_path, method: :patch, class: "primary-button", form: { data: { turbo_confirm: "Replace the current PC join code? The previous code will stop enrolling PCs." } } %>
+  <%= link_to "Return to dashboard", root_path, class: "secondary-button" %>
+</section>

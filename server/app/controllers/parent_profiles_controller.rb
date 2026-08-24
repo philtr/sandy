@@ -6,4 +6,9 @@ class ParentProfilesController < ApplicationController
     cookies.signed.permanent[:parent_profile_id] = { value: profile.id, httponly: true, same_site: :lax }
     redirect_back fallback_location: root_path, notice: "Using this phone as #{profile.name}."
   end
+
+  def destroy
+    cookies.delete(:parent_profile_id)
+    redirect_to root_path
+  end
 end

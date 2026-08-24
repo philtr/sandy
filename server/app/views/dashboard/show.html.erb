@@ -1,16 +1,25 @@
 <% content_for :title, "#{current_family.name} · Sandy" %>
+<% unless current_parent_profile %>
+  <section class="profile-gate" role="dialog" aria-modal="true" aria-labelledby="profile-gate-title">
+    <div class="panel profile-gate-card">
+      <p class="eyebrow"><%= current_family.name %></p>
+      <h1 id="profile-gate-title">Who is using this phone?</h1>
+      <p>Select your parent profile to continue.</p>
+      <div class="profile-gate-options">
+        <% @profiles.each do |profile| %>
+          <%= button_to profile.name, parent_profile_path, method: :patch, params: { id: profile.id }, class: "primary-button", autofocus: profile == @profiles.first %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+<% else %>
+
 <section class="dashboard-heading">
-  <div><p class="eyebrow"><%= current_family.name %></p><h1>Gaming time</h1></div>
-  <div class="profile-picker">
-    <span>This phone is:</span>
-    <% @profiles.each do |profile| %>
-      <%= button_to profile.name, parent_profile_path, method: :patch, params: { id: profile.id }, class: current_parent_profile == profile ? "profile active" : "profile" %>
-    <% end %>
-  </div>
+  <div><p class="eyebrow"><%= current_family.name %></p><h1>PC Screentime</h1></div>
 </section>
 
 <% if @devices.empty? %>
-  <section class="panel empty"><h2>No PC enrolled yet</h2><p>Launch the Sandy agent on the gaming PC and enter your family join code.</p></section>
+  <section class="panel empty"><h2>No PC enrolled yet</h2><p>Launch the Sandy agent on the PC and enter your family join code.</p></section>
 <% else %>
   <section class="device-grid" data-controller="dashboard">
     <% @devices.each do |device| %>
@@ -39,6 +48,13 @@
   </section>
 <% end %>
 
+<% if current_parent_profile %>
+  <div class="profile-status">
+    <span>Signed in as <strong><%= current_parent_profile.name %>.</strong></span>
+    <%= button_to "Switch User", parent_profile_path, method: :delete, class: "inline-link-button" %>
+  </div>
+<% end %>
+
 <section class="panel history">
   <h2>Recent activity</h2>
   <% if @recent_events.empty? %><p>Nothing recorded yet.</p><% end %>
@@ -56,7 +72,9 @@
 <% if current_parent_profile %>
   <section class="panel family-tools">
     <h2>PC enrollment</h2>
-    <p>Rotate the family join code if it was shared accidentally. Existing PCs stay enrolled.</p>
+    <p>Use the family join code to enroll another PC, or rotate it if it was shared accidentally. Existing PCs stay enrolled.</p>
+    <%= button_to "Show join code", enrollment_code_path, method: :get, class: "secondary-button" %>
     <%= button_to "Rotate join code", enrollment_code_path, method: :patch, class: "secondary-button", form: { data: { turbo_confirm: "Replace the current PC join code?" } } %>
   </section>
+<% end %>
 <% end %>

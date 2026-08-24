@@ -3,8 +3,8 @@ Rails.application.routes.draw do
 
   resource :setup, only: [ :new, :create ]
   resource :session, only: [ :new, :create, :destroy ]
-  resource :parent_profile, only: :update
-  resource :enrollment_code, only: :update
+  resource :parent_profile, only: [ :update, :destroy ]
+  resource :enrollment_code, only: [ :show, :update ]
   resources :devices, only: [ :show, :destroy ] do
     resources :time_grants, only: :create
     resource :screen_time_revocation, only: :create

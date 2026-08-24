@@ -39,7 +39,7 @@ Timer state and connection state are orthogonal. A heartbeat no older than 75 se
 
 Parent requests use a password-authenticated Rails session, secure HTTP-only cookies, CSRF protection, and rate limiting. The selected parent profile is signed cookie state for attribution, not a second authentication factor.
 
-Enrollment exchanges a rate-limited, human-readable family join code for a random 256-bit device token. Rails stores only token/code digests. The agent protects the token with current-user DPAPI. A device token authorizes only that device's API and Action Cable stream; it cannot grant time or enter the parent UI. Revocation rejects subsequent HTTP and WebSocket authentication.
+Enrollment exchanges a rate-limited, human-readable family join code for a random 256-bit device token. Rails stores only token/code digests. Because the join-code digest is one-way, the parent UI cannot redisplay an existing code; it instead explains the limitation and requires explicit confirmation before generating a replacement. The agent protects the token with current-user DPAPI. A device token authorizes only that device's API and Action Cable stream; it cannot grant time or enter the parent UI. Revocation rejects subsequent HTTP and WebSocket authentication.
 
 TLS is required outside a trusted development environment. Filter setup tokens, join codes, credentials, authorization headers, and device tokens from application logs.
 
