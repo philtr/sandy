@@ -74,7 +74,6 @@ public sealed class AgentController : IDisposable
     private async void Tick(object? sender, EventArgs e)
     {
         var reading = _timer.Read();
-        _statusWindow.UpdateTimer(reading);
 
         var mustBlock = !reading.HasAuthoritativeState || reading.Phase == TimerPhase.Expired;
         if (mustBlock)
@@ -101,6 +100,8 @@ public sealed class AgentController : IDisposable
                 _countdownWindow = null;
             }
         }
+
+        _statusWindow.UpdateTimer(reading);
 
         foreach (var notification in _transitions.Observe(reading))
             HandleNotification(notification);

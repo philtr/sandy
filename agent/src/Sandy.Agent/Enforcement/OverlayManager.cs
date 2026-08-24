@@ -6,6 +6,7 @@ namespace Sandy.Agent.Enforcement;
 public sealed class OverlayManager : IDisposable
 {
     private readonly List<ExpiredOverlayWindow> _windows = [];
+    private readonly SystemAudioMute _audioMute = new();
     private KeyboardBlocker? _keyboardBlocker;
     private bool _active;
 
@@ -15,6 +16,7 @@ public sealed class OverlayManager : IDisposable
     {
         if (_active)
             return;
+        _audioMute.Mute();
         _active = true;
         CreateWindows();
         try
@@ -38,12 +40,14 @@ public sealed class OverlayManager : IDisposable
         _windows.Clear();
         _keyboardBlocker?.Dispose();
         _keyboardBlocker = null;
+        _audioMute.Restore();
     }
 
     public void Dispose()
     {
         SystemEvents.DisplaySettingsChanged -= DisplaySettingsChanged;
         Hide();
+        _audioMute.Dispose();
     }
 
     private void CreateWindows()

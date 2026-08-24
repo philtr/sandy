@@ -25,6 +25,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Cross 15-minute and 5-minute thresholds normally and by reconciliation; verify each warning is shown once for that countdown epoch.
 - Verify the final minute is prominent and counts live without blocking ordinary use.
 - At zero, confirm every monitor receives a borderless topmost overlay that covers taskbars at 100%, 125%, 150%, and mixed DPI.
+- Play audio from an unmuted default output; at zero, verify it is muted before the expired state appears, then grant time and verify the prior unmuted state is restored. Repeat with an endpoint that was already muted and verify it stays muted after time is granted.
 - Connect/disconnect/rearrange monitors while expired; verify overlays follow the new topology.
 - Try the Windows keys, Alt-Tab, Alt-Esc, Alt-F4, Ctrl-Esc, and Ctrl-Shift-Esc; verify they are suppressed only while expired.
 - Confirm Ctrl-Alt-Delete remains available and document that Task Manager/agent termination is an intentional escape path.
