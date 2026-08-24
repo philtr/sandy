@@ -27,6 +27,7 @@ public sealed class LauncherDesktopManager : IDisposable
     private bool _available;
     private bool _availabilityInitialized;
     private bool _nativeDesktopVisible;
+    private bool _taskbarRaisePending;
     private string? _fullscreenCandidateMonitor;
     private nint _fullscreenCandidateWindow;
     private DateTimeOffset _fullscreenCandidateSince;
@@ -145,7 +146,7 @@ public sealed class LauncherDesktopManager : IDisposable
     {
         foreach (var screen in Forms.Screen.AllScreens.OrderByDescending(screen => screen.Primary))
         {
-            var launcher = new LauncherWindow(screen.Bounds, screen.Primary, ShowEditor);
+            var launcher = new LauncherWindow(screen.Bounds, screen.Primary, ShowEditor, QueueTaskbarRaise);
             launcher.SetPins(_pins);
             launcher.UpdateTimer(_reading);
             launcher.UpdateConnection(_connection);
@@ -286,6 +287,21 @@ public sealed class LauncherDesktopManager : IDisposable
     {
         foreach (var taskbar in _taskbars)
             taskbar.SetFullscreenHidden(false);
+    }
+
+    private void QueueTaskbarRaise()
+    {
+        if (_taskbarRaisePending || !_available || _nativeDesktopVisible || _fullscreenMonitor is not null)
+            return;
+        _taskbarRaisePending = true;
+        System.Windows.Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            _taskbarRaisePending = false;
+            if (!_available || _nativeDesktopVisible || _fullscreenMonitor is not null)
+                return;
+            RestoreAllTaskbars();
+            HideNativeIfHealthy();
+        }, DispatcherPriority.Background);
     }
 
     private void ShowWindowsDesktop()

@@ -22,7 +22,7 @@ namespace Sandy.Agent.Views;
 
 public partial class SandyTaskbarWindow : Window
 {
-    private const int HeightDips = 56;
+    private const int HeightDips = 48;
     private const int WmDpiChanged = 0x02E0;
     private const int AbnPosChanged = 1;
     private readonly Forms.Screen _screen;

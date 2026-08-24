@@ -13,16 +13,25 @@ public sealed class AppBarRegistration(nint handle, Forms.Screen screen, int hei
     private const uint AbmSetPos = 3;
     private const uint AbeBottom = 3;
     private bool _registered;
+    private bool _ownsReservation;
     private int _height = height;
 
     public bool Register()
     {
         if (_registered)
             return true;
+        if (ExistingBottomReservation() > 0)
+        {
+            _registered = true;
+            _ownsReservation = false;
+            Position();
+            return true;
+        }
         var data = CreateData();
         if (SHAppBarMessage(AbmNew, ref data) == 0)
             return false;
         _registered = true;
+        _ownsReservation = true;
         Position();
         return true;
     }
@@ -32,6 +41,15 @@ public sealed class AppBarRegistration(nint handle, Forms.Screen screen, int hei
         if (!_registered)
             return;
         var bounds = screen.Bounds;
+        if (!_ownsReservation)
+        {
+            var reservedHeight = ExistingBottomReservation();
+            if (reservedHeight <= 0)
+                reservedHeight = _height;
+            SetWindowPos(handle, nint.Zero, bounds.Left, bounds.Bottom - reservedHeight,
+                bounds.Width, reservedHeight, 0x0010 | 0x0040);
+            return;
+        }
         var data = CreateData();
         data.Edge = AbeBottom;
         data.Rect = new Rect
@@ -59,9 +77,22 @@ public sealed class AppBarRegistration(nint handle, Forms.Screen screen, int hei
     {
         if (!_registered)
             return;
-        var data = CreateData();
-        SHAppBarMessage(AbmRemove, ref data);
+        if (_ownsReservation)
+        {
+            var data = CreateData();
+            SHAppBarMessage(AbmRemove, ref data);
+        }
         _registered = false;
+        _ownsReservation = false;
+    }
+
+    private int ExistingBottomReservation()
+    {
+        var bounds = screen.Bounds;
+        var workingArea = screen.WorkingArea;
+        return workingArea.Left == bounds.Left && workingArea.Right == bounds.Right
+            ? Math.Max(0, bounds.Bottom - workingArea.Bottom)
+            : 0;
     }
 
     private AppBarData CreateData() => new()

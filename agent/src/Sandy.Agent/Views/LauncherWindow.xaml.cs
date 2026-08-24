@@ -22,15 +22,18 @@ public partial class LauncherWindow : Window
     private const uint SwpShowWindow = 0x0040;
     private readonly DrawingRectangle _bounds;
     private readonly Action _showEditor;
+    private readonly Action _raiseTaskbars;
 
-    public LauncherWindow(DrawingRectangle bounds, bool primary, Action showEditor)
+    public LauncherWindow(DrawingRectangle bounds, bool primary, Action showEditor, Action raiseTaskbars)
     {
         InitializeComponent();
         _bounds = bounds;
         _showEditor = showEditor;
+        _raiseTaskbars = raiseTaskbars;
         PrimaryContent.Visibility = primary ? Visibility.Visible : Visibility.Collapsed;
         SourceInitialized += PositionOnMonitor;
         SizeChanged += (_, _) => UpdateResponsiveContentSize();
+        PreviewMouseDown += (_, _) => _raiseTaskbars();
     }
 
     public void SetPins(IReadOnlyList<LauncherPin> pins)
