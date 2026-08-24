@@ -68,6 +68,7 @@ public sealed class AgentController : IDisposable
         _synchronization.ConnectionStateChanged -= ConnectionChanged;
         _countdownWindow?.Close();
         _overlay.Dispose();
+        _statusWindow.ClosePermanently();
     }
 
     private async void Tick(object? sender, EventArgs e)
