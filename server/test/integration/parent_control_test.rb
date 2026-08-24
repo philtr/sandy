@@ -141,8 +141,11 @@ class ParentControlTest < ActionDispatch::IntegrationTest
 
     patch enrollment_code_path
 
-    assert_response :success
+    assert_response :see_other
+    assert_redirected_to enrollment_code_path
     assert_not_equal old_digest, @family.reload.enrollment_code_digest
+    follow_redirect!
+    assert_response :success
     assert_select "h1", text: "Connect a new PC"
     assert_select ".join-code"
   end
