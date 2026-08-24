@@ -9,7 +9,8 @@ class PwaMetadataTest < ActionDispatch::IntegrationTest
     assert_select "meta[name='apple-mobile-web-app-capable'][content='yes']"
     assert_select "meta[name='apple-mobile-web-app-title'][content='Sandy']"
     assert_select "meta[name='apple-mobile-web-app-status-bar-style'][content='black-translucent']"
-    assert_select "meta[name='theme-color'][content='#17233d']"
+    assert_select "meta[name='theme-color'][content='#f8fafc'][media='(prefers-color-scheme: light)']"
+    assert_select "meta[name='theme-color'][content='#020617'][media='(prefers-color-scheme: dark)']"
     assert_select "link[rel='apple-touch-icon'][href='/apple-touch-icon.png'][sizes='180x180']"
   end
 
@@ -22,6 +23,8 @@ class PwaMetadataTest < ActionDispatch::IntegrationTest
     assert_equal "Sandy", manifest.fetch("short_name")
     assert_equal "Family PC screentime timer.", manifest.fetch("description")
     assert_equal "standalone", manifest.fetch("display")
+    assert_equal "#047857", manifest.fetch("theme_color")
+    assert_equal "#f8fafc", manifest.fetch("background_color")
     assert_equal [ "192x192", "512x512" ], manifest.fetch("icons").pluck("sizes")
     assert_includes manifest.fetch("icons").last.fetch("purpose"), "maskable"
   end

@@ -17,7 +17,7 @@ class SetupFlowTest < ActionDispatch::IntegrationTest
     }
 
     assert_response :created
-    assert_includes response.body, "Save the PC join code"
+    assert_select "h1", text: "Save the PC join code"
     assert_equal 1, Family.count
     assert_equal 2, Family.first.parent_profiles.count
 

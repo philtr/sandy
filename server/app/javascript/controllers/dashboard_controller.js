@@ -46,7 +46,7 @@ export default class extends Controller {
 
   renderCard(card) {
     if (card.dataset.revoked === "true") {
-      card.className = "device-card status-revoked"
+      card.dataset.status = "revoked"
       card.querySelector(".status").textContent = "revoked"
       return
     }
@@ -57,7 +57,7 @@ export default class extends Controller {
     const online = Number.isFinite(heartbeat) && now - heartbeat <= 75000
     const active = Number.isFinite(expires) && expires > now
     const status = online ? (active ? "active" : "expired") : "offline"
-    card.className = `device-card status-${status}`
+    card.dataset.status = status
     card.querySelector(".status").textContent = status
 
     if (!online) return

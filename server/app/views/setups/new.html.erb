@@ -1,8 +1,8 @@
 <% content_for :title, "Set up Sandy" %>
-<section class="panel narrow">
+<section class="panel narrow auth-card">
   <p class="eyebrow">First run</p>
-  <h1>Set up your family</h1>
-  <p>Create the shared parent login. The deployment setup token is required only once.</p>
+  <h1>Set up your <span class="gradient-text">family</span></h1>
+  <p class="lede">Create the shared parent login. The deployment setup token is required only once.</p>
   <%= form_with url: setup_path, class: "stack" do |form| %>
     <%= form.label :setup_token, "Setup token" %>
     <%= form.password_field :setup_token, required: true, autocomplete: "one-time-code" %>
@@ -17,8 +17,8 @@
     <%= form.label :password_confirmation %>
     <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password" %>
     <div class="two-columns">
-      <div><%= form.label :parent_one_name, "First parent" %><%= form.text_field :parent_one_name, required: true, value: params[:parent_one_name] %></div>
-      <div><%= form.label :parent_two_name, "Second parent" %><%= form.text_field :parent_two_name, required: true, value: params[:parent_two_name] %></div>
+      <div class="field-group"><%= form.label :parent_one_name, "First parent" %><%= form.text_field :parent_one_name, required: true, value: params[:parent_one_name] %></div>
+      <div class="field-group"><%= form.label :parent_two_name, "Second parent" %><%= form.text_field :parent_two_name, required: true, value: params[:parent_two_name] %></div>
     </div>
     <%= form.submit "Create family", class: "primary-button" %>
   <% end %>

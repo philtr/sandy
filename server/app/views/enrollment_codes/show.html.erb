@@ -1,8 +1,9 @@
-<% content_for :title, "New PC join code" %>
-<section class="panel narrow center">
-  <p class="eyebrow">Join code rotated</p>
-  <h1>Save the new PC join code</h1>
-  <p>The previous code no longer works. Existing enrolled devices are unaffected.</p>
+<% content_for :title, "Add a PC" %>
+<section class="panel narrow center auth-card">
+  <div class="result-icon" aria-hidden="true">+</div>
+  <p class="eyebrow">Add PC</p>
+  <h1>Connect a new <span class="gradient-text">PC</span></h1>
+  <p class="lede">Enter this code in the Sandy agent on the PC you want to add.</p>
   <div class="join-code"><%= @join_code %></div>
   <%= link_to "Return to dashboard", root_path, class: "primary-button" %>
 </section>

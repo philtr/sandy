@@ -1,11 +1,35 @@
 <% content_for :title, "#{@device.name} · Sandy" %>
-<%= link_to "← Dashboard", root_path %>
-<section class="panel"><h1><%= @device.name %></h1><p>Status: <strong><%= @device.dashboard_status %></strong> · Agent <%= @device.agent_version || "unknown" %> · State version <%= @device.state_version %></p></section>
-<section class="panel history"><h2>Time grants</h2><% @grants.each do |grant| %><p><%= l(grant.created_at, format: :short) %> — <strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> minutes; deadline <%= l(grant.resulting_expires_at, format: :short) %>.</p><% end %></section>
-<section class="panel history"><h2>Events</h2><% @events.each do |event| %><p><%= l(event.occurred_at, format: :short) %> — <strong><%= event.kind.humanize %></strong><% if event.details.present? %>: <%= event.details.to_json %><% end %></p><% end %></section>
+<%= link_to "← Dashboard", root_path, class: "back-link" %>
+<section class="panel detail-hero" aria-labelledby="device-title">
+  <p class="eyebrow">PC details</p>
+  <h1 id="device-title"><%= @device.name %></h1>
+  <p class="detail-summary">Enrollment status, time-grant history, and agent activity in one place.</p>
+  <div class="detail-stats">
+    <div class="detail-stat"><span>Status</span><strong><%= @device.dashboard_status.humanize %></strong></div>
+    <div class="detail-stat"><span>Agent</span><strong><%= @device.agent_version || "Unknown" %></strong></div>
+    <div class="detail-stat"><span>State version</span><strong><%= @device.state_version %></strong></div>
+  </div>
+</section>
+<div class="content-grid">
+  <section class="panel history" aria-labelledby="grants-title">
+    <div class="panel-heading"><h2 id="grants-title">Time grants</h2><span class="panel-kicker"><%= pluralize(@grants.size, "grant") %></span></div>
+    <div class="record-list">
+      <% if @grants.empty? %><p>No time has been granted yet.</p><% end %>
+      <% @grants.each do |grant| %><p><%= l(grant.created_at, format: :short) %> — <strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> minutes; deadline <%= l(grant.resulting_expires_at, format: :short) %>.</p><% end %>
+    </div>
+  </section>
+  <section class="panel history" aria-labelledby="events-title">
+    <div class="panel-heading"><h2 id="events-title">Events</h2><span class="panel-kicker"><%= pluralize(@events.size, "event") %></span></div>
+    <div class="record-list">
+      <% if @events.empty? %><p>No agent events recorded yet.</p><% end %>
+      <% @events.each do |event| %><p><%= l(event.occurred_at, format: :short) %> — <strong><%= event.kind.humanize %></strong><% if event.details.present? %>: <%= event.details.to_json %><% end %></p><% end %>
+    </div>
+  </section>
+</div>
 <% if current_parent_profile && !@device.revoked_at? %>
-  <section class="panel danger-zone">
-    <h2>Revoke this PC</h2>
+  <section class="panel danger-zone" aria-labelledby="danger-title">
+    <p class="eyebrow">Danger zone</p>
+    <h2 id="danger-title">Revoke this PC</h2>
     <p>The agent will lose access immediately and must be enrolled again with the current family join code.</p>
     <%= button_to "Revoke #{@device.name}", device_path(@device), method: :delete, class: "danger-button", form: { data: { turbo_confirm: "Revoke this PC?" } } %>
   </section>

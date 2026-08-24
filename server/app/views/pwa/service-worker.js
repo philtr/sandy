@@ -1,4 +1,4 @@
-const CACHE = "sandy-shell-v2"
+const CACHE = "sandy-shell-v3"
 const APP_ASSETS = [
   "/apple-touch-icon.png",
   "/favicon-32.png",

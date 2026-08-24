@@ -29,9 +29,24 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "h1", text: "PC Screentime"
+    assert_select "h1", text: "Family PCs"
     assert_select "button", text: "+1 min"
     assert_select "button", text: "+5 min"
+  end
+
+  test "dashboard exposes stable semantic device statuses" do
+    active = @family.devices.create!(name: "Active PC", last_heartbeat_at: Time.current, expires_at: 20.minutes.from_now)
+    expired = @family.devices.create!(name: "Expired PC", last_heartbeat_at: Time.current, expires_at: 2.minutes.ago)
+    revoked = @family.devices.create!(name: "Revoked PC", revoked_at: Time.current)
+    sign_in_and_select_profile
+
+    get root_path
+
+    assert_response :success
+    assert_select ".device-card[data-status='offline'][data-device-id='#{@device.id}'] .status", text: "offline"
+    assert_select ".device-card[data-status='active'][data-device-id='#{active.id}'] .status", text: "active"
+    assert_select ".device-card[data-status='expired'][data-device-id='#{expired.id}'] .status", text: "expired"
+    assert_select ".device-card[data-status='revoked'][data-device-id='#{revoked.id}'] .status", text: "revoked"
   end
 
   test "recent activity combines grants and device events in descending event order" do
@@ -69,7 +84,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
       assert_select "button", text: @profile.name
       assert_select "button[autofocus]", count: 1
     end
-    assert_select ".dashboard-heading", count: 0
+    assert_select ".dashboard-title", count: 0
     assert_select ".device-grid", count: 0
     assert_select ".history", count: 0
     assert_select "button", text: "+1 min", count: 0
@@ -80,10 +95,11 @@ class ParentControlTest < ActionDispatch::IntegrationTest
 
     get root_path
 
-    assert_select ".profile-status", text: /Signed in as Alex\./ do
-      assert_select "button", text: "Switch User"
+    assert_select ".profile-status", text: /Using Sandy as Alex/ do
+      assert_select "a[data-turbo-method='delete']", text: "Switch user"
     end
-    assert_select ".device-grid + .profile-status + .history"
+    assert_select ".device-grid + .profile-status"
+    assert_select ".history"
     assert_select ".profile-gate", count: 0
 
     delete parent_profile_path
@@ -119,7 +135,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "selected parent can rotate the join code" do
+  test "selected parent can generate a join code for adding a PC" do
     sign_in_and_select_profile
     old_digest = @family.enrollment_code_digest
 
@@ -127,22 +143,27 @@ class ParentControlTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_not_equal old_digest, @family.reload.enrollment_code_digest
-    assert_match(/Save the new PC join code/, response.body)
+    assert_select "h1", text: "Connect a new PC"
+    assert_select ".join-code"
   end
 
-  test "join code screen explains secure storage and offers replacement" do
+  test "add PC actions generate a new join code" do
     sign_in_and_select_profile
     old_digest = @family.enrollment_code_digest
 
     get enrollment_code_path
 
     assert_response :success
-    assert_select "h1", text: "The current join code is hidden"
-    assert_select "button", text: "Generate replacement join code"
+    assert_select "h1", text: "Connect another PC"
+    assert_select "button", text: "Create join code"
     assert_equal old_digest, @family.reload.enrollment_code_digest
 
     get root_path
-    assert_select "button", text: "Show join code"
+    assert_select "h2", text: "Add a PC"
+    assert_select "form[action='#{enrollment_code_path}']" do
+      assert_select "input[name='_method'][value='patch']"
+      assert_select "button", text: "Add PC"
+    end
   end
 
   test "selected parent can revoke a device" do

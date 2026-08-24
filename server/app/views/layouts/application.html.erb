@@ -6,7 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Sandy">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#17233d">
+    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)">
     <meta name="application-name" content="Sandy">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
@@ -27,13 +28,19 @@
   </head>
 
   <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <header class="site-header">
-      <%= link_to "Sandy", root_path, class: "brand" %>
-      <% if current_account %>
-        <%= button_to "Sign out", session_path, method: :delete, class: "link-button" %>
-      <% end %>
+      <div class="header-inner">
+        <%= link_to root_path, class: "brand", aria: { label: "Sandy home" } do %>
+          <%= image_tag "/icon.svg", alt: "", width: 38, height: 38 %>
+          <span><span class="brand-name">Sandy</span><span class="brand-tagline">Family screen time, clearly managed</span></span>
+        <% end %>
+        <% if current_account %>
+          <%= button_to "Sign out", session_path, method: :delete, class: "header-action" %>
+        <% end %>
+      </div>
     </header>
-    <main class="page-shell">
+    <main class="page-shell" id="main-content">
       <% flash.each do |type, message| %>
         <div class="flash <%= type %>"><%= message %></div>
       <% end %>

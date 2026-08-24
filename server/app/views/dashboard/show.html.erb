@@ -2,6 +2,7 @@
 <% unless current_parent_profile %>
   <section class="profile-gate" role="dialog" aria-modal="true" aria-labelledby="profile-gate-title">
     <div class="panel profile-gate-card">
+      <div class="result-icon" aria-hidden="true">✓</div>
       <p class="eyebrow"><%= current_family.name %></p>
       <h1 id="profile-gate-title">Who is using this phone?</h1>
       <p>Select your parent profile to continue.</p>
@@ -14,25 +15,39 @@
   </section>
 <% else %>
 
-<section class="dashboard-heading">
-  <div><p class="eyebrow"><%= current_family.name %></p><h1>PC Screentime</h1></div>
-</section>
+<div class="section-heading dashboard-title">
+  <div><p class="eyebrow"><%= current_family.name %></p><h1 id="devices-title">Family PCs</h1><p>Live status and remaining screen time</p></div>
+  <span class="count-badge" aria-label="<%= pluralize(@devices.size, 'PC') %>"><%= @devices.size %></span>
+</div>
 
 <% if @devices.empty? %>
-  <section class="panel empty"><h2>No PC enrolled yet</h2><p>Launch the Sandy agent on the PC and enter your family join code.</p></section>
+  <section class="panel empty" aria-labelledby="devices-title">
+    <div class="empty-icon" aria-hidden="true">◇</div>
+    <h2>No PC enrolled yet</h2>
+    <p>Launch the Sandy agent on the PC and enter your family join code.</p>
+  </section>
 <% else %>
-  <section class="device-grid" data-controller="dashboard">
+  <section class="device-grid" data-controller="dashboard" aria-labelledby="devices-title">
     <% @devices.each do |device| %>
       <% now = Time.current; status = device.dashboard_status(at: now) %>
-      <article class="device-card status-<%= status %>" data-device-id="<%= device.id %>" data-revoked="<%= device.revoked_at? %>" data-expires-at="<%= device.expires_at&.iso8601(3) %>" data-last-heartbeat-at="<%= device.last_heartbeat_at&.iso8601(3) %>">
-        <div class="device-title"><div><h2><%= link_to device.name, device_path(device) %></h2><p><%= device.agent_version.presence || "Agent version unknown" %></p></div><span class="status"><%= status %></span></div>
-        <div class="remaining" data-role="remaining"><%= device.timer_status(at: now) == "active" ? distance_of_time_in_words(now, device.expires_at) : "Time’s up" %></div>
-        <% if status == "offline" %><p class="stale">Offline · last deadline <%= device.expires_at ? l(device.expires_at, format: :short) : "not set" %></p><% end %>
+      <article class="device-card" data-status="<%= status %>" data-device-id="<%= device.id %>" data-revoked="<%= device.revoked_at? %>" data-expires-at="<%= device.expires_at&.iso8601(3) %>" data-last-heartbeat-at="<%= device.last_heartbeat_at&.iso8601(3) %>">
+        <header class="device-title">
+          <div><h3><%= link_to device.name, device_path(device) %></h3><p><%= device.agent_version.presence || "Agent version unknown" %></p></div>
+          <span class="status"><%= status %></span>
+        </header>
+        <div class="timer-panel">
+          <p class="timer-label">Time remaining</p>
+          <div class="remaining" data-role="remaining"><%= device.timer_status(at: now) == "active" ? distance_of_time_in_words(now, device.expires_at) : "Time’s up" %></div>
+          <% if status == "offline" %><p class="stale">Offline · last deadline <%= device.expires_at ? l(device.expires_at, format: :short) : "not set" %></p><% end %>
+        </div>
         <% if current_parent_profile && !device.revoked_at? %>
-          <div class="grant-buttons">
-            <% TimeGrant::QUICK_GRANT_MINUTES.each do |minutes| %>
-              <%= button_to "+#{minutes} min", device_time_grants_path(device), params: { duration_seconds: minutes.minutes.to_i, idempotency_key: SecureRandom.uuid }, class: "grant-button" %>
-            <% end %>
+          <div class="grant-panel">
+            <p>Add screen time</p>
+            <div class="grant-buttons">
+              <% TimeGrant::QUICK_GRANT_MINUTES.each do |minutes| %>
+                <%= button_to "+#{minutes} min", device_time_grants_path(device), params: { duration_seconds: minutes.minutes.to_i, idempotency_key: SecureRandom.uuid }, class: "grant-button" %>
+              <% end %>
+            </div>
           </div>
           <% if device.timer_status(at: now) == "active" %>
             <%= button_to device_screen_time_revocation_path(device), params: { idempotency_key: SecureRandom.uuid }, class: "revoke-time-switch", role: "switch", aria: { checked: false }, form: { data: { turbo_confirm: "End all remaining screen time for #{device.name}? This cannot be undone." } } do %>
@@ -48,33 +63,38 @@
   </section>
 <% end %>
 
-<% if current_parent_profile %>
-  <div class="profile-status">
-    <span>Signed in as <strong><%= current_parent_profile.name %>.</strong></span>
-    <%= button_to "Switch User", parent_profile_path, method: :delete, class: "inline-link-button" %>
-  </div>
-<% end %>
+<div class="profile-status">
+  <span>Using Sandy as <strong><%= current_parent_profile.name %></strong></span>
+  <span aria-hidden="true">·</span>
+  <%= link_to "Switch user", parent_profile_path, class: "inline-link-button", data: { turbo_method: :delete } %>
+</div>
 
-<section class="panel history">
-  <h2>Recent activity</h2>
-  <% if @recent_events.empty? %><p>Nothing recorded yet.</p><% end %>
-  <% @recent_events.each do |event| %>
-    <% if event.kind == "time_granted" %>
-      <p><strong><%= event.details["parent_profile"] %></strong> added <%= event.details["duration_seconds"].to_i / 60 %> min to <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
-    <% elsif event.kind == "screen_time_revoked" %>
-      <p><strong><%= event.details["parent_profile"] %></strong> revoked screen time for <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
-    <% else %>
-      <p><strong><%= event.device.name %></strong> reported <%= event.kind.humanize.downcase %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
-    <% end %>
-  <% end %>
-</section>
-
-<% if current_parent_profile %>
-  <section class="panel family-tools">
-    <h2>PC enrollment</h2>
-    <p>Use the family join code to enroll another PC, or rotate it if it was shared accidentally. Existing PCs stay enrolled.</p>
-    <%= button_to "Show join code", enrollment_code_path, method: :get, class: "secondary-button" %>
-    <%= button_to "Rotate join code", enrollment_code_path, method: :patch, class: "secondary-button", form: { data: { turbo_confirm: "Replace the current PC join code?" } } %>
+<div class="content-grid">
+  <section class="panel history" aria-labelledby="activity-title">
+    <div class="panel-heading"><h2 id="activity-title">Recent activity</h2><span class="panel-kicker">Newest first</span></div>
+    <div class="activity-list">
+      <% if @recent_events.empty? %><p class="activity-item">Nothing recorded yet.</p><% end %>
+      <% @recent_events.each do |event| %>
+        <% if event.kind == "time_granted" %>
+          <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.details["parent_profile"] %></strong> added <%= event.details["duration_seconds"].to_i / 60 %> min to <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
+        <% elsif event.kind == "screen_time_revoked" %>
+          <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.details["parent_profile"] %></strong> revoked screen time for <%= event.device.name %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
+        <% else %>
+          <p class="activity-item" data-kind="<%= event.kind %>"><strong><%= event.device.name %></strong> reported <%= event.kind.humanize.downcase %> <time><%= time_ago_in_words(event.occurred_at) %> ago</time></p>
+        <% end %>
+      <% end %>
+    </div>
   </section>
-<% end %>
+
+  <% if current_parent_profile %>
+    <section class="panel family-tools" aria-labelledby="enrollment-title">
+      <p class="eyebrow">Family tools</p>
+      <h2 id="enrollment-title">Add a PC</h2>
+      <p>Generate a join code to connect another PC to Sandy.</p>
+      <div class="button-row">
+        <%= button_to "Add PC", enrollment_code_path, method: :patch, class: "primary-button" %>
+      </div>
+    </section>
+  <% end %>
+</div>
 <% end %>
