@@ -12,7 +12,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
-    <TextBlock FontSize="28" FontWeight="SemiBold" Text="Connect this gaming PC" />
+    <TextBlock FontSize="28" FontWeight="SemiBold" Text="Connect this PC" />
     <TextBlock Grid.Row="1" Margin="0,10,0,22" TextWrapping="Wrap"
                Foreground="#B8BFCC" Text="Enter the Sandy server address and the family join code shown to a parent." />
     <StackPanel Grid.Row="2">

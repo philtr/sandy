@@ -2,7 +2,7 @@
 
 ## System boundary
 
-Sandy has one authoritative Rails deployment and one or more enrolled Windows agents in a single family. Parent phones use the Rails PWA over HTTPS. Agents initiate HTTPS and WebSocket connections to the same public origin; the gaming PC never listens on an internet-facing port.
+Sandy has one authoritative Rails deployment and one or more enrolled Windows agents in a single family. Parent phones use the Rails PWA over HTTPS. Agents initiate HTTPS and WebSocket connections to the same public origin; the managed PC never listens on an internet-facing port.
 
 Rails stores durable application, audit, job, cache, and Action Cable data in SQLite files under `/rails/storage`. Production runs one Puma process by default. Solid Cable provides cross-request Action Cable delivery without Redis. A single persistent Docker volume contains every production database.
 
@@ -22,7 +22,7 @@ A parent can revoke the current allowance immediately. Rails atomically replaces
 
 The agent records a received server timestamp, absolute deadline, local UTC timestamp, monotonic timestamp, and state version. It advances normally from monotonic elapsed time and compares corrected wall-clock time after suspend/resume. A valid cached snapshot lets enforcement continue while Rails is unavailable. Reconnection always fetches or receives a complete snapshot; a higher `state_version` supersedes local state. A heartbeat every 30 seconds repairs a missed WebSocket notification.
 
-Wall-clock time is intentional: sleep, reboot, logout, and network loss do not pause or bank gaming time.
+Wall-clock time is intentional: sleep, reboot, logout, and network loss do not pause or bank screen time.
 
 ## Domain model
 
@@ -46,6 +46,6 @@ TLS is required outside a trusted development environment. Filter setup tokens, 
 ## Deliberate limitations
 
 - `Ctrl`+`Alt`+`Delete` remains available, and terminating the agent is possible.
-- Elevated applications, secure-desktop UI, other Windows user sessions, and some exclusive-fullscreen games can appear above or bypass a normal WPF overlay.
+- Elevated applications, secure-desktop UI, other Windows user sessions, and some exclusive-fullscreen applications can appear above or bypass a normal WPF overlay.
 - There is no service, watchdog, `uiAccess`, kernel driver, inbound agent server, or attempt to resist an administrator.
 - Version 1 has immediate grants only: no pause, schedule, banked balance, or usage-metered clock.

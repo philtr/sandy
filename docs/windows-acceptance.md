@@ -29,7 +29,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Try the Windows keys, Alt-Tab, Alt-Esc, Alt-F4, Ctrl-Esc, and Ctrl-Shift-Esc; verify they are suppressed only while expired.
 - Confirm Ctrl-Alt-Delete remains available and document that Task Manager/agent termination is an intentional escape path.
 - Grant new time while the overlay is visible; verify hooks and all overlays disappear promptly and the existing session resumes.
-- Exercise representative windowed, borderless, and exclusive-fullscreen games and record any game that can remain above the overlay.
+- Exercise representative windowed, borderless, and exclusive-fullscreen applications and record any application that can remain above the overlay.
 
 ## Updates and recovery
 

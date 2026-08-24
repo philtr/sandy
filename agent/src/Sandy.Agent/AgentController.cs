@@ -135,11 +135,11 @@ public sealed class AgentController : IDisposable
         switch (notification)
         {
             case TimerNotification.FifteenMinutes:
-                new WarningWindow("15 minutes of gaming time remain").Show();
+                new WarningWindow("15 minutes of PC screentime remain").Show();
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 15 });
                 break;
             case TimerNotification.FiveMinutes:
-                new WarningWindow("5 minutes of gaming time remain").Show();
+                new WarningWindow("5 minutes of PC screentime remain").Show();
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 5 });
                 break;
             case TimerNotification.FinalMinute:

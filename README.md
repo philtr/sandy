@@ -1,6 +1,6 @@
 # Sandy
 
-Sandy is a deliberately small remote time-limit system for a family Windows gaming PC. A Rails control plane owns the authoritative deadline, while a per-user Windows agent keeps counting through short network outages and presents warnings and an expired-session overlay.
+Sandy is a deliberately small remote screen-time system for a family Windows PC. A Rails control plane owns the authoritative deadline, while a per-user Windows agent keeps counting through short network outages and presents warnings and an expired-session overlay.
 
 This is a visibility and consistency tool, not hardened parental-control software. A technically determined local user, elevated applications, and the Windows secure desktop are outside its threat model. `Ctrl`+`Alt`+`Delete` intentionally remains an escape hatch.
 

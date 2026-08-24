@@ -22,7 +22,7 @@ public partial class StatusWindow : Window
         _trayIcon = new Forms.NotifyIcon
         {
             Icon = _trayIconImage,
-            Text = "Sandy Gaming Timer",
+            Text = "Sandy PC Screentime",
             Visible = true
         };
         _trayIcon.MouseClick += TrayIcon_MouseClick;

@@ -43,7 +43,7 @@ Request:
 ```json
 {
   "join_code": "ABCD-EFGH",
-  "device_name": "Gaming PC",
+  "device_name": "Family PC",
   "agent_version": "1.0.0",
   "platform": "windows"
 }

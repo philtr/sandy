@@ -45,7 +45,7 @@ public sealed class SandyApiClientTests
         })));
 
         var response = await new SandyApiClient(http).EnrollAsync(
-            new Uri("https://sandy.test"), new EnrollmentRequest("ABCD", "Gaming PC", "1.0.0"));
+            new Uri("https://sandy.test"), new EnrollmentRequest("ABCD", "Family PC", "1.0.0"));
 
         Assert.Equal(42, response.DeviceId);
         Assert.Equal("device-token", response.DeviceToken);

@@ -6,7 +6,7 @@
         WindowStartupLocation="Manual" IsHitTestVisible="False">
   <Border Background="#EE1E2430" BorderBrush="#FFFFB300" BorderThickness="3" CornerRadius="18" Padding="28">
     <StackPanel HorizontalAlignment="Center">
-      <TextBlock Foreground="White" FontSize="24" Text="Gaming time ends in" HorizontalAlignment="Center" />
+      <TextBlock Foreground="White" FontSize="24" Text="PC screentime ends in" HorizontalAlignment="Center" />
       <TextBlock x:Name="RemainingText" Foreground="#FFFFC247" FontSize="72" FontWeight="Bold"
                  Text="1:00" HorizontalAlignment="Center" />
     </StackPanel>
