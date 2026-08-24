@@ -46,6 +46,12 @@ Windows releases are published from `agent-v*` Git tags. Set the installed agent
 - View logs with `docker compose --env-file deploy/.env -f deploy/compose.yml logs --tail=200 app`.
 - Rotate the family join code after unexpected disclosure. Existing devices remain enrolled.
 - Revoke a lost or replaced PC's device credential from the parent UI.
+- After upgrading a server that already has time grants, backfill the unified activity feed once. The task is idempotent and safe to rerun:
+
+  ```sh
+  docker compose --env-file deploy/.env -f deploy/compose.yml exec app bin/rails sandy:backfill_time_grant_events
+  ```
+
 - Back up `sandy_storage` regularly according to [`backup-and-recovery.md`](backup-and-recovery.md).
 
 The container port is bound to loopback by default. If the reverse proxy runs in Docker, attach both services to a private Docker network and proxy to `app:80` instead of publishing the port broadly.

@@ -19,6 +19,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_equal 1, @device.time_grants.count
     assert_equal @profile, @device.time_grants.first.parent_profile
     assert_equal 5.minutes.to_i, @device.time_grants.first.duration_seconds
+    assert_equal 1, @device.device_events.where(kind: "time_granted").count
     assert @device.reload.expires_at.future?
   end
 

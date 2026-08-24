@@ -1,4 +1,9 @@
 class TimeGrant < ApplicationRecord
+  class EventConflict < StandardError; end
+
+  EVENT_KIND = "time_granted"
+  EVENT_ID_PREFIX = "time-grant"
+
   QUICK_GRANT_MINUTES = [ 1, 5, 15, 30, 60 ].freeze
   ALLOWED_DURATIONS = QUICK_GRANT_MINUTES.map { |minutes| minutes.minutes.to_i }.freeze
 
@@ -30,10 +35,57 @@ class TimeGrant < ApplicationRecord
         resulting_expires_at: resulting,
         idempotency_key: idempotency_key
       )
+      grant.create_device_event!
       device.update!(expires_at: resulting, state_version: device.state_version + 1)
       grant
     end
   rescue ActiveRecord::RecordNotUnique
-    find_by!(device:, idempotency_key:)
+    existing = find_by(device:, idempotency_key:)
+    return existing if existing
+
+    raise
+  end
+
+  def device_event_id
+    "#{EVENT_ID_PREFIX}:#{id}"
+  end
+
+  def create_device_event!
+    device.device_events.create!(
+      event_id: device_event_id,
+      kind: EVENT_KIND,
+      occurred_at: created_at,
+      details: {
+        time_grant_id: id,
+        parent_profile_id: parent_profile_id,
+        parent_profile: parent_profile.name,
+        duration_seconds: duration_seconds,
+        previous_expires_at: previous_expires_at&.iso8601(3),
+        resulting_expires_at: resulting_expires_at.iso8601(3)
+      }
+    )
+  end
+
+  def ensure_device_event!
+    event = device.device_events.find_by(event_id: device_event_id)
+    return event if event_matches_grant?(event)
+    raise EventConflict, event_conflict_message(event) if event
+
+    create_device_event!
+  rescue ActiveRecord::RecordNotUnique
+    event = device.device_events.find_by!(event_id: device_event_id)
+    return event if event_matches_grant?(event)
+
+    raise EventConflict, event_conflict_message(event)
+  end
+
+  private
+
+  def event_matches_grant?(event)
+    event&.kind == EVENT_KIND && event.details["time_grant_id"].to_i == id
+  end
+
+  def event_conflict_message(event)
+    "Device event #{device_event_id.inspect} already exists and does not represent time grant #{id}"
   end
 end
