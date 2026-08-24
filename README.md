@@ -1,13 +1,17 @@
 # Sandy
 
-Sandy is a deliberately small remote screen-time system for a family Windows PC. A Rails control plane owns the authoritative deadline, while a per-user Windows agent keeps counting through short network outages and presents warnings and an expired-session overlay.
+Sandy is a family-focused Windows launcher with remotely managed screen time. While time is available, its per-user agent presents a multi-monitor home screen for pinned apps, a live countdown, and a Sandy taskbar for switching between open windows. When time runs out, Sandy replaces the launcher with a full-screen expired-session overlay.
+
+A Rails PWA lets parents grant or revoke time and temporarily unlock launcher editing. The server owns the authoritative deadline, while the Windows agent keeps counting through short network outages and returns to the normal launcher as soon as more time is available. Explorer remains the Windows shell, and parents can temporarily expose the regular desktop during an editing session.
+
+![Sandy Windows agent showing the remaining time and available applications](docs/images/sandy.png)
 
 This is a visibility and consistency tool, not hardened parental-control software. A technically determined local user, elevated applications, and the Windows secure desktop are outside its threat model. `Ctrl`+`Alt`+`Delete` intentionally remains an escape hatch.
 
 ## Repository
 
 - [`server/`](server/) — Rails 8.1 control plane, parent PWA, JSON API, and Action Cable endpoint.
-- [`agent/`](agent/) — .NET 10 WPF agent and platform-independent timer/synchronization core.
+- [`agent/`](agent/) — .NET 10 WPF launcher, taskbar, enforcement UI, and platform-independent timer/synchronization core.
 - [`deploy/`](deploy/) — homelab Docker Compose deployment.
 - [`docs/architecture.md`](docs/architecture.md) — boundaries, domain model, and design decisions.
 - [`docs/protocol.md`](docs/protocol.md) — device HTTP/WebSocket synchronization contract.
