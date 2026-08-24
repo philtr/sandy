@@ -10,6 +10,51 @@ overlays, and Velopack integration.
 Use a .NET 10 SDK. The WPF host must be exercised on Windows; the core tests run
 on any supported SDK platform.
 
+### macOS with Docker
+
+From the repository root, run the core tests with the .NET 10 SDK container:
+
+```bash
+docker run --rm \
+  -v "$PWD/agent:/src" \
+  -w /src \
+  mcr.microsoft.com/dotnet/sdk:10.0 \
+  dotnet test Sandy.slnx -c Release
+```
+
+Cross-compile the WPF application:
+
+```bash
+docker run --rm \
+  -v "$PWD/agent:/src" \
+  -w /src \
+  mcr.microsoft.com/dotnet/sdk:10.0 \
+  dotnet build src/Sandy.Agent/Sandy.Agent.csproj -c Release
+```
+
+Produce a self-contained Windows x64 build under `agent/artifacts/agent`:
+
+```bash
+docker run --rm \
+  -v "$PWD/agent:/src" \
+  -w /src \
+  mcr.microsoft.com/dotnet/sdk:10.0 \
+  dotnet publish src/Sandy.Agent/Sandy.Agent.csproj \
+    -c Release \
+    -r win-x64 \
+    --self-contained true \
+    -o artifacts/agent
+```
+
+These commands verify timer tests, C# and XAML compilation, and Windows publish
+output. macOS cannot launch the WPF host or exercise DPAPI, registry startup,
+keyboard hooks, overlays, monitor handling, or Velopack installation. Run the
+Windows acceptance checklist before publishing a stable agent release.
+
+### Windows with the .NET SDK
+
+From the `agent` directory:
+
 ```powershell
 dotnet restore .\Sandy.slnx
 dotnet test .\Sandy.slnx -c Release
