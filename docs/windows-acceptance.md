@@ -7,6 +7,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Install as a standard user and confirm no administrator or inbound-firewall prompt is required.
 - Complete first-boot enrollment and verify the token is not present in logs or plaintext configuration.
 - Confirm only one agent instance runs and it starts at that user's next interactive logon.
+- Close the timer window and confirm the agent stays running; left-click the Sandy system tray icon and confirm the timer window reopens and receives focus.
 - Reboot and verify cached state is enforced before network reconciliation completes.
 - Verify an invalid server URL, invalid/rotated join code, TLS error, and revoked device produce actionable status without leaking credentials.
 
