@@ -44,7 +44,7 @@ Windows releases are published from `agent-v*` Git tags. Set the installed agent
 
 - `GET /up` is a liveness/boot check. Also alert on the parent dashboard being unreachable and inspect device heartbeat age for end-to-end health.
 - View logs with `docker compose --env-file deploy/.env -f deploy/compose.yml logs --tail=200 app`.
-- Rotate the family join code after unexpected disclosure. Existing devices remain enrolled.
+- Use **Add PC** to generate a fresh family join code after unexpected disclosure. Existing devices remain enrolled.
 - Revoke a lost or replaced PC's device credential from the parent UI.
 - After upgrading a server that already has time grants, backfill the unified activity feed once. The task is idempotent and safe to rerun:
 
