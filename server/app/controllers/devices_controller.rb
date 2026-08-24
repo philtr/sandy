@@ -1,6 +1,6 @@
 class DevicesController < ApplicationController
   before_action :require_authentication
-  before_action :require_parent_profile, only: :destroy
+  before_action :require_parent_profile, only: [ :destroy, :archive ]
 
   def show
     @device = current_family.devices.find(params[:id])
@@ -17,7 +17,28 @@ class DevicesController < ApplicationController
       occurred_at: Time.current,
       details: { parent_profile: current_parent_profile.name }
     )
-    ActionCable.server.remote_connections.where(current_device: device, current_account: nil).disconnect
-    redirect_to root_path, notice: "Revoked #{device.name}. Re-enrollment requires the current join code."
+    if device.family.allow_revoked_devices?
+      device.broadcast_timer_state!
+    else
+      ActionCable.server.remote_connections.where(current_device: device, current_account: nil).disconnect
+    end
+    notice = if device.family.allow_revoked_devices?
+      "Revoked #{device.name} and released its Sandy screen-time lock."
+    else
+      "Revoked #{device.name}. Re-enrollment requires the current join code."
+    end
+    redirect_to root_path, notice:
+  end
+
+  def archive
+    device = current_family.devices.revoked.not_archived.find(params[:id])
+    device.archive!
+    device.device_events.create!(
+      event_id: SecureRandom.uuid,
+      kind: "device_archived",
+      occurred_at: Time.current,
+      details: { parent_profile: current_parent_profile.name }
+    )
+    redirect_to settings_path, notice: "Archived #{device.name}."
   end
 end

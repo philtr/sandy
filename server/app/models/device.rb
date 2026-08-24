@@ -11,6 +11,10 @@ class Device < ApplicationRecord
   validates :state_version, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
   scope :not_revoked, -> { where(revoked_at: nil) }
+  scope :not_archived, -> { where(archived_at: nil) }
+  scope :revoked, -> { where.not(revoked_at: nil) }
+
+  validate :archived_only_after_revocation
 
   def self.digest_token(token)
     Digest::SHA256.hexdigest(token.to_s)
@@ -19,7 +23,10 @@ class Device < ApplicationRecord
   def self.authenticate_token(token)
     return if token.blank?
 
-    not_revoked.find_by(token_digest: digest_token(token))
+    device = find_by(token_digest: digest_token(token))
+    return if device&.revoked_at? && !device.family.allow_revoked_devices?
+
+    device
   end
 
   def issue_token!
@@ -49,6 +56,8 @@ class Device < ApplicationRecord
   end
 
   def timer_snapshot(at: Time.current)
+    return family.revoked_device_release_snapshot(at:, state_version:) if revoked_at? && family.allow_revoked_devices?
+
     {
       schema_version: 1,
       state_version: state_version,
@@ -77,7 +86,11 @@ class Device < ApplicationRecord
   end
 
   def revoke!
-    update!(revoked_at: Time.current, token_digest: nil, state_version: state_version + 1)
+    update!(revoked_at: Time.current, state_version: state_version + 1)
+  end
+
+  def archive!
+    update!(archived_at: Time.current)
   end
 
   def revoke_screen_time!(parent_profile:, idempotency_key:, now: Time.current)
@@ -112,5 +125,11 @@ class Device < ApplicationRecord
     event
   rescue ActiveRecord::RecordNotUnique
     device_events.find_by!(event_id:)
+  end
+
+  private
+
+  def archived_only_after_revocation
+    errors.add(:archived_at, "requires the PC to be revoked first") if archived_at? && !revoked_at?
   end
 end

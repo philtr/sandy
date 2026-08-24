@@ -38,6 +38,8 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     active = @family.devices.create!(name: "Active PC", last_heartbeat_at: Time.current, expires_at: 20.minutes.from_now)
     expired = @family.devices.create!(name: "Expired PC", last_heartbeat_at: Time.current, expires_at: 2.minutes.ago)
     revoked = @family.devices.create!(name: "Revoked PC", revoked_at: Time.current)
+    archived = @family.devices.create!(name: "Archived PC", revoked_at: 2.days.ago, archived_at: 1.day.ago)
+    archived.device_events.create!(event_id: "archived-event", kind: "startup", occurred_at: 1.day.ago)
     sign_in_and_select_profile
 
     get root_path
@@ -47,6 +49,41 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_select ".device-card[data-status='active'][data-device-id='#{active.id}'] .status", text: "active"
     assert_select ".device-card[data-status='expired'][data-device-id='#{expired.id}'] .status", text: "expired"
     assert_select ".device-card[data-status='revoked'][data-device-id='#{revoked.id}'] .status", text: "revoked"
+    assert_select ".device-card[data-device-id='#{archived.id}']", count: 0
+    refute_includes response.body, "Archived PC"
+  end
+
+  test "settings gear lists revoked PCs and archives them off the dashboard" do
+    revoked = @family.devices.create!(name: "Old PC", revoked_at: 2.days.ago)
+    sign_in_and_select_profile
+
+    get root_path
+    assert_select ".header-actions" do
+      assert_select "a.settings-action[href='#{settings_path}']"
+      assert_select "form[action='#{session_path}']"
+    end
+    assert_select ".device-card[data-device-id='#{revoked.id}']", count: 1
+
+    get settings_path
+    assert_response :success
+    assert_select "h1", text: "Settings"
+    assert_select "button", text: "Allow revoked PCs"
+    assert_select "form[action='#{archive_device_path(revoked)}'] button", text: "Archive"
+
+    patch settings_path, params: { allow_revoked_devices: true }
+    assert_redirected_to settings_path
+    assert @family.reload.allow_revoked_devices?
+    get settings_path
+    assert_select ".release-setting .status", text: "allow"
+    assert_select "button", text: "Deny revoked PCs"
+
+    patch archive_device_path(revoked)
+    assert_redirected_to settings_path
+    assert revoked.reload.archived_at?
+    assert_equal "device_archived", revoked.device_events.last.kind
+
+    get root_path
+    assert_select ".device-card[data-device-id='#{revoked.id}']", count: 0
   end
 
   test "recent activity combines grants and device events in descending event order" do

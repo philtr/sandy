@@ -1,4 +1,6 @@
 class Family < ApplicationRecord
+  REVOKED_RELEASE_DURATION = 100.years
+
   has_one :account, dependent: :destroy
   has_many :parent_profiles, dependent: :destroy
   has_many :devices, dependent: :destroy
@@ -15,6 +17,21 @@ class Family < ApplicationRecord
 
   def authenticate_join_code(code)
     authenticate_enrollment_code(self.class.normalize_join_code(code))
+  end
+
+  def revoked_device_release_snapshot(at: Time.current, state_version: nil)
+    # Agent 1.1.0 only understands active/expired, so release with a normal
+    # schema-1 active snapshot instead of introducing a new timer status.
+    expires_at = at + REVOKED_RELEASE_DURATION
+    {
+      schema_version: 1,
+      state_version: state_version || devices.maximum(:state_version).to_i + 1,
+      server_time: at.iso8601(3),
+      expires_at: expires_at.iso8601(3),
+      remaining_seconds: (expires_at - at).ceil,
+      timer_status: "active",
+      heartbeat_interval_seconds: Device::HEARTBEAT_INTERVAL_SECONDS
+    }
   end
 
   def self.normalize_join_code(code)

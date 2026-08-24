@@ -22,6 +22,32 @@ class DeviceTest < ActiveSupport::TestCase
     assert_nil Device.authenticate_token(token)
   end
 
+  test "family allow setting returns a schema-one active snapshot for revoked devices" do
+    family = create_family
+    family.update!(allow_revoked_devices: true)
+    device = family.devices.create!(name: "Gaming PC", expires_at: 10.minutes.from_now)
+    token = device.issue_token!
+
+    device.revoke!
+
+    assert_equal device, Device.authenticate_token(token)
+    assert device.token_digest.present?
+    snapshot = device.timer_snapshot
+    assert_equal 1, snapshot[:schema_version]
+    assert_equal "active", snapshot[:timer_status]
+    assert snapshot[:expires_at].present?
+    assert_operator snapshot[:remaining_seconds], :>, 0
+  end
+
+  test "only revoked devices can be archived" do
+    device = create_family.devices.create!(name: "Gaming PC")
+
+    assert_raises(ActiveRecord::RecordInvalid) { device.archive! }
+    device.update!(revoked_at: Time.current)
+    assert device.archive!
+    assert device.archived_at?
+  end
+
   test "screen time revocation expires the deadline and is idempotent" do
     family = create_family
     profile = family.parent_profiles.create!(name: "Alex")

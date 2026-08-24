@@ -1,0 +1,50 @@
+<% content_for :title, "Settings · Sandy" %>
+<%= link_to "← Dashboard", root_path, class: "back-link" %>
+
+<section class="panel narrow" aria-labelledby="settings-title">
+  <p class="eyebrow">Family settings</p>
+  <h1 id="settings-title">Settings</h1>
+  <p class="settings-note">Archive revoked PCs to remove them from the family dashboard and its recent activity.</p>
+
+  <section class="release-setting" aria-labelledby="release-title">
+    <div>
+      <div class="panel-heading">
+        <h2 id="release-title">Revoked PC behavior</h2>
+        <span class="status"><%= current_family.allow_revoked_devices? ? "allow" : "deny" %></span>
+      </div>
+      <% if current_family.allow_revoked_devices? %>
+        <p>Revoked PCs receive a standard active timer state so Sandy 1.1.0 and newer agents release the screen-time lock.</p>
+        <% if @legacy_revoked_count.positive? %><p class="setting-warning"><strong>Emergency release is active:</strong> because <%= pluralize(@legacy_revoked_count, "older revoked PC") %> no longer has a stored token digest, any bearer token can receive the release state from timer endpoints. Re-enroll and archive those old records, or turn this setting off, after recovering the PCs.</p><% end %>
+        <%= button_to "Deny revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: false }, class: "danger-button", form: { data: { turbo_confirm: "Stop releasing revoked PCs? A released PC may remain usable until its cached deadline expires." } } %>
+      <% else %>
+        <p>Revoked PCs are denied server access and Sandy continues enforcing their last known timer state.</p>
+        <%= button_to "Allow revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: true }, class: "primary-button", form: { data: { turbo_confirm: "Allow every revoked PC? This also enables emergency release for older revoked PCs whose token digest was erased." } } %>
+      <% end %>
+    </div>
+  </section>
+
+  <div class="panel-heading"><h2>Revoked PCs</h2><span class="panel-kicker"><%= pluralize(@revoked_devices.size, "PC") %></span></div>
+  <% if @revoked_devices.empty? %>
+    <p class="settings-note">There are no revoked PCs waiting to be archived.</p>
+  <% else %>
+    <div class="settings-list">
+      <% @revoked_devices.each do |device| %>
+        <article class="settings-device">
+          <div><h3><%= device.name %></h3><p>Revoked <%= time_ago_in_words(device.revoked_at) %> ago</p></div>
+          <%= button_to "Archive", archive_device_path(device), method: :patch, class: "secondary-button", form: { data: { turbo_confirm: "Archive #{device.name}? It will no longer appear on the dashboard." } } %>
+        </article>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @archived_devices.any? %>
+    <div class="panel-heading"><h2>Archived PCs</h2><span class="panel-kicker"><%= pluralize(@archived_devices.size, "PC") %></span></div>
+    <div class="settings-list">
+      <% @archived_devices.each do |device| %>
+        <article class="settings-device">
+          <div><h3><%= device.name %></h3><p>Archived <%= time_ago_in_words(device.archived_at) %> ago</p></div>
+        </article>
+      <% end %>
+    </div>
+  <% end %>
+</section>

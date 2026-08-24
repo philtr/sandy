@@ -48,6 +48,8 @@ Windows releases are published from `agent-v*` Git tags. Set the installed agent
 - View logs with `docker compose --env-file deploy/.env -f deploy/compose.yml logs --tail=200 app`.
 - Use **Add PC** to generate a fresh family join code after unexpected disclosure. Existing devices remain enrolled.
 - Revoke a lost or replaced PC's device credential from the parent UI.
+- Use **Settings → Revoked PC behavior** to choose whether revoked PCs remain denied or receive a release state. The release state uses the schema-1 active timer shape supported by agent 1.1.0.
+- Use the header settings gear to archive revoked PCs that should no longer appear on the dashboard.
 - After upgrading a server that already has time grants, backfill the unified activity feed once. The task is idempotent and safe to rerun:
 
   ```sh

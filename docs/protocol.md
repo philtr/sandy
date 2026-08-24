@@ -12,7 +12,7 @@ Authorization: Bearer <device-token>
 
 Action Cable authenticates with the same token in the WebSocket connection URL or its negotiated connection parameters. The production URL must use `wss://`. Tokens must never be written to logs.
 
-Common responses are `401` for an absent/invalid token, `403` for a revoked device, `409` for an idempotency conflict, `422` for invalid input, and `429` for enrollment/login throttling.
+Common responses are `401` for an absent, invalid, or denied revoked-device token, `409` for an idempotency conflict, `422` for invalid input, and `429` for enrollment/login throttling.
 
 ## Authoritative snapshot
 
@@ -30,7 +30,9 @@ Every state fetch, heartbeat response, enrollment response, and `timer_state` br
 }
 ```
 
-`expires_at` is nullable and is the authority. `remaining_seconds` is a display/bootstrap convenience calculated at `server_time`; clients must not repeatedly decrement that transmitted number. `timer_status` is `active` or `expired`. `state_version` increases whenever the authoritative deadline changes.
+`expires_at` is nullable and is the authority. `remaining_seconds` is a display/bootstrap convenience calculated at `server_time`; clients must not repeatedly decrement that transmitted number. `timer_status` is `active` or `expired`. `state_version` increases whenever the authoritative deadline or device revocation state changes.
+
+The family setting for revoked-PC behavior defaults to deny. When a parent changes it to allow, revoked devices receive a schema-1 active snapshot with a long deadline so agent 1.1.0 and newer releases stop enforcement. New revocations retain the token digest so this choice can be changed later. Older revoked records may already have had their digest erased; while allow is enabled and such an unarchived record exists, state and heartbeat endpoints provide an emergency release snapshot to any request carrying a bearer token. Other device endpoints remain denied. Archiving the recovered legacy record disables that fallback for it.
 
 An agent accepts a snapshot when it has a greater version, or when it has the same version and refreshes clock calibration. It never restores an older deadline from a lower-version message. After process restart it may enforce a valid cached snapshot immediately, but must reconnect and reconcile without waiting for its normal heartbeat interval.
 

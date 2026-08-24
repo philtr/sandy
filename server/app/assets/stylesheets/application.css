@@ -63,8 +63,12 @@ button, [type="submit"], .button { touch-action: manipulation; }
 .brand-name { display: block; font-size: 1.2rem; font-weight: 900; letter-spacing: -.02em; line-height: 1.05; }
 .brand-tagline { display: block; margin-top: .18rem; color: var(--emerald-200); font-size: .72rem; font-weight: 650; letter-spacing: .03em; }
 .header-action, .link-button, .inline-link-button { min-height: 44px; border: 0; background: transparent; cursor: pointer; font-weight: 800; }
-.header-action { padding: .55rem .85rem; border: 1px solid rgba(255, 255, 255, .18); border-radius: .8rem; color: #ffffff; }
+.header-actions { display: flex; align-items: center; gap: .5rem; }
+.header-actions form { display: flex; }
+.header-action { padding: .55rem .85rem; display: inline-flex; min-height: 44px; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, .18); border-radius: .8rem; color: #ffffff; text-decoration: none; }
+.settings-action { width: 44px; padding: .55rem; }
 .header-action:hover { background: rgba(255, 255, 255, .09); }
+.visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
 .page-shell { position: relative; z-index: 1; width: min(1120px, 92vw); margin: clamp(1.5rem, 4vw, 3.5rem) auto 5rem; }
 
 .panel, .device-card { position: relative; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--surface); box-shadow: var(--shadow-card); }
@@ -164,6 +168,17 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
 
 .content-grid { margin-top: 1rem; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, .8fr); align-items: start; gap: 1rem; }
 .history, .family-tools, .danger-zone { margin-top: 1rem; }
+.settings-list { margin-top: 1rem; display: grid; gap: .75rem; }
+.settings-device { padding: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border: 1px solid var(--border); border-radius: 1rem; background: var(--surface-subtle); }
+.settings-device h3, .settings-device p { margin: 0; }
+.settings-device p { color: var(--muted); font-size: .86rem; }
+.settings-note { color: var(--muted); }
+.settings-note + .panel-heading, .settings-list + .panel-heading { margin-top: 2rem; }
+.release-setting { margin: 1.5rem 0 2rem; padding: 1.15rem; border: 1px solid var(--attention-border); border-radius: 1rem; background: var(--attention-soft); }
+.release-setting .panel-heading { margin-bottom: .5rem; }
+.release-setting p { margin: .5rem 0 1rem; color: var(--muted); }
+.release-setting form { display: inline-flex; }
+.setting-warning { padding: .8rem; border: 1px solid var(--danger-border); border-radius: .8rem; background: var(--danger-soft); color: var(--danger) !important; }
 .content-grid .history, .content-grid .family-tools { margin-top: 0; }
 .panel-heading { margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .panel-kicker { color: var(--faint); font-size: .8rem; font-weight: 750; }
@@ -205,6 +220,8 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
   .button-row form, .button-row .primary-button, .button-row .secondary-button, .button-row .danger-button { width: 100%; }
   .device-card { padding: 1.1rem; }
   .remaining { font-size: 2.4rem; }
+  .settings-device { align-items: stretch; flex-direction: column; }
+  .settings-device form, .settings-device button { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
