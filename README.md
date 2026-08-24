@@ -14,6 +14,7 @@ This is a visibility and consistency tool, not hardened parental-control softwar
 - [`docs/deployment.md`](docs/deployment.md) — initial installation and upgrades.
 - [`docs/backup-and-recovery.md`](docs/backup-and-recovery.md) — SQLite-volume backup and recovery.
 - [`docs/windows-acceptance.md`](docs/windows-acceptance.md) — real-Windows release checklist.
+- [`docs/future-enhancements.md`](docs/future-enhancements.md) — future enhancements and TODOs.
 
 ## Development
 
