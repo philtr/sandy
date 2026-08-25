@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative "../lib/sandy/demo_agent"
+
+port = ENV.fetch("PORT", "3000")
+server_url = ENV.fetch("SANDY_SERVER_URL", "http://127.0.0.1:#{port}")
+
+begin
+  Sandy::DemoAgent.new(base_url: server_url).run
+rescue Interrupt
+  exit 0
+rescue Sandy::DemoAgent::AuthenticationError
+  warn "Demo agent stopped: a pre-enrolled device credential was rejected. Reset the demo database and restart."
+  exit 1
+rescue Sandy::DemoAgent::ProtocolError => error
+  warn "Demo agent stopped: #{error.message}"
+  exit 1
+end

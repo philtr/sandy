@@ -1,0 +1,204 @@
+#!/usr/bin/env ruby
+
+require "net/http"
+require "uri"
+
+require_relative "../lib/sandy/demo_data"
+
+APP_ROOT = File.expand_path("..", __dir__)
+DEMO_DATABASE_URL = "sqlite3:storage/demo.sqlite3"
+DEMO_EMAIL = Sandy::DemoData::EMAIL
+DEMO_PASSWORD = Sandy::DemoData::PASSWORD
+BOOT_TIMEOUT_SECONDS = 30
+SHUTDOWN_TIMEOUT_SECONDS = 5
+
+begin
+  port = Integer(ENV.fetch("PORT", "3000"), 10)
+  raise ArgumentError unless (1..65_535).cover?(port)
+rescue ArgumentError
+  warn "Unable to start demo: PORT must be an integer between 1 and 65535."
+  exit 1
+end
+
+server_url = "http://127.0.0.1:#{port}"
+demo_environment = {
+  "DATABASE_URL" => DEMO_DATABASE_URL,
+  "RAILS_ENV" => "development",
+  "SANDY_DEMO" => "1"
+}.freeze
+
+children = {}
+received_signal = nil
+
+signal_children = lambda do |signal|
+  children.each_key do |pid|
+    Process.kill(signal, -pid)
+  rescue Errno::ESRCH
+    # The child exited between the status check and signal delivery.
+  end
+end
+
+%w[INT TERM].each do |signal|
+  Signal.trap(signal) do
+    received_signal ||= signal
+    signal_children.call(signal)
+  end
+end
+
+spawn_child = lambda do |name, environment, *command|
+  pid = Process.spawn(environment, *command, chdir: APP_ROOT, pgroup: true)
+  children[pid] = name
+  pid
+end
+
+wait_for_child = lambda do |pid|
+  loop do
+    waited_pid, status = Process.waitpid2(pid, Process::WNOHANG)
+    if waited_pid
+      children.delete(pid)
+      break status
+    end
+
+    break if received_signal
+
+    sleep 0.1
+  end
+end
+
+shutdown_children = lambda do
+  signal_children.call("TERM") unless received_signal
+  deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + SHUTDOWN_TIMEOUT_SECONDS
+
+  until children.empty? || Process.clock_gettime(Process::CLOCK_MONOTONIC) >= deadline
+    children.keys.each do |pid|
+      waited_pid = Process.waitpid(pid, Process::WNOHANG)
+      children.delete(waited_pid) if waited_pid
+    rescue Errno::ECHILD
+      children.delete(pid)
+    end
+    sleep 0.05 unless children.empty?
+  end
+
+  signal_children.call("KILL")
+  children.each_key do |pid|
+    Process.waitpid(pid)
+  rescue Errno::ECHILD
+    nil
+  end
+  children.clear
+end
+
+exit_status = 1
+
+begin
+  puts "== Resetting isolated demo database =="
+  database_ready = [
+    [ "database reset", "db:drop", "db:create" ],
+    [ "schema load", "db:schema:load" ],
+    [ "demo seed", "demo:seed" ]
+  ].all? do |name, *tasks|
+    pid = spawn_child.call(name, demo_environment, "bin/rails", *tasks)
+    status = wait_for_child.call(pid)
+    !received_signal && status&.success?
+  end
+
+  if received_signal
+    exit_status = 128 + Signal.list.fetch(received_signal)
+  elsif !database_ready
+    warn "Demo database setup failed."
+  else
+    puts "\n== Starting Sandy demo =="
+    server_pid = spawn_child.call(
+      "Rails server",
+      demo_environment,
+      "bin/rails", "server",
+      "--binding", "127.0.0.1",
+      "--port", port.to_s,
+      "--pid", "tmp/pids/demo-#{Process.pid}.pid"
+    )
+
+    health_uri = URI("#{server_url}/up")
+    boot_deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + BOOT_TIMEOUT_SECONDS
+    server_status = nil
+    healthy = false
+
+    until received_signal || Process.clock_gettime(Process::CLOCK_MONOTONIC) >= boot_deadline
+      waited_pid, status = Process.waitpid2(server_pid, Process::WNOHANG)
+      if waited_pid
+        children.delete(server_pid)
+        server_status = status
+        break
+      end
+
+      begin
+        response = Net::HTTP.start(
+          health_uri.host,
+          health_uri.port,
+          open_timeout: 0.5,
+          read_timeout: 0.5
+        ) { |http| http.get(health_uri.request_uri) }
+        if response.is_a?(Net::HTTPSuccess)
+          healthy = true
+          break
+        end
+      rescue Errno::ECONNREFUSED, Errno::ECONNRESET, EOFError, IOError, Net::OpenTimeout, Net::ReadTimeout
+        # Rails is still booting.
+      end
+
+      sleep 0.1
+    end
+
+    if received_signal
+      exit_status = 128 + Signal.list.fetch(received_signal)
+    elsif server_status
+      warn "Rails exited before becoming healthy (#{server_status})."
+    elsif !healthy
+      warn "Rails did not become healthy at #{health_uri} within #{BOOT_TIMEOUT_SECONDS} seconds."
+    else
+      mock_environment = demo_environment.merge("SANDY_SERVER_URL" => server_url)
+      spawn_child.call("mock agent", mock_environment, "bin/mock_agent")
+
+      puts <<~MESSAGE
+
+        Demo is ready:
+          URL:      #{server_url}
+          Username: #{DEMO_EMAIL}
+          Password: #{DEMO_PASSWORD}
+
+        These credentials are intentionally insecure and for this local demo only.
+        Press Ctrl-C to stop the server and mock agent.
+      MESSAGE
+
+      loop do
+        break if received_signal
+
+        exited = nil
+        children.each_key do |pid|
+          waited_pid, status = Process.waitpid2(pid, Process::WNOHANG)
+          next unless waited_pid
+
+          exited = [ waited_pid, status ]
+          break
+        end
+
+        if exited
+          pid, status = exited
+          name = children.delete(pid)
+          warn "#{name} exited unexpectedly (#{status})."
+          exit_status = status.success? ? 1 : (status.exitstatus || 1)
+          break
+        end
+
+        sleep 0.1
+      end
+
+      exit_status = 128 + Signal.list.fetch(received_signal) if received_signal
+    end
+  end
+rescue Errno::ENOENT => error
+  warn "Unable to start demo: #{error.message}"
+ensure
+  shutdown_children.call
+end
+
+exit exit_status
