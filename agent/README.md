@@ -114,7 +114,7 @@ existing Alt-Tab, Alt-Esc, Alt-F4, Ctrl-Esc, and Ctrl-Shift-Esc restrictions als
 apply. Ctrl-Alt-Delete remains handled by Windows and is the deliberate manual
 escape hatch.
 
-Revoked credentials receive the explicit `device_revoked` protocol response.
+Unenrolled credentials receive the explicit `device_revoked` protocol response.
 Sandy clears only the matching enrollment/cache, restores Explorer taskbars, and
 shows current-code re-enrollment. A generic unauthorized response and all network
 failures remain fail-closed.

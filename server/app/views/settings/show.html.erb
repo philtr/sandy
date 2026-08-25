@@ -4,33 +4,33 @@
 <section class="panel narrow" aria-labelledby="settings-title">
   <p class="eyebrow">Family settings</p>
   <h1 id="settings-title">Settings</h1>
-  <p class="settings-note">Archive revoked PCs to remove them from the family dashboard and its recent activity.</p>
+  <p class="settings-note">Archive unenrolled PCs to remove them from the family dashboard and its recent activity.</p>
 
   <section class="release-setting" aria-labelledby="release-title">
     <div>
       <div class="panel-heading">
-        <h2 id="release-title">Revoked PC behavior</h2>
+        <h2 id="release-title">Unenrolled PC behavior</h2>
         <span class="status"><%= current_family.allow_revoked_devices? ? "allow" : "deny" %></span>
       </div>
       <% if current_family.allow_revoked_devices? %>
-        <p>Revoked PCs running Sandy 1.x receive a standard active timer state so they release the screen-time lock. Sandy 2.0 and newer always use current-code re-enrollment.</p>
+        <p>Unenrolled PCs running Sandy 1.x receive a standard active timer state so they release the screen-time lock. Sandy 2.0 and newer always use current-code re-enrollment.</p>
         <p class="setting-warning"><strong>Legacy recovery mode is active:</strong> Sandy 1.x timer requests carrying any bearer token can receive the release state, even when the PC record is archived or no longer exists. Sandy 2.0 and other device endpoints remain protected.</p>
-        <%= button_to "Deny revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: false }, class: "danger-button", form: { data: { turbo_confirm: "Stop releasing revoked PCs? A released PC may remain usable until its cached deadline expires." } } %>
+        <%= button_to "Stop releasing unenrolled PCs", settings_path, method: :patch, params: { allow_revoked_devices: false }, class: "danger-button", form: { data: { turbo_confirm: "Stop releasing unenrolled PCs? A released PC may remain usable until its cached deadline expires." } } %>
       <% else %>
-        <p>Revoked PCs are denied timer access. Sandy 2.0 shows re-enrollment; legacy agents continue enforcing their last known timer state.</p>
-        <%= button_to "Allow revoked PCs", settings_path, method: :patch, params: { allow_revoked_devices: true }, class: "primary-button", form: { data: { turbo_confirm: "Allow revoked PCs running Sandy 1.x? Legacy recovery will return an unlocked timer state for their timer requests, including PCs whose records were archived or removed." } } %>
+        <p>Unenrolled PCs are denied timer access. Sandy 2.0 shows re-enrollment; legacy agents continue enforcing their last known timer state.</p>
+        <%= button_to "Release legacy unenrolled PCs", settings_path, method: :patch, params: { allow_revoked_devices: true }, class: "primary-button", form: { data: { turbo_confirm: "Release unenrolled PCs running Sandy 1.x? Legacy recovery will return an unlocked timer state for their timer requests, including PCs whose records were archived or removed." } } %>
       <% end %>
     </div>
   </section>
 
-  <div class="panel-heading"><h2>Revoked PCs</h2><span class="panel-kicker"><%= pluralize(@revoked_devices.size, "PC") %></span></div>
+  <div class="panel-heading"><h2>Unenrolled PCs</h2><span class="panel-kicker"><%= pluralize(@revoked_devices.size, "PC") %></span></div>
   <% if @revoked_devices.empty? %>
-    <p class="settings-note">There are no revoked PCs waiting to be archived.</p>
+    <p class="settings-note">There are no unenrolled PCs waiting to be archived.</p>
   <% else %>
     <div class="settings-list">
       <% @revoked_devices.each do |device| %>
         <article class="settings-device">
-          <div><h3><%= device.name %></h3><p>Revoked <%= time_ago_in_words(device.revoked_at) %> ago</p></div>
+          <div><h3><%= device.name %></h3><p>Unenrolled <%= time_ago_in_words(device.revoked_at) %> ago</p></div>
           <%= button_to "Archive", archive_device_path(device), method: :patch, class: "secondary-button", form: { data: { turbo_confirm: "Archive #{device.name}? It will no longer appear on the dashboard." } } %>
         </article>
       <% end %>

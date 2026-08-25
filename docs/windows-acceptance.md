@@ -9,7 +9,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Confirm only one agent instance runs and it starts at that user's next interactive logon.
 - Verify no Start Menu, AppsFolder, Steam, or filesystem application enumeration occurs during ordinary startup.
 - Reboot and verify cached state is enforced before network reconciliation completes.
-- Verify invalid server URL, invalid join code, TLS error, unknown credential, and explicitly revoked credential produce the intended recovery state without leaking credentials.
+- Verify invalid server URL, invalid join code, TLS error, unknown credential, and an explicitly unenrolled PC produce the intended recovery state without leaking credentials.
 - Restart Explorer and verify Sandy re-registers its AppBars and hides recreated Explorer taskbars only after it is healthy.
 - Crash, hang, kill, update, uninstall, and disable Sandy startup in separate trials; verify Explorer taskbars return and the user is never left without either taskbar.
 - Confirm `Ctrl`+`Alt`+`Delete`, sign-out, and restarting Explorer remain deliberate recovery paths.
@@ -66,9 +66,9 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 
 ## Revocation, updates, and release
 
-- Revoke a current agent and confirm it receives `device_revoked`, stops old synchronization, removes enforcement UI/hooks/audio mute, restores Explorer taskbars, clears credential/cache, preserves pins, and requires the current join code.
-- Test a pre-migration already-revoked credential: generic unauthorized remains fail-closed but offers current-code re-enrollment without treating network errors as revocation.
-- Confirm revoked credentials cannot fetch state, heartbeat, events, timer data, or launcher-edit authorization.
+- Unenroll a current agent and confirm it receives `device_revoked`, stops old synchronization, removes enforcement UI/hooks/audio mute, restores Explorer taskbars, clears credential/cache, preserves pins, and requires the current join code.
+- Test a pre-migration already-unenrolled credential: generic unauthorized remains fail-closed but offers current-code re-enrollment without treating network errors as unenrollment.
+- Confirm unenrolled credentials cannot fetch state, heartbeat, events, timer data, or launcher-edit authorization.
 - Confirm startup and six-hour update checks against the configured public GitHub release source.
 - While active, verify an update downloads without prompting and does not restart the agent.
 - After at least 60 seconds expired, verify the agent refreshes state before applying, restores Explorer during handoff, restarts, restores cache/launcher, and reconnects.

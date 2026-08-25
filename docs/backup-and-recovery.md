@@ -40,5 +40,5 @@ Then sign in, inspect the audit history, and verify the Windows agent reconnects
 
 - Losing `SECRET_KEY_BASE` invalidates all browser sessions. Restore it from the password manager where possible; replacing it forces both parents to sign in again.
 - Losing `SETUP_TOKEN` after setup is harmless because setup is disabled. It is needed only for a deliberate administrative reset.
-- A lost device token is replaced by revoking the device and enrolling it again with the current join code.
+- A lost device token is replaced by unenrolling the device and enrolling it again with the current join code.
 - A lost shared parent password requires an authenticated recovery mechanism or an administrative Rails console reset; document the actual recovery command in the release runbook once the account model is finalized.

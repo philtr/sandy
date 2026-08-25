@@ -1,6 +1,8 @@
 require "test_helper"
 
 class DeviceTest < ActiveSupport::TestCase
+  include ActionCable::TestHelper
+
   test "snapshot is versioned and uses an absolute deadline" do
     family = create_family
     device = family.devices.create!(name: "Gaming PC", expires_at: Time.zone.parse("2026-08-23 12:30:00"), state_version: 4)
@@ -21,6 +23,33 @@ class DeviceTest < ActiveSupport::TestCase
     device.revoke!
     assert_nil Device.authenticate_token(token)
     assert Device.revoked_token?(token)
+  end
+
+  test "unenrollment tells current agents to clear enrollment" do
+    family = create_family
+    device = family.devices.create!(name: "Gaming PC")
+    device.issue_token!
+
+    messages = capture_broadcasts(DeviceChannel.broadcasting_for(device)) do
+      device.revoke!
+    end
+
+    assert_equal [ { "type" => "device_revoked" } ], messages
+  end
+
+  test "unenrollment releases legacy agents before telling current agents to clear enrollment" do
+    family = create_family
+    family.update!(allow_revoked_devices: true)
+    device = family.devices.create!(name: "Gaming PC")
+    device.issue_token!
+
+    messages = capture_broadcasts(DeviceChannel.broadcasting_for(device)) do
+      device.revoke!
+    end
+
+    assert_equal %w[timer_state device_revoked], messages.pluck("type")
+    assert_equal "active", messages.first.dig("timer_state", "timer_status")
+    assert_operator Time.iso8601(messages.first.dig("timer_state", "expires_at")), :>, 10.years.from_now
   end
 
   test "launcher editing uses a renewable fixed lease and records attribution" do

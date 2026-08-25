@@ -73,12 +73,12 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_select ".device-card[data-status='offline'][data-device-id='#{@device.id}'] .status", text: "offline"
     assert_select ".device-card[data-status='active'][data-device-id='#{active.id}'] .status", text: "active"
     assert_select ".device-card[data-status='expired'][data-device-id='#{expired.id}'] .status", text: "expired"
-    assert_select ".device-card[data-status='revoked'][data-device-id='#{revoked.id}'] .status", text: "revoked"
+    assert_select ".device-card[data-status='revoked'][data-device-id='#{revoked.id}'] .status", text: "unenrolled"
     assert_select ".device-card[data-device-id='#{archived.id}']", count: 0
     refute_includes response.body, "Archived PC"
   end
 
-  test "settings gear lists revoked PCs and archives them off the dashboard" do
+  test "settings gear lists unenrolled PCs and archives them off the dashboard" do
     revoked = @family.devices.create!(name: "Old PC", revoked_at: 2.days.ago)
     sign_in_and_select_profile
 
@@ -92,7 +92,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     get settings_path
     assert_response :success
     assert_select "h1", text: "Settings"
-    assert_select "button", text: "Allow revoked PCs"
+    assert_select "button", text: "Release legacy unenrolled PCs"
     assert_select "form[action='#{archive_device_path(revoked)}'] button", text: "Archive"
 
     patch settings_path, params: { allow_revoked_devices: true }
@@ -101,7 +101,7 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     get settings_path
     assert_select ".release-setting .status", text: "allow"
     assert_select ".setting-warning", text: /Sandy 1\.x.*any bearer token.*archived or no longer exists/i
-    assert_select "button", text: "Deny revoked PCs"
+    assert_select "button", text: "Stop releasing unenrolled PCs"
 
     patch archive_device_path(revoked)
     assert_redirected_to settings_path
@@ -232,13 +232,18 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     end
   end
 
-  test "selected parent can revoke a device" do
+  test "selected parent can unenroll a device" do
     token = @device.issue_token!
     sign_in_and_select_profile
+
+    get device_path(@device)
+    assert_select "h2", text: "Unenroll this PC"
+    assert_select "button", text: "Unenroll #{@device.name}"
 
     delete device_path(@device)
 
     assert_redirected_to root_path
+    assert_equal "Unenrolled #{@device.name}. Agent 2.0 requires the current join code.", flash[:notice]
     assert @device.reload.revoked_at?
     assert_nil Device.authenticate_token(token)
     assert Device.revoked_token?(token)

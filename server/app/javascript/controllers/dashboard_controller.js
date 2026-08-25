@@ -47,7 +47,7 @@ export default class extends Controller {
   renderCard(card) {
     if (card.dataset.revoked === "true") {
       card.dataset.status = "revoked"
-      card.querySelector(".status").textContent = "revoked"
+      card.querySelector(".status").textContent = "unenrolled"
       return
     }
 

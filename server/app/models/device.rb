@@ -108,6 +108,11 @@ class Device < ApplicationRecord
         state_version: state_version + 1
       )
     end
+
+    # Legacy agents only understand timer snapshots, while current agents can
+    # immediately discard their credential and return to enrollment.
+    broadcast_timer_state! if family.allow_revoked_devices?
+    DeviceChannel.broadcast_to(self, type: "device_revoked")
   end
 
   def launcher_edit_unlocked?(at: Time.current)
@@ -193,6 +198,6 @@ class Device < ApplicationRecord
   private
 
   def archived_only_after_revocation
-    errors.add(:archived_at, "requires the PC to be revoked first") if archived_at? && !revoked_at?
+    errors.add(:archived_at, "requires the PC to be unenrolled first") if archived_at? && !revoked_at?
   end
 end
