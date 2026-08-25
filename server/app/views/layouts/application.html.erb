@@ -6,8 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Sandy">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#020617" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#090e16">
     <meta name="application-name" content="Sandy">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
@@ -32,7 +31,7 @@
     <header class="site-header">
       <div class="header-inner">
         <%= link_to root_path, class: "brand", aria: { label: "Sandy home" } do %>
-          <%= image_tag "/icon.svg", alt: "", width: 38, height: 38 %>
+          <span class="brand-mark" aria-hidden="true">S</span>
           <span><span class="brand-name">Sandy</span><span class="brand-tagline">Family screen time, clearly managed</span></span>
         <% end %>
         <% if current_account %>
