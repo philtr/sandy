@@ -8,6 +8,7 @@ namespace Sandy.Agent.Views;
 internal static class ForegroundNoticePosition
 {
     private const int MarginPixels = 20;
+    private const uint SwpNoActivate = 0x0010;
     private const uint SwpShowWindow = 0x0040;
 
     public static void Apply(Window window, Forms.Screen screen)
@@ -17,6 +18,8 @@ internal static class ForegroundNoticePosition
         var width = (int)Math.Ceiling(window.Width * scale);
         var height = (int)Math.Ceiling(window.Height * scale);
         var workArea = screen.WorkingArea;
+        // A topmost notice must not become the foreground window. Activating it can
+        // force exclusive-fullscreen games to minimize or leave fullscreen mode.
         SetWindowPos(
             handle,
             new nint(-1),
@@ -24,7 +27,7 @@ internal static class ForegroundNoticePosition
             workArea.Top + MarginPixels,
             width,
             height,
-            SwpShowWindow);
+            SwpNoActivate | SwpShowWindow);
     }
 
     [DllImport("user32.dll")]
