@@ -21,9 +21,20 @@ public partial class EnrollmentWindow : Window
         if (recovery)
         {
             Title = "Reconnect Sandy";
+            HeadingText.Text = "Reconnect this PC";
+            InstructionsText.Text = "Enter the current server address and family join code to reconnect Sandy.";
+            ConnectButton.Content = "Reconnect";
             Topmost = true;
         }
     }
+
+    private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == System.Windows.Input.MouseButtonState.Pressed)
+            DragMove();
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
     private async void Connect_Click(object sender, RoutedEventArgs e)
     {
@@ -35,7 +46,9 @@ public partial class EnrollmentWindow : Window
             return;
         }
 
+        var buttonLabel = ConnectButton.Content;
         ConnectButton.IsEnabled = false;
+        ConnectButton.Content = _recovery ? "Reconnecting…" : "Connecting…";
         try
         {
             await _enrollmentService.EnrollAsync(
@@ -50,6 +63,7 @@ public partial class EnrollmentWindow : Window
         }
         finally
         {
+            ConnectButton.Content = buttonLabel;
             ConnectButton.IsEnabled = true;
         }
     }
