@@ -30,6 +30,15 @@ bin/setup
 bin/rails test
 ```
 
+To launch an isolated local demo with showcase data and an already-enrolled mock agent:
+
+```sh
+cd server
+bin/demo
+```
+
+Open `http://127.0.0.1:3000` and sign in with `demo@sandy.test` / `password`. These credentials are intentionally insecure and must only be used for the local demo. Override them with `SANDY_DEMO_EMAIL` and `SANDY_DEMO_PASSWORD`. Each run replaces `server/storage/demo.sqlite3` without changing the normal development database. Set `PORT` to use another port, for example `PORT=3100 bin/demo`.
+
 The Windows timer core can be developed and tested on macOS. Building or exercising WPF requires Windows:
 
 ```sh
