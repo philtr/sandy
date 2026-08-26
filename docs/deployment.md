@@ -46,6 +46,7 @@ For the launcher/unenrollment migration, publish and allow uptake of the recover
 
 ## Operations
 
+- A successful parent sign-in creates a persistent session for 30 days. Signing out, clearing browser/PWA site data, using private browsing, changing the public hostname, or changing `SECRET_KEY_BASE` requires a new sign-in.
 - `GET /up` is a liveness/boot check. Also alert on the parent dashboard being unreachable and inspect device heartbeat age for end-to-end health.
 - View logs with `docker compose --env-file deploy/.env -f deploy/compose.yml logs --tail=200 app`.
 - Use **Add PC** to generate a fresh family join code after unexpected disclosure. Existing devices remain enrolled.
