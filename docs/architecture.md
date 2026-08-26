@@ -1,5 +1,17 @@
 # Architecture
 
+## Architecture decision records
+
+Architecture decision records capture durable choices and their tradeoffs. The existing sections below describe Sandy's current architecture; these records add focused context for decisions as they are made.
+
+| ADR | Status | Decision summary |
+| --- | --- | --- |
+| [ADR 0001: Use a shared Sandy visual language](adrs/0001-use-a-shared-sandy-visual-language.md) | Accepted | Use the launcher's design language across Sandy-owned Windows surfaces and the parent PWA while preserving each surface's interaction model. |
+| [ADR 0002: Keep advance warnings passive](adrs/0002-keep-advance-warnings-passive.md) | Accepted | Keep visual timer warnings non-activating, associate them with compatible fullscreen targets, and rely on audio for exclusive fullscreen. |
+| [ADR 0003: Minimize fullscreen applications at expiration](adrs/0003-minimize-fullscreen-apps-at-expiration.md) | Accepted | Minimize a foreground fullscreen application so the expiration overlay is visible without closing or terminating the application. |
+| [ADR 0004: Use spoken threshold cues and session ducking](adrs/0004-use-spoken-threshold-cues-and-session-ducking.md) | Accepted | Play bundled cues once at 15, 5, and 1 minutes while temporarily reducing other shared-mode audio sessions to half volume. |
+| [ADR 0005: Publish agent releases from version tags](adrs/0005-publish-agent-releases-from-version-tags.md) | Accepted | Let any intentional `agent-v*` tag trigger a fully validated Windows release, including prereleases from pull-request branches. |
+
 ## System boundary
 
 Sandy has one authoritative Rails deployment and one or more enrolled Windows agents in a single family. Parent phones use the Rails PWA over HTTPS. Agents initiate HTTPS and WebSocket connections to the same public origin; the managed PC never listens on an internet-facing port.

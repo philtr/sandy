@@ -13,7 +13,7 @@ This is a visibility and consistency tool, not hardened parental-control softwar
 - [`server/`](server/) — Rails 8.1 control plane, parent PWA, JSON API, and Action Cable endpoint.
 - [`agent/`](agent/) — .NET 10 WPF launcher, taskbar, enforcement UI, and platform-independent timer/synchronization core.
 - [`deploy/`](deploy/) — homelab Docker Compose deployment.
-- [`docs/architecture.md`](docs/architecture.md) — boundaries, domain model, and design decisions.
+- [Architecture and ADR index](docs/architecture.md#architecture-decision-records) — boundaries, domain model, and recorded design decisions.
 - [`docs/protocol.md`](docs/protocol.md) — device HTTP/WebSocket synchronization contract.
 - [`docs/deployment.md`](docs/deployment.md) — initial installation and upgrades.
 - [`docs/backup-and-recovery.md`](docs/backup-and-recovery.md) — SQLite-volume backup and recovery.
