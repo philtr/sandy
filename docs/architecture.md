@@ -13,6 +13,12 @@ Architecture decision records capture durable choices and their tradeoffs. The e
 | [ADR 0005: Publish agent releases from version tags](adrs/0005-publish-agent-releases-from-version-tags.md) | Accepted | Let any intentional `agent-v*` tag trigger a fully validated Windows release, including prereleases from pull-request branches. |
 | [ADR 0006: Use Conventional Commits](adrs/0006-use-conventional-commits.md) | Accepted | Use typed, optionally scoped commit subjects so project history and release metadata remain consistent and machine-readable. |
 | [ADR 0007: Recovery generation and device re-enrollment after database restore](adrs/0007-recovery-generation-and-device-reenrollment-after-restore.md) | Proposed | Rotate the recovery generation and invalidate existing device credentials after a destructive database restore. |
+| [ADR 0008: Server-authoritative time and agent convergence](adrs/0008-server-authoritative-time-and-agent-convergence.md) | Proposed | Make Rails the source of timer policy while agents converge from complete, versioned snapshots. |
+| [ADR 0009: Single-node SQLite and Solid Cable deployment](adrs/0009-single-node-sqlite-and-solid-cable.md) | Proposed | Use one Rails/Puma deployment with SQLite and Solid Cable for the household control plane. |
+| [ADR 0010: Interactive agent and cooperative trust boundary](adrs/0010-interactive-agent-and-cooperative-trust-boundary.md) | Proposed | Run a per-user WPF agent alongside Explorer rather than a hardened Windows control system. |
+| [ADR 0011: Device capabilities and explicit revocation](adrs/0011-device-capabilities-and-explicit-revocation.md) | Proposed | Scope device credentials to agent access and distinguish confirmed unenrollment from connection failures. |
+| [ADR 0012: Local launcher state and online edit lease](adrs/0012-local-launcher-state-and-online-edit-lease.md) | Proposed | Keep pins local while using a server-authorized, online edit lease for changes. |
+| [ADR 0013: Single-household tenancy and parent attribution](adrs/0013-single-household-tenancy-and-parent-attribution.md) | Proposed | Model one household with a shared parent account and two attribution profiles. |
 
 ## System boundary
 
