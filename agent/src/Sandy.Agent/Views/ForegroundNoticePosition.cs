@@ -9,6 +9,7 @@ internal static class ForegroundNoticePosition
 {
     private const int MarginPixels = 20;
     private const uint SwpNoActivate = 0x0010;
+    private const uint SwpNoOwnerZOrder = 0x0200;
     private const uint SwpShowWindow = 0x0040;
 
     public static void Apply(Window window, Forms.Screen screen)
@@ -27,7 +28,7 @@ internal static class ForegroundNoticePosition
             workArea.Top + MarginPixels,
             width,
             height,
-            SwpNoActivate | SwpShowWindow);
+            SwpNoActivate | SwpNoOwnerZOrder | SwpShowWindow);
     }
 
     [DllImport("user32.dll")]
