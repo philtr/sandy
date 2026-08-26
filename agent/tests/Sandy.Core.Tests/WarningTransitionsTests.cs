@@ -36,6 +36,22 @@ public sealed class WarningTransitionsTests
         Assert.Equal([TimerNotification.Resumed], transitions.Observe(Reading(TimerPhase.Active, 5)));
     }
 
+    [Theory]
+    [InlineData(TimerNotification.FifteenMinutes, WarningCue.FifteenMinutes)]
+    [InlineData(TimerNotification.FiveMinutes, WarningCue.FiveMinutes)]
+    [InlineData(TimerNotification.FinalMinute, WarningCue.OneMinute)]
+    public void Selects_the_matching_spoken_cue(TimerNotification notification, WarningCue expectedCue)
+    {
+        Assert.True(WarningCueSelector.TrySelect(notification, out var cue));
+        Assert.Equal(expectedCue, cue);
+    }
+
+    [Theory]
+    [InlineData(TimerNotification.Expired)]
+    [InlineData(TimerNotification.Resumed)]
+    public void Does_not_select_a_spoken_cue_for_non_warning_notifications(TimerNotification notification) =>
+        Assert.False(WarningCueSelector.TrySelect(notification, out _));
+
     private static TimerReading Reading(TimerPhase phase, long version) =>
         new(phase, TimeSpan.Zero, version, null, true);
 }
