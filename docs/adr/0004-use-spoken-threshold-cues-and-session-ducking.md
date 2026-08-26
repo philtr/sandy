@@ -1,6 +1,5 @@
 # ADR 0004: Use spoken threshold cues and session ducking
 
-- Status: Accepted
 - Date: 2026-08-26
 
 ## Context

@@ -1,6 +1,5 @@
 # ADR 0001: Use a shared Sandy visual language
 
-- Status: Accepted
 - Date: 2026-08-26
 
 ## Context

@@ -1,6 +1,5 @@
 # ADR 0005: Publish agent releases from version tags
 
-- Status: Accepted
 - Date: 2026-08-26
 
 ## Context

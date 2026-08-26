@@ -1,6 +1,5 @@
 # ADR 0003: Minimize fullscreen applications at expiration
 
-- Status: Accepted
 - Date: 2026-08-26
 
 ## Context

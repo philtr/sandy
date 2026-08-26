@@ -1,6 +1,5 @@
 # ADR 0011: Device capabilities and explicit revocation
 
-- Status: Proposed
 - Date: 2026-08-26
 
 ## Context

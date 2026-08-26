@@ -1,6 +1,5 @@
 # ADR 0007: Recovery generation and device re-enrollment after database restore
 
-- Status: Proposed
 - Date: 2026-08-26
 
 ## Context

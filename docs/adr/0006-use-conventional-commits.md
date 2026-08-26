@@ -1,6 +1,5 @@
 # ADR 0006: Use Conventional Commits
 
-- Status: Accepted
 - Date: 2026-08-26
 
 ## Context

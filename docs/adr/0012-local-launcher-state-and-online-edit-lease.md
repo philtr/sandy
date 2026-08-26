@@ -1,6 +1,5 @@
 # ADR 0012: Local launcher state and online edit lease
 
-- Status: Proposed
 - Date: 2026-08-26
 
 ## Context

@@ -1,6 +1,5 @@
 # ADR 0013: Single-household tenancy and parent attribution
 
-- Status: Proposed
 - Date: 2026-08-26
 
 ## Context

@@ -1,6 +1,5 @@
 # ADR 0002: Keep advance warnings passive
 
-- Status: Accepted
 - Date: 2026-08-26
 
 ## Context

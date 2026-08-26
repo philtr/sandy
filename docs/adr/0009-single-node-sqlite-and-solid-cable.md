@@ -1,6 +1,5 @@
 # ADR 0009: Single-node SQLite and Solid Cable deployment
 
-- Status: Proposed
 - Date: 2026-08-26
 
 ## Context

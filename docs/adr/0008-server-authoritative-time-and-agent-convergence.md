@@ -1,6 +1,5 @@
 # ADR 0008: Server-authoritative time and agent convergence
 
-- Status: Proposed
 - Date: 2026-08-26
 
 ## Context

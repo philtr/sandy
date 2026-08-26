@@ -2,23 +2,23 @@
 
 ## Architecture decision records
 
-Architecture decision records capture durable choices and their tradeoffs. The existing sections below describe Sandy's current architecture; these records add focused context for decisions as they are made.
+Architecture decision records capture Sandy's durable choices and their tradeoffs. Every committed record is authoritative project direction. The existing sections below describe Sandy's current architecture; these records add focused context for decisions as they are made.
 
-| ADR | Status | Decision summary |
-| --- | --- | --- |
-| [ADR 0001: Use a shared Sandy visual language](adr/0001-use-a-shared-sandy-visual-language.md) | Accepted | Use the launcher's design language across Sandy-owned Windows surfaces and the parent PWA while preserving each surface's interaction model. |
-| [ADR 0002: Keep advance warnings passive](adr/0002-keep-advance-warnings-passive.md) | Accepted | Keep visual timer warnings non-activating, associate them with compatible fullscreen targets, and rely on audio for exclusive fullscreen. |
-| [ADR 0003: Minimize fullscreen applications at expiration](adr/0003-minimize-fullscreen-apps-at-expiration.md) | Accepted | Minimize a foreground fullscreen application so the expiration overlay is visible without closing or terminating the application. |
-| [ADR 0004: Use spoken threshold cues and session ducking](adr/0004-use-spoken-threshold-cues-and-session-ducking.md) | Accepted | Play bundled cues once at 15, 5, and 1 minutes while temporarily reducing other shared-mode audio sessions to half volume. |
-| [ADR 0005: Publish agent releases from version tags](adr/0005-publish-agent-releases-from-version-tags.md) | Accepted | Let any intentional `agent-v*` tag trigger a fully validated Windows release, including prereleases from pull-request branches. |
-| [ADR 0006: Use Conventional Commits](adr/0006-use-conventional-commits.md) | Accepted | Use typed, optionally scoped commit subjects so project history and release metadata remain consistent and machine-readable. |
-| [ADR 0007: Recovery generation and device re-enrollment after database restore](adr/0007-recovery-generation-and-device-reenrollment-after-restore.md) | Proposed | Rotate the recovery generation and invalidate existing device credentials after a destructive database restore. |
-| [ADR 0008: Server-authoritative time and agent convergence](adr/0008-server-authoritative-time-and-agent-convergence.md) | Proposed | Make Rails the source of timer policy while agents converge from complete, versioned snapshots. |
-| [ADR 0009: Single-node SQLite and Solid Cable deployment](adr/0009-single-node-sqlite-and-solid-cable.md) | Proposed | Use one Rails/Puma deployment with SQLite and Solid Cable for the household control plane. |
-| [ADR 0010: Interactive agent and cooperative trust boundary](adr/0010-interactive-agent-and-cooperative-trust-boundary.md) | Proposed | Run a per-user WPF agent alongside Explorer rather than a hardened Windows control system. |
-| [ADR 0011: Device capabilities and explicit revocation](adr/0011-device-capabilities-and-explicit-revocation.md) | Proposed | Scope device credentials to agent access and distinguish confirmed unenrollment from connection failures. |
-| [ADR 0012: Local launcher state and online edit lease](adr/0012-local-launcher-state-and-online-edit-lease.md) | Proposed | Keep pins local while using a server-authorized, online edit lease for changes. |
-| [ADR 0013: Single-household tenancy and parent attribution](adr/0013-single-household-tenancy-and-parent-attribution.md) | Proposed | Model one household with a shared parent account and two attribution profiles. |
+| ADR | Decision summary |
+| --- | --- |
+| [ADR 0001: Use a shared Sandy visual language](adr/0001-use-a-shared-sandy-visual-language.md) | Use the launcher's design language across Sandy-owned Windows surfaces and the parent PWA while preserving each surface's interaction model. |
+| [ADR 0002: Keep advance warnings passive](adr/0002-keep-advance-warnings-passive.md) | Keep visual timer warnings non-activating, associate them with compatible fullscreen targets, and rely on audio for exclusive fullscreen. |
+| [ADR 0003: Minimize fullscreen applications at expiration](adr/0003-minimize-fullscreen-apps-at-expiration.md) | Minimize a foreground fullscreen application so the expiration overlay is visible without closing or terminating the application. |
+| [ADR 0004: Use spoken threshold cues and session ducking](adr/0004-use-spoken-threshold-cues-and-session-ducking.md) | Play bundled cues once at 15, 5, and 1 minutes while temporarily reducing other shared-mode audio sessions to half volume. |
+| [ADR 0005: Publish agent releases from version tags](adr/0005-publish-agent-releases-from-version-tags.md) | Let any intentional `agent-v*` tag trigger a fully validated Windows release, including prereleases from pull-request branches. |
+| [ADR 0006: Use Conventional Commits](adr/0006-use-conventional-commits.md) | Use typed, optionally scoped commit subjects so project history and release metadata remain consistent and machine-readable. |
+| [ADR 0007: Recovery generation and device re-enrollment after database restore](adr/0007-recovery-generation-and-device-reenrollment-after-restore.md) | Rotate the recovery generation and invalidate existing device credentials after a destructive database restore. |
+| [ADR 0008: Server-authoritative time and agent convergence](adr/0008-server-authoritative-time-and-agent-convergence.md) | Make Rails the source of timer policy while agents converge from complete, versioned snapshots. |
+| [ADR 0009: Single-node SQLite and Solid Cable deployment](adr/0009-single-node-sqlite-and-solid-cable.md) | Use one Rails/Puma deployment with SQLite and Solid Cable for the household control plane. |
+| [ADR 0010: Interactive agent and cooperative trust boundary](adr/0010-interactive-agent-and-cooperative-trust-boundary.md) | Run a per-user WPF agent alongside Explorer rather than a hardened Windows control system. |
+| [ADR 0011: Device capabilities and explicit revocation](adr/0011-device-capabilities-and-explicit-revocation.md) | Scope device credentials to agent access and distinguish confirmed unenrollment from connection failures. |
+| [ADR 0012: Local launcher state and online edit lease](adr/0012-local-launcher-state-and-online-edit-lease.md) | Keep pins local while using a server-authorized, online edit lease for changes. |
+| [ADR 0013: Single-household tenancy and parent attribution](adr/0013-single-household-tenancy-and-parent-attribution.md) | Model one household with a shared parent account and two attribution profiles. |
 
 ## System boundary
 

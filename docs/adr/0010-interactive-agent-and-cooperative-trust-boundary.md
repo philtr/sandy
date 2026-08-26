@@ -1,6 +1,5 @@
 # ADR 0010: Interactive agent and cooperative trust boundary
 
-- Status: Proposed
 - Date: 2026-08-26
 
 ## Context
