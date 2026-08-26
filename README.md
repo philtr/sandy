@@ -14,6 +14,7 @@ This is a visibility and consistency tool, not hardened parental-control softwar
 - [`agent/`](agent/) — .NET 10 WPF launcher, taskbar, enforcement UI, and platform-independent timer/synchronization core.
 - [`deploy/`](deploy/) — homelab Docker Compose deployment.
 - [`docs/architecture.md`](docs/architecture.md) — boundaries, domain model, and design decisions.
+- [`docs/adr/`](docs/adr/README.md) — proposed and accepted architecture decision records.
 - [`docs/protocol.md`](docs/protocol.md) — device HTTP/WebSocket synchronization contract.
 - [`docs/deployment.md`](docs/deployment.md) — initial installation and upgrades.
 - [`docs/backup-and-recovery.md`](docs/backup-and-recovery.md) — SQLite-volume backup and recovery.
