@@ -23,6 +23,10 @@
     <PackageReference Include="Velopack" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources/Audio/*.wav" CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <ApplicationDefinition Remove="App.xaml" />
     <Page Include="App.xaml" />
   </ItemGroup>

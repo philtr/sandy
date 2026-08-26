@@ -19,6 +19,7 @@ public sealed class AgentController : IDisposable
     private readonly LauncherDesktopManager _launcher;
     private readonly OverlayManager _overlay = new();
     private readonly WarningTransitions _transitions = new();
+    private readonly TimerCuePlayer _cuePlayer = new();
     private readonly DispatcherTimer _timerTick = new() { Interval = TimeSpan.FromMilliseconds(250) };
     private CountdownWindow? _countdownWindow;
     private DateTimeOffset? _expiredSince;
@@ -68,6 +69,7 @@ public sealed class AgentController : IDisposable
         _timerTick.Stop();
         _synchronization.ConnectionStateChanged -= ConnectionChanged;
         _countdownWindow?.Close();
+        _cuePlayer.Dispose();
         _overlay.Dispose();
         _launcher.Dispose();
     }
@@ -81,6 +83,7 @@ public sealed class AgentController : IDisposable
         {
             _countdownWindow?.Close();
             _countdownWindow = null;
+            _cuePlayer.Stop();
             _overlay.Show();
             _launcher.SetAvailable(false);
             _synchronization.SetOverlayActive(true);
@@ -144,14 +147,17 @@ public sealed class AgentController : IDisposable
         switch (notification)
         {
             case TimerNotification.FifteenMinutes:
+                _cuePlayer.Play(notification);
                 ShowWarning("15 minutes of PC screentime remain");
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 15 });
                 break;
             case TimerNotification.FiveMinutes:
+                _cuePlayer.Play(notification);
                 ShowWarning("5 minutes of PC screentime remain");
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 5 });
                 break;
             case TimerNotification.FinalMinute:
+                _cuePlayer.Play(notification);
                 _events.TryEnqueue("final_countdown_shown");
                 break;
             case TimerNotification.Expired:
