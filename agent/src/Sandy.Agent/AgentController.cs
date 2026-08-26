@@ -94,7 +94,12 @@ public sealed class AgentController : IDisposable
             _expiredSince = null;
             if (reading.Phase == TimerPhase.FinalMinute)
             {
-                _countdownWindow ??= ShowCountdown();
+                var target = TopLevelWindowTracker.ForegroundNoticeTarget();
+                if (_countdownWindow is null || _countdownWindow.OwnerHandle != target.OwnerHandle)
+                {
+                    _countdownWindow?.Close();
+                    _countdownWindow = ShowCountdown(target.OwnerHandle, target.Screen);
+                }
                 _countdownWindow.Update(reading.Remaining);
             }
             else
@@ -139,11 +144,11 @@ public sealed class AgentController : IDisposable
         switch (notification)
         {
             case TimerNotification.FifteenMinutes:
-                new WarningWindow("15 minutes of PC screentime remain", TopLevelWindowTracker.ForegroundScreen()).Show();
+                ShowWarning("15 minutes of PC screentime remain");
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 15 });
                 break;
             case TimerNotification.FiveMinutes:
-                new WarningWindow("5 minutes of PC screentime remain", TopLevelWindowTracker.ForegroundScreen()).Show();
+                ShowWarning("5 minutes of PC screentime remain");
                 _events.TryEnqueue("warning_shown", new Dictionary<string, object?> { ["minutes"] = 5 });
                 break;
             case TimerNotification.FinalMinute:
@@ -158,11 +163,17 @@ public sealed class AgentController : IDisposable
         }
     }
 
-    private CountdownWindow ShowCountdown()
+    private static CountdownWindow ShowCountdown(nint ownerHandle, System.Windows.Forms.Screen screen)
     {
-        var window = new CountdownWindow(TopLevelWindowTracker.ForegroundScreen());
+        var window = new CountdownWindow(screen, ownerHandle);
         window.Show();
         return window;
+    }
+
+    private static void ShowWarning(string message)
+    {
+        var target = TopLevelWindowTracker.ForegroundNoticeTarget();
+        new WarningWindow(message, target.Screen, target.OwnerHandle).Show();
     }
 
     private void ConnectionChanged(object? sender, ConnectionState state) =>

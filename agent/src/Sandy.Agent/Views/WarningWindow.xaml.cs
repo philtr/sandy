@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace Sandy.Agent.Views;
@@ -14,12 +15,15 @@ public partial class WarningWindow : Window
         Interval = TimeSpan.FromMilliseconds(100)
     };
 
-    public WarningWindow(string message, System.Windows.Forms.Screen screen)
+    public WarningWindow(string message, System.Windows.Forms.Screen screen, nint ownerHandle)
     {
         InitializeComponent();
+        if (ownerHandle != nint.Zero)
+            new WindowInteropHelper(this).Owner = ownerHandle;
         MessageText.Text = message;
         _dismissTimer.Tick += DismissTimer_Tick;
         SourceInitialized += (_, _) => ForegroundNoticePosition.Apply(this, screen);
+        ContentRendered += (_, _) => ForegroundNoticePosition.Apply(this, screen);
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();

@@ -87,6 +87,11 @@ public sealed class TopLevelWindowTracker
     public static bool IsForegroundFullscreen(out nint handle, out string monitorName)
     {
         handle = GetForegroundWindow();
+        return IsFullscreen(handle, out monitorName);
+    }
+
+    private static bool IsFullscreen(nint handle, out string monitorName)
+    {
         monitorName = string.Empty;
         if (handle == nint.Zero || handle == GetShellWindow() || !IsWindowVisible(handle) || IsIconic(handle)
             || IsCloaked(handle))
@@ -117,8 +122,16 @@ public sealed class TopLevelWindowTracker
             ShowWindowAsync(handle, 6);
     }
 
-    public static System.Windows.Forms.Screen ForegroundScreen() =>
-        System.Windows.Forms.Screen.FromHandle(GetForegroundWindow());
+    public static (nint OwnerHandle, System.Windows.Forms.Screen Screen) ForegroundNoticeTarget()
+    {
+        var handle = GetForegroundWindow();
+        // A fullscreen window can occupy the topmost band itself. Making the
+        // passive notice its owned window keeps the notice above that one app;
+        // ordinary windows do not need the ownership relationship.
+        return (
+            IsFullscreen(handle, out _) ? handle : nint.Zero,
+            System.Windows.Forms.Screen.FromHandle(handle));
+    }
 
     private static string? ResolveIdentity(nint window, Process process)
     {

@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using Sandy.Agent.Shell;
 using Sandy.Agent.Views;
 
 namespace Sandy.Agent.Enforcement;
@@ -18,7 +19,12 @@ public sealed class OverlayManager : IDisposable
             return;
         _audioMute.Mute();
         _active = true;
+        // Once time has expired, preserve the fullscreen app's process and state
+        // but move its surface out of the way before raising the blocking UI.
+        if (TopLevelWindowTracker.IsForegroundFullscreen(out var fullscreenWindow, out _))
+            TopLevelWindowTracker.Minimize(fullscreenWindow);
         CreateWindows();
+        FocusOverlays();
         try
         {
             _keyboardBlocker = new KeyboardBlocker(FocusOverlays);
