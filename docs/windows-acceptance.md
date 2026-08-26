@@ -43,7 +43,8 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Confirm `Alt`+`Tab`, `Alt`+`Esc`, `Alt`+`F4`, `Ctrl`+`Esc`, and ordinary application shortcuts work while time remains.
 - Test windowed, maximized, borderless full-screen, video full-screen, and exclusive full-screen applications.
 - For borderless full-screen, verify the AppBar releases only that monitor after entry debounce and returns after exit/minimize/close/foreground loss without rapid flicker.
-- Let the final-minute notice appear over both borderless and exclusive full-screen games; verify the notice does not take focus, minimize the game, or change its z-order, and that the game process remains running.
+- Let the final-minute notice appear over both borderless and exclusive full-screen games; verify the notice stays above the game without taking focus or minimizing it, and that the game process remains running.
+- Let time expire in a full-screen game; verify Sandy immediately minimizes the game and displays the blocking overlay without waiting for keyboard input, while leaving the game process running.
 - Invoke Sandy Home from full screen and verify the application backgrounds/minimizes where possible, the launcher returns, and AppBars reserve their edges again.
 - Change display resolution, scale, orientation, monitor topology, and full-screen monitor while running.
 - Verify the passive network status icon, account/lock/sign-out, and sleep/restart/shutdown controls. Confirm Sandy does not emulate third-party notification-area icons.
