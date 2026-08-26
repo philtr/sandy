@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -40,7 +41,7 @@ internal sealed class TimerCuePlayer : IDisposable
             _player.MediaOpened += Player_MediaOpened;
             _player.MediaEnded += Player_MediaEnded;
             _player.MediaFailed += Player_MediaFailed;
-            _player.Open(new Uri(path, UriKind.Absolute));
+            _player.Open(new System.Uri(path, System.UriKind.Absolute));
             StartCompletionTimer(LoadTimeout);
         }
         catch (Exception exception)
@@ -79,10 +80,11 @@ internal sealed class TimerCuePlayer : IDisposable
 
     private void Player_MediaOpened(object? sender, EventArgs e)
     {
-        if (!ReferenceEquals(sender, _player) || _cue is null)
+        var player = _player;
+        if (!ReferenceEquals(sender, player) || player is null || _cue is null)
             return;
 
-        _player.Play();
+        player.Play();
         StartCompletionTimer(_cue.Duration + CompletionGrace);
     }
 
