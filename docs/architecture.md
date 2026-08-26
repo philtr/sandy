@@ -11,6 +11,7 @@ Architecture decision records capture durable choices and their tradeoffs. The e
 | [ADR 0003: Minimize fullscreen applications at expiration](adrs/0003-minimize-fullscreen-apps-at-expiration.md) | Accepted | Minimize a foreground fullscreen application so the expiration overlay is visible without closing or terminating the application. |
 | [ADR 0004: Use spoken threshold cues and session ducking](adrs/0004-use-spoken-threshold-cues-and-session-ducking.md) | Accepted | Play bundled cues once at 15, 5, and 1 minutes while temporarily reducing other shared-mode audio sessions to half volume. |
 | [ADR 0005: Publish agent releases from version tags](adrs/0005-publish-agent-releases-from-version-tags.md) | Accepted | Let any intentional `agent-v*` tag trigger a fully validated Windows release, including prereleases from pull-request branches. |
+| [ADR 0006: Use Conventional Commits](adrs/0006-use-conventional-commits.md) | Accepted | Use typed, optionally scoped commit subjects so project history and release metadata remain consistent and machine-readable. |
 
 ## System boundary
 
