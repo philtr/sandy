@@ -112,6 +112,22 @@ class ParentControlTest < ActionDispatch::IntegrationTest
     assert_select ".device-card[data-device-id='#{revoked.id}']", count: 0
   end
 
+  test "selected parent can set the household voice theme for every PC" do
+    other_device = @family.devices.create!(name: "Study PC")
+    sign_in_and_select_profile
+
+    patch settings_path, params: { voice_theme: "random" }
+
+    assert_redirected_to settings_path
+    assert_equal "random", @family.reload.voice_theme
+    assert_equal 1, @device.reload.state_version
+    assert_equal 1, other_device.reload.state_version
+    assert_equal "random", @device.timer_snapshot[:voice_theme]
+
+    get settings_path
+    assert_select "select[name='voice_theme'] option[selected][value='random']", text: "Random"
+  end
+
   test "recent activity combines grants and device events in descending event order" do
     sign_in_and_select_profile
     older = @device.device_events.create!(event_id: "older", kind: "startup", occurred_at: 3.hours.ago)

@@ -6,6 +6,18 @@
   <h1 id="settings-title">Settings</h1>
   <p class="settings-note">Archive unenrolled PCs to remove them from the family dashboard and its recent activity.</p>
 
+  <section class="release-setting" aria-labelledby="voice-theme-title">
+    <div>
+      <div class="panel-heading"><h2 id="voice-theme-title">Voice theme</h2></div>
+      <p>Choose the spoken screen-time cues used by every enrolled PC in your household.</p>
+      <%= form_with url: settings_path, method: :patch do |form| %>
+        <%= form.label :voice_theme, "Cue voice" %>
+        <%= form.select :voice_theme, [["Stella", "stella"], ["Blondie", "blondie"], ["Random", "random"]], selected: current_family.voice_theme %>
+        <%= form.submit "Save voice theme", class: "primary-button" %>
+      <% end %>
+    </div>
+  </section>
+
   <section class="release-setting" aria-labelledby="release-title">
     <div>
       <div class="panel-heading">

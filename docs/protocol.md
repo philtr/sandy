@@ -30,13 +30,14 @@ Every state fetch, heartbeat response, enrollment response, and `timer_state` br
   "launcher_edit_unlocked_until": null,
   "remaining_seconds": 1800,
   "timer_status": "active",
-  "heartbeat_interval_seconds": 30
+  "heartbeat_interval_seconds": 30,
+  "voice_theme": "stella"
 }
 ```
 
 `expires_at` is nullable and is the authority. `remaining_seconds` is a display/bootstrap convenience calculated at `server_time`; clients must not repeatedly decrement that transmitted number. `timer_status` is `active` or `expired`.
 
-`allowance_started_at` is the beginning of the current contiguous allowance and lets the launcher render whole-allowance progress. `launcher_edit_unlocked_until` is a nullable, absolute 30-minute lease granted by a parent. Agents permit pin changes only while that lease is current, the timer is active, and the server connection is online. `state_version` increases whenever authoritative timer or launcher-edit state changes.
+`allowance_started_at` is the beginning of the current contiguous allowance and lets the launcher render whole-allowance progress. `launcher_edit_unlocked_until` is a nullable, absolute 30-minute lease granted by a parent. Agents permit pin changes only while that lease is current, the timer is active, and the server connection is online. `voice_theme` is the household-wide spoken cue selection: `stella`, `blondie`, or `random`. `state_version` increases whenever authoritative timer, launcher-edit, or voice-theme state changes.
 
 The family unenrolled-PC recovery setting applies only to agents older than 2.0. When enabled, their state and heartbeat requests receive a schema-1 active snapshot with a long deadline, including pre-tombstone credentials whose device record is gone. Agent 2.0 and newer receive `device_revoked` for known unenrolled credentials and `unauthorized` for unknown credentials regardless of that legacy setting. Other device endpoints remain denied.
 
@@ -124,7 +125,8 @@ An authenticated agent subscribes to `DeviceChannel`; the server derives the dev
     "launcher_edit_unlocked_until": "2026-08-23T21:35:00Z",
     "remaining_seconds": 3600,
     "timer_status": "active",
-    "heartbeat_interval_seconds": 30
+    "heartbeat_interval_seconds": 30,
+    "voice_theme": "stella"
   }
 }
 ```

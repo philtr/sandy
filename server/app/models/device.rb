@@ -77,7 +77,8 @@ class Device < ApplicationRecord
       launcher_edit_unlocked_until: launcher_edit_unlocked_until&.iso8601(3),
       remaining_seconds: remaining_seconds(at:),
       timer_status: timer_status(at:),
-      heartbeat_interval_seconds: HEARTBEAT_INTERVAL_SECONDS
+      heartbeat_interval_seconds: HEARTBEAT_INTERVAL_SECONDS,
+      voice_theme: family.voice_theme
     }
   end
 

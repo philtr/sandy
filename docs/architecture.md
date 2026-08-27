@@ -34,7 +34,7 @@ Rails owns device allowance state and publishes complete, versioned snapshots af
 
 ## Domain model
 
-- **Family** — the household boundary, timezone, and rotatable digest of its enrollment code.
+- **Family** — the household boundary, timezone, rotatable digest of its enrollment code, and the global spoken-cue voice theme.
 - **Account** — the shared parent login and password digest.
 - **ParentProfile** — one of the two attribution identities selected on each parent's phone.
 - **Device** — the active or revoked credential digest, allowance window, launcher-edit lease, state version, last heartbeat, reported agent/overlay state, and revocation state.

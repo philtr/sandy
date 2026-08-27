@@ -18,7 +18,7 @@ public sealed class AgentDiagnosticReporterTests
             message: "Could not start the screen-time cue.",
             context: new Dictionary<string, object?>
             {
-                ["cue"] = "one-minute.wav",
+                ["cue"] = "blondie-one-minute.wav",
                 ["backend"] = "SoundPlayer"
             },
             exception: exception);
@@ -31,7 +31,7 @@ public sealed class AgentDiagnosticReporterTests
         Assert.Equal("Could not start the screen-time cue.", diagnostic.Metadata["message"]);
 
         var context = Assert.IsAssignableFrom<IReadOnlyDictionary<string, object?>>(diagnostic.Metadata["context"]);
-        Assert.Equal("one-minute.wav", context["cue"]);
+        Assert.Equal("blondie-one-minute.wav", context["cue"]);
         Assert.Equal("SoundPlayer", context["backend"]);
 
         var error = Assert.IsAssignableFrom<IReadOnlyDictionary<string, object?>>(diagnostic.Metadata["exception"]);

@@ -35,10 +35,14 @@ public sealed class TimerSynchronizationService(
     private readonly RetryPolicy _retry = new(options.MaximumRetryDelay);
     private readonly SemaphoreSlim _snapshotGate = new(1, 1);
     private volatile bool _overlayActive;
+    private TimerSnapshot? _currentSnapshot;
     private int _revocationRaised;
 
     public event EventHandler<ConnectionState>? ConnectionStateChanged;
     public event EventHandler<EnrollmentFailureEventArgs>? EnrollmentRejected;
+    public event EventHandler<TimerSnapshot>? SnapshotSynchronized;
+
+    public TimerSnapshot? CurrentSnapshot => Volatile.Read(ref _currentSnapshot);
 
     public void SetOverlayActive(bool active) => _overlayActive = active;
 
@@ -48,7 +52,14 @@ public sealed class TimerSynchronizationService(
         if (credential is null)
             return false;
         var cached = await snapshotStore.LoadAsync(credential.EnrollmentGeneration, cancellationToken);
-        return cached is not null && timer.Synchronize(cached.Rehydrate(DateTimeOffset.UtcNow));
+        if (cached is null)
+            return false;
+
+        var snapshot = cached.Rehydrate(DateTimeOffset.UtcNow);
+        if (!timer.Synchronize(snapshot))
+            return false;
+        Volatile.Write(ref _currentSnapshot, snapshot);
+        return true;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken)
@@ -174,7 +185,9 @@ public sealed class TimerSynchronizationService(
         {
             if (!timer.Synchronize(snapshot))
                 return;
+            Volatile.Write(ref _currentSnapshot, snapshot);
             await snapshotStore.SaveAsync(snapshot, enrollmentGeneration, cancellationToken);
+            SnapshotSynchronized?.Invoke(this, snapshot);
         }
         finally
         {

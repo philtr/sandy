@@ -68,6 +68,33 @@ public sealed class WarningTransitionsTests
     public void Does_not_select_a_spoken_cue_for_non_warning_notifications(TimerNotification notification) =>
         Assert.False(WarningCueSelector.TrySelect(notification, out _));
 
+    [Fact]
+    public void Selects_Stella_assets_by_default()
+    {
+        var asset = VoiceCueSelector.Select(WarningCue.FiveMinutes, null);
+
+        Assert.Equal("stella", asset.VoiceTheme);
+        Assert.Equal("stella-five-minutes.wav", asset.FileName);
+    }
+
+    [Fact]
+    public void Selects_the_requested_voice_asset()
+    {
+        var asset = VoiceCueSelector.Select(WarningCue.OneMinute, "blondie");
+
+        Assert.Equal("blondie", asset.VoiceTheme);
+        Assert.Equal("blondie-one-minute.wav", asset.FileName);
+    }
+
+    [Fact]
+    public void Random_theme_selects_an_available_voice()
+    {
+        var asset = VoiceCueSelector.Select(WarningCue.FifteenMinutes, "random", () => 1);
+
+        Assert.Equal("blondie", asset.VoiceTheme);
+        Assert.Equal("blondie-fifteen-minutes.wav", asset.FileName);
+    }
+
     private static TimerReading Reading(TimerPhase phase, long version) =>
         new(phase, TimeSpan.Zero, version, null, true);
 }

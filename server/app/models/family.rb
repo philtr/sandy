@@ -1,5 +1,6 @@
 class Family < ApplicationRecord
   REVOKED_RELEASE_DURATION = 100.years
+  VOICE_THEMES = %w[stella blondie random].freeze
 
   has_one :account, dependent: :destroy
   has_many :parent_profiles, dependent: :destroy
@@ -8,6 +9,7 @@ class Family < ApplicationRecord
   has_secure_password :enrollment_code, validations: false
 
   validates :name, :timezone, :enrollment_code_digest, presence: true
+  validates :voice_theme, inclusion: { in: VOICE_THEMES }
   validate :timezone_must_exist
 
   def self.generate_join_code
@@ -30,8 +32,19 @@ class Family < ApplicationRecord
       expires_at: expires_at.iso8601(3),
       remaining_seconds: (expires_at - at).ceil,
       timer_status: "active",
-      heartbeat_interval_seconds: Device::HEARTBEAT_INTERVAL_SECONDS
+      heartbeat_interval_seconds: Device::HEARTBEAT_INTERVAL_SECONDS,
+      voice_theme: voice_theme
     }
+  end
+
+  def update_voice_theme!(theme)
+    transaction do
+      lock!
+      update!(voice_theme: theme)
+      devices.not_revoked.update_all([ "state_version = state_version + 1, updated_at = ?", Time.current ])
+    end
+
+    devices.not_revoked.find_each(&:broadcast_timer_state!)
   end
 
   def self.normalize_join_code(code)

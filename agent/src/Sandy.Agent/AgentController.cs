@@ -41,8 +41,10 @@ public sealed class AgentController : IDisposable
         _updateCheckInterval = updateCheckInterval;
         _launcher = launcher;
         _cuePlayer = new TimerCuePlayer(events);
+        _cuePlayer.SetVoiceTheme(_synchronization.CurrentSnapshot?.VoiceTheme);
         _timerTick.Tick += Tick;
         _synchronization.ConnectionStateChanged += ConnectionChanged;
+        _synchronization.SnapshotSynchronized += SnapshotSynchronized;
     }
 
     public void Start()
@@ -72,6 +74,7 @@ public sealed class AgentController : IDisposable
     {
         _timerTick.Stop();
         _synchronization.ConnectionStateChanged -= ConnectionChanged;
+        _synchronization.SnapshotSynchronized -= SnapshotSynchronized;
         _countdownWindow?.Close();
         _cuePlayer.Dispose();
         _overlay.Dispose();
@@ -188,4 +191,7 @@ public sealed class AgentController : IDisposable
 
     private void ConnectionChanged(object? sender, ConnectionState state) =>
         System.Windows.Application.Current.Dispatcher.Invoke(() => _launcher.UpdateConnection(state));
+
+    private void SnapshotSynchronized(object? sender, Sandy.Core.Protocol.TimerSnapshot snapshot) =>
+        _cuePlayer.SetVoiceTheme(snapshot.VoiceTheme);
 }

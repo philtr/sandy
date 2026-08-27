@@ -17,6 +17,7 @@ internal sealed class TimerCuePlayer : IDisposable
     private AudioSessionDucker? _ducker;
     private CueDefinition? _cue;
     private readonly AgentDiagnosticReporter _diagnostics;
+    private string _voiceTheme = "stella";
 
     public TimerCuePlayer(IDeviceEventSink events)
     {
@@ -30,7 +31,7 @@ internal sealed class TimerCuePlayer : IDisposable
             return;
 
         Stop();
-        _cue = CueDefinition.For(warningCue);
+        _cue = CueDefinition.For(VoiceCueSelector.Select(warningCue, _voiceTheme));
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", "Audio", _cue.FileName);
         _diagnostics.Info(
             component: "audio",
@@ -96,6 +97,8 @@ internal sealed class TimerCuePlayer : IDisposable
         _completionTimer.Tick -= CompletionTimer_Tick;
     }
 
+    public void SetVoiceTheme(string? voiceTheme) => _voiceTheme = voiceTheme ?? "stella";
+
     public void Stop()
     {
         _completionTimer.Stop();
@@ -138,17 +141,21 @@ internal sealed class TimerCuePlayer : IDisposable
     private static Dictionary<string, object?> CueContext(CueDefinition cue) => new()
     {
         ["cue"] = cue.FileName,
+        ["voice_theme"] = cue.VoiceTheme,
         ["backend"] = nameof(SoundPlayer)
     };
 
-    private sealed record CueDefinition(string FileName, TimeSpan Duration)
+    private sealed record CueDefinition(string VoiceTheme, string FileName, TimeSpan Duration)
     {
-        public static CueDefinition For(WarningCue cue) => cue switch
+        public static CueDefinition For(VoiceCueAsset asset) => asset.FileName switch
         {
-            WarningCue.FifteenMinutes => new CueDefinition("fifteen-minutes.wav", TimeSpan.FromSeconds(2.25)),
-            WarningCue.FiveMinutes => new CueDefinition("five-minutes.wav", TimeSpan.FromSeconds(2.12)),
-            WarningCue.OneMinute => new CueDefinition("one-minute.wav", TimeSpan.FromSeconds(2.13)),
-            _ => throw new ArgumentOutOfRangeException(nameof(cue), cue, null)
+            "stella-fifteen-minutes.wav" => new CueDefinition(asset.VoiceTheme, asset.FileName, TimeSpan.FromSeconds(2.52)),
+            "stella-five-minutes.wav" => new CueDefinition(asset.VoiceTheme, asset.FileName, TimeSpan.FromSeconds(2.94)),
+            "stella-one-minute.wav" => new CueDefinition(asset.VoiceTheme, asset.FileName, TimeSpan.FromSeconds(4.52)),
+            "blondie-fifteen-minutes.wav" => new CueDefinition(asset.VoiceTheme, asset.FileName, TimeSpan.FromSeconds(2.25)),
+            "blondie-five-minutes.wav" => new CueDefinition(asset.VoiceTheme, asset.FileName, TimeSpan.FromSeconds(2.12)),
+            "blondie-one-minute.wav" => new CueDefinition(asset.VoiceTheme, asset.FileName, TimeSpan.FromSeconds(2.13)),
+            _ => throw new ArgumentOutOfRangeException(nameof(asset), asset, null)
         };
     }
 }

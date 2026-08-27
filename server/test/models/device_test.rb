@@ -13,6 +13,16 @@ class DeviceTest < ActiveSupport::TestCase
     assert_equal 1800, snapshot[:remaining_seconds]
     assert_equal "active", snapshot[:timer_status]
     assert_equal 30, snapshot[:heartbeat_interval_seconds]
+    assert_equal "stella", snapshot[:voice_theme]
+  end
+
+  test "snapshot includes the household voice theme" do
+    family = create_family
+    family.update!(voice_theme: "blondie")
+
+    snapshot = family.devices.create!(name: "Gaming PC").timer_snapshot
+
+    assert_equal "blondie", snapshot[:voice_theme]
   end
 
   test "token authentication rejects revoked devices" do

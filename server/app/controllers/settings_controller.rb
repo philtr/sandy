@@ -8,6 +8,11 @@ class SettingsController < ApplicationController
   end
 
   def update
+    if params.key?(:voice_theme)
+      current_family.update_voice_theme!(params[:voice_theme])
+      return redirect_to settings_path, notice: "Voice theme updated for every enrolled PC."
+    end
+
     allow_revoked_devices = ActiveModel::Type::Boolean.new.cast(params[:allow_revoked_devices])
     current_family.update!(allow_revoked_devices:)
 

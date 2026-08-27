@@ -31,6 +31,9 @@ public sealed record TimerSnapshot
     [JsonPropertyName("heartbeat_interval_seconds")]
     public required int HeartbeatIntervalSeconds { get; init; }
 
+    [JsonPropertyName("voice_theme")]
+    public string VoiceTheme { get; init; } = "stella";
+
     public TimerSnapshot Validate()
     {
         if (SchemaVersion != 1)
