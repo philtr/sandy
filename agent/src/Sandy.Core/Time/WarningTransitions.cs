@@ -18,19 +18,26 @@ public sealed class WarningTransitions
     {
         var notifications = new List<TimerNotification>();
         var prior = _last;
+        var resumed = _version >= 0
+            && reading.StateVersion > _version
+            && prior == TimerPhase.Expired
+            && reading.Phase != TimerPhase.Expired;
 
-        if (_version >= 0 && reading.StateVersion > _version && prior == TimerPhase.Expired && reading.Phase != TimerPhase.Expired)
+        if (resumed)
             notifications.Add(TimerNotification.Resumed);
 
         // When a sleep or delayed sync skips several thresholds, show only the most
         // urgent warning instead of stacking multiple dialogs at once.
+        // Treat a new allowance as starting from Active so a short grant emits its
+        // matching warning instead of inheriting the prior expired phase.
+        var warningPrior = resumed ? TimerPhase.Active : prior;
         if (reading.Phase == TimerPhase.Expired && prior != TimerPhase.Expired)
             notifications.Add(TimerNotification.Expired);
-        else if (Crossed(prior, reading.Phase, TimerPhase.FinalMinute))
+        else if (Crossed(warningPrior, reading.Phase, TimerPhase.FinalMinute))
             notifications.Add(TimerNotification.FinalMinute);
-        else if (Crossed(prior, reading.Phase, TimerPhase.FiveMinuteWarning))
+        else if (Crossed(warningPrior, reading.Phase, TimerPhase.FiveMinuteWarning))
             notifications.Add(TimerNotification.FiveMinutes);
-        else if (Crossed(prior, reading.Phase, TimerPhase.FifteenMinuteWarning))
+        else if (Crossed(warningPrior, reading.Phase, TimerPhase.FifteenMinuteWarning))
             notifications.Add(TimerNotification.FifteenMinutes);
 
         _last = reading.Phase;

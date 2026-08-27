@@ -37,6 +37,22 @@ public sealed class WarningTransitionsTests
     }
 
     [Theory]
+    [InlineData(TimerPhase.FifteenMinuteWarning, TimerNotification.FifteenMinutes)]
+    [InlineData(TimerPhase.FiveMinuteWarning, TimerNotification.FiveMinutes)]
+    [InlineData(TimerPhase.FinalMinute, TimerNotification.FinalMinute)]
+    public void New_grant_into_warning_interval_emits_resume_and_matching_warning(
+        TimerPhase phase,
+        TimerNotification warning)
+    {
+        var transitions = new WarningTransitions();
+        transitions.Observe(Reading(TimerPhase.Expired, 4));
+
+        Assert.Equal(
+            [TimerNotification.Resumed, warning],
+            transitions.Observe(Reading(phase, 5)));
+    }
+
+    [Theory]
     [InlineData(TimerNotification.FifteenMinutes, WarningCue.FifteenMinutes)]
     [InlineData(TimerNotification.FiveMinutes, WarningCue.FiveMinutes)]
     [InlineData(TimerNotification.FinalMinute, WarningCue.OneMinute)]
