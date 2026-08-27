@@ -16,6 +16,7 @@ public sealed class AgentController : IDisposable
     private readonly TimerSynchronizationService _synchronization;
     private readonly IDeviceEventSink _events;
     private readonly IUpdateService _updates;
+    private readonly TimeSpan _updateCheckInterval;
     private readonly LauncherDesktopManager _launcher;
     private readonly OverlayManager _overlay = new();
     private readonly WarningTransitions _transitions = new();
@@ -30,12 +31,14 @@ public sealed class AgentController : IDisposable
         TimerSynchronizationService synchronization,
         IDeviceEventSink events,
         IUpdateService updates,
+        TimeSpan updateCheckInterval,
         LauncherDesktopManager launcher)
     {
         _timer = timer;
         _synchronization = synchronization;
         _events = events;
         _updates = updates;
+        _updateCheckInterval = updateCheckInterval;
         _launcher = launcher;
         _timerTick.Tick += Tick;
         _synchronization.ConnectionStateChanged += ConnectionChanged;
@@ -60,7 +63,7 @@ public sealed class AgentController : IDisposable
             {
                 _events.TryEnqueue("update_failed");
             }
-            await Task.Delay(TimeSpan.FromHours(6), cancellationToken);
+            await Task.Delay(_updateCheckInterval, cancellationToken);
         }
     }
 

@@ -86,7 +86,8 @@ Updates use `https://github.com/philtr/sandy` by default. Set the per-user or
 machine `SANDY_UPDATE_URL` environment variable only to override the public
 GitHub repository URL. Updates download in the background, auto-apply on the
 next launch, or apply after the timer has been expired for 60 seconds and the
-server confirms it is still expired.
+server confirms it is still expired. The agent checks at startup and every 15
+minutes thereafter.
 
 ## Wire contract
 

@@ -73,7 +73,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Unenroll a current agent and confirm it receives `device_revoked`, stops old synchronization, removes enforcement UI/hooks/audio mute, restores Explorer taskbars, clears credential/cache, preserves pins, and requires the current join code.
 - Test a pre-migration already-unenrolled credential: generic unauthorized remains fail-closed but offers current-code re-enrollment without treating network errors as unenrollment.
 - Confirm unenrolled credentials cannot fetch state, heartbeat, events, timer data, or launcher-edit authorization.
-- Confirm startup and six-hour update checks against the configured public GitHub release source.
+- Confirm startup and 15-minute update checks against the configured public GitHub release source.
 - While active, verify an update downloads without prompting and does not restart the agent.
 - After at least 60 seconds expired, verify the agent refreshes state before applying, restores Explorer during handoff, restarts, restores cache/launcher, and reconnects.
 - Grant time during the update boundary and confirm application is deferred.

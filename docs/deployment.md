@@ -40,7 +40,7 @@ The Rails image entrypoint prepares databases before boot. Review release notes 
 
 Server images are released from `server-vX.Y.Z` Git tags or a manual workflow run with an `X.Y.Z` version. Each release publishes the exact `X.Y.Z` image tag, the moving `latest` tag, and the moving `vX-latest` tag for consumers that want updates within one major version. Default-branch builds publish only an immutable `sha-*` tag.
 
-Windows releases are published from `agent-v*` Git tags. Set the installed agent's `SANDY_UPDATE_URL` to the public repository URL, such as `https://github.com/OWNER/REPOSITORY`. The agent checks that source at startup and every six hours, downloads quietly, and applies at a safe boundary. Stable artifacts should be Authenticode-signed; unsigned development builds can trigger SmartScreen.
+Windows releases are published from `agent-v*` Git tags. Set the installed agent's `SANDY_UPDATE_URL` to the public repository URL, such as `https://github.com/OWNER/REPOSITORY`. The agent checks that source at startup and every 15 minutes, downloads quietly, and applies at a safe boundary. Stable artifacts should be Authenticode-signed; unsigned development builds can trigger SmartScreen.
 
 For the launcher/unenrollment migration, publish and allow uptake of the recovery-capable Windows agent before operators begin relying on revoked-token tombstone responses. Old rows whose token digest was already cleared cannot be identified retroactively; those agents use the generic unauthorized, current-join-code recovery flow. Existing installations retain credentials and cached timer state, begin with an empty manual pin grid, and keep app editing locked until a parent grants a lease.
 
