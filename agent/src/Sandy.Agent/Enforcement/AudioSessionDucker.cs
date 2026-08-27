@@ -9,11 +9,19 @@ internal sealed class AudioSessionDucker : IDisposable
     private readonly List<DuckedSession> _sessions;
     private bool _restored;
 
-    private AudioSessionDucker(List<DuckedSession> sessions) => _sessions = sessions;
+    private AudioSessionDucker(List<DuckedSession> sessions, bool succeeded)
+    {
+        _sessions = sessions;
+        Succeeded = succeeded;
+    }
+
+    public bool Succeeded { get; }
+    public int DuckedSessionCount => _sessions.Count;
 
     public static AudioSessionDucker DuckOtherSessions(float multiplier)
     {
         var sessions = new List<DuckedSession>();
+        var succeeded = true;
         IMMDeviceEnumerator? deviceEnumerator = null;
         IMMDevice? device = null;
         IAudioSessionManager2? sessionManager = null;
@@ -38,6 +46,7 @@ internal sealed class AudioSessionDucker : IDisposable
         catch (Exception exception) when (exception is COMException or InvalidCastException)
         {
             Trace.TraceWarning($"Could not duck system audio: {exception.Message}");
+            succeeded = false;
             Restore(sessions);
             sessions.Clear();
         }
@@ -49,7 +58,7 @@ internal sealed class AudioSessionDucker : IDisposable
             Release(deviceEnumerator);
         }
 
-        return new AudioSessionDucker(sessions);
+        return new AudioSessionDucker(sessions, succeeded);
     }
 
     public void Dispose()

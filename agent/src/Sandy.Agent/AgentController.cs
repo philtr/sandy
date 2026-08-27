@@ -20,7 +20,7 @@ public sealed class AgentController : IDisposable
     private readonly LauncherDesktopManager _launcher;
     private readonly OverlayManager _overlay = new();
     private readonly WarningTransitions _transitions = new();
-    private readonly TimerCuePlayer _cuePlayer = new();
+    private readonly TimerCuePlayer _cuePlayer;
     private readonly DispatcherTimer _timerTick = new() { Interval = TimeSpan.FromMilliseconds(250) };
     private CountdownWindow? _countdownWindow;
     private DateTimeOffset? _expiredSince;
@@ -40,6 +40,7 @@ public sealed class AgentController : IDisposable
         _updates = updates;
         _updateCheckInterval = updateCheckInterval;
         _launcher = launcher;
+        _cuePlayer = new TimerCuePlayer(events);
         _timerTick.Tick += Tick;
         _synchronization.ConnectionStateChanged += ConnectionChanged;
     }

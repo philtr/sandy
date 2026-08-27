@@ -202,6 +202,22 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
 .record-list p { margin: 0; padding: .75rem 0; border-bottom: 1px solid var(--border); color: var(--muted); }
 .record-list p:last-child { border-bottom: 0; }
 .record-list strong { color: var(--ink); }
+.diagnostics { margin-top: 1.25rem; }
+.diagnostics-toolbar { margin: 1rem 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.diagnostics-toolbar p, .diagnostics-empty { margin: 0; color: var(--muted); }
+.diagnostics-toolbar button { flex: 0 0 auto; }
+.diagnostic-list { display: grid; gap: .75rem; }
+.diagnostic-entry { padding: .9rem 1rem; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: .85rem; background: var(--surface-subtle); }
+.diagnostic-entry[data-severity="warning"] { border-left-color: var(--attention); }
+.diagnostic-entry[data-severity="error"] { border-left-color: var(--danger); }
+.diagnostic-entry p { margin: .2rem 0 0; color: var(--muted); }
+.diagnostic-entry strong { color: var(--ink); }
+.diagnostic-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; color: var(--faint); font-size: .8rem; }
+.diagnostic-severity { color: var(--ink); font-size: .72rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.diagnostic-entry code { margin-top: .55rem; display: block; overflow-wrap: anywhere; color: var(--slate-200); font-size: .78rem; }
+.diagnostic-export { margin-top: 1rem; color: var(--muted); }
+.diagnostic-export summary { cursor: pointer; font-weight: 800; }
+.diagnostic-export pre { max-height: 24rem; margin: .75rem 0 0; padding: 1rem; overflow: auto; border: 1px solid var(--border); border-radius: .75rem; background: var(--slate-950); color: var(--slate-200); font: .78rem/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre-wrap; }
 
 @media (max-width: 780px) {
   .content-grid { grid-template-columns: 1fr; }
@@ -219,6 +235,8 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
   .remaining { font-size: 2.4rem; }
   .settings-device { align-items: stretch; flex-direction: column; }
   .settings-device form, .settings-device button { width: 100%; }
+  .diagnostics-toolbar { align-items: stretch; flex-direction: column; }
+  .diagnostics-toolbar button { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

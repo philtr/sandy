@@ -5,7 +5,8 @@ class DevicesController < ApplicationController
   def show
     @device = current_family.devices.find(params[:id])
     @grants = @device.time_grants.includes(:parent_profile).order(created_at: :desc).limit(100)
-    @events = @device.device_events.order(occurred_at: :desc).limit(100)
+    @events = @device.device_events.where.not(kind: DeviceEvent::AGENT_DIAGNOSTIC_KIND).order(occurred_at: :desc).limit(100)
+    @diagnostics = @device.device_events.agent_diagnostics.order(occurred_at: :desc, id: :desc).limit(DeviceEvent::AGENT_DIAGNOSTIC_RETENTION)
   end
 
   def destroy

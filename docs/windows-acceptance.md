@@ -61,6 +61,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 - Verify the final minute is prominent and counts live without blocking ordinary use.
 - Play non-Sandy audio, including an exclusive-full-screen game; at 15, 5, and 1 minute, verify the matching spoken cue plays once, other shared-mode audio drops to half volume during the cue, and each untouched session returns to its prior level afterward.
 - Change an application volume during a spoken cue; verify Sandy does not overwrite that manual adjustment when it restores the other ducked sessions.
+- Open the PC details page after a spoken cue and verify **Agent diagnostics** records the requested, started, and completed audio stages. Copy the plain-text diagnostics and confirm it contains the cue/backend context but no device token, authorization header, raw exception message, or stack trace.
 - At zero, confirm Sandy AppBars release their work areas and every monitor receives a borderless topmost overlay at all supported DPI/topologies.
 - Play audio from an unmuted default output; at zero, verify it mutes, then grant time and verify the prior state returns. Repeat with an endpoint that was already muted.
 - Connect/disconnect/rearrange monitors while expired; verify overlays follow the topology.

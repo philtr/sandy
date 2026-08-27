@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
-using System.Windows.Media;
+using System.Media;
 using System.Windows.Threading;
+using Sandy.Core.Events;
 using Sandy.Core.Time;
 
 namespace Sandy.Agent.Enforcement;
@@ -13,11 +13,16 @@ internal sealed class TimerCuePlayer : IDisposable
     private static readonly TimeSpan LoadTimeout = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan CompletionGrace = TimeSpan.FromMilliseconds(500);
     private readonly DispatcherTimer _completionTimer = new();
-    private MediaPlayer? _player;
+    private SoundPlayer? _player;
     private AudioSessionDucker? _ducker;
     private CueDefinition? _cue;
+    private readonly AgentDiagnosticReporter _diagnostics;
 
-    public TimerCuePlayer() => _completionTimer.Tick += CompletionTimer_Tick;
+    public TimerCuePlayer(IDeviceEventSink events)
+    {
+        _diagnostics = new AgentDiagnosticReporter(events);
+        _completionTimer.Tick += CompletionTimer_Tick;
+    }
 
     public void Play(TimerNotification notification)
     {
@@ -27,9 +32,19 @@ internal sealed class TimerCuePlayer : IDisposable
         Stop();
         _cue = CueDefinition.For(warningCue);
         var path = Path.Combine(AppContext.BaseDirectory, "Resources", "Audio", _cue.FileName);
+        _diagnostics.Info(
+            component: "audio",
+            code: "cue_playback_requested",
+            message: "A screen-time cue reached its playback threshold.",
+            context: CueContext(_cue));
         if (!File.Exists(path))
         {
             Trace.TraceWarning($"Screen-time cue asset is missing: {path}");
+            _diagnostics.Error(
+                component: "audio",
+                code: "cue_asset_missing",
+                message: "The bundled screen-time cue file is missing.",
+                context: CueContext(_cue));
             _cue = null;
             return;
         }
@@ -37,16 +52,40 @@ internal sealed class TimerCuePlayer : IDisposable
         try
         {
             _ducker = AudioSessionDucker.DuckOtherSessions(DuckMultiplier);
-            _player = new MediaPlayer();
-            _player.MediaOpened += Player_MediaOpened;
-            _player.MediaEnded += Player_MediaEnded;
-            _player.MediaFailed += Player_MediaFailed;
-            _player.Open(new System.Uri(path, System.UriKind.Absolute));
-            StartCompletionTimer(LoadTimeout);
+            if (!_ducker.Succeeded)
+            {
+                _diagnostics.Warning(
+                    component: "audio",
+                    code: "session_ducking_failed",
+                    message: "The cue will play without reducing other application volumes.",
+                    context: CueContext(_cue));
+            }
+            _player = new SoundPlayer(path)
+            {
+                LoadTimeout = (int)LoadTimeout.TotalMilliseconds
+            };
+            _player.Load();
+            _player.Play();
+            var startedContext = new Dictionary<string, object?>(CueContext(_cue))
+            {
+                ["ducked_session_count"] = _ducker.DuckedSessionCount
+            };
+            _diagnostics.Info(
+                component: "audio",
+                code: "cue_playback_started",
+                message: "The native Windows audio backend accepted the screen-time cue.",
+                context: startedContext);
+            StartCompletionTimer(_cue.Duration + CompletionGrace);
         }
         catch (Exception exception)
         {
             Trace.TraceWarning($"Could not play screen-time cue: {exception.Message}");
+            _diagnostics.Error(
+                component: "audio",
+                code: "cue_playback_failed",
+                message: "The native Windows audio backend could not start the screen-time cue.",
+                context: _cue is null ? null : CueContext(_cue),
+                exception: exception);
             Stop();
         }
     }
@@ -66,11 +105,9 @@ internal sealed class TimerCuePlayer : IDisposable
         {
             var player = _player;
             _player = null;
-            player.MediaOpened -= Player_MediaOpened;
-            player.MediaEnded -= Player_MediaEnded;
-            player.MediaFailed -= Player_MediaFailed;
-            try { player.Close(); }
+            try { player.Stop(); }
             catch (Exception exception) { Trace.TraceWarning($"Could not stop screen-time cue: {exception.Message}"); }
+            player.Dispose();
         }
 
         try { _ducker?.Dispose(); }
@@ -78,30 +115,18 @@ internal sealed class TimerCuePlayer : IDisposable
         _ducker = null;
     }
 
-    private void Player_MediaOpened(object? sender, EventArgs e)
+    private void CompletionTimer_Tick(object? sender, EventArgs e)
     {
-        var player = _player;
-        if (!ReferenceEquals(sender, player) || player is null || _cue is null)
-            return;
-
-        player.Play();
-        StartCompletionTimer(_cue.Duration + CompletionGrace);
+        if (_cue is not null)
+        {
+            _diagnostics.Info(
+                component: "audio",
+                code: "cue_playback_completed",
+                message: "The screen-time cue playback window completed.",
+                context: CueContext(_cue));
+        }
+        Stop();
     }
-
-    private void Player_MediaEnded(object? sender, EventArgs e)
-    {
-        if (ReferenceEquals(sender, _player))
-            Stop();
-    }
-
-    private void Player_MediaFailed(object? sender, ExceptionEventArgs e)
-    {
-        Trace.TraceWarning($"Could not play screen-time cue: {e.ErrorException.Message}");
-        if (ReferenceEquals(sender, _player))
-            Stop();
-    }
-
-    private void CompletionTimer_Tick(object? sender, EventArgs e) => Stop();
 
     private void StartCompletionTimer(TimeSpan interval)
     {
@@ -109,6 +134,12 @@ internal sealed class TimerCuePlayer : IDisposable
         _completionTimer.Interval = interval;
         _completionTimer.Start();
     }
+
+    private static Dictionary<string, object?> CueContext(CueDefinition cue) => new()
+    {
+        ["cue"] = cue.FileName,
+        ["backend"] = nameof(SoundPlayer)
+    };
 
     private sealed record CueDefinition(string FileName, TimeSpan Duration)
     {

@@ -20,12 +20,46 @@
   </section>
   <section class="panel history" aria-labelledby="events-title">
     <div class="panel-heading"><h2 id="events-title">Events</h2><span class="panel-kicker"><%= pluralize(@events.size, "event") %></span></div>
-    <div class="record-list">
+    <div class="record-list" id="events-list">
       <% if @events.empty? %><p>No agent events recorded yet.</p><% end %>
       <% @events.each do |event| %><p><%= l(event.occurred_at, format: :short) %> — <strong><%= event.kind.humanize %></strong><% if event.details.present? %>: <%= event.details.to_json %><% end %></p><% end %>
     </div>
   </section>
 </div>
+<section class="panel diagnostics" aria-labelledby="diagnostics-title" data-controller="clipboard">
+  <div class="panel-heading">
+    <div><p class="eyebrow">Troubleshooting</p><h2 id="diagnostics-title">Agent diagnostics</h2></div>
+    <span class="panel-kicker"><%= pluralize(@diagnostics.size, "entry") %></span>
+  </div>
+  <div class="diagnostics-toolbar">
+    <p>Structured agent reports only. Credentials, raw exception messages, and stack traces are not uploaded.</p>
+    <button type="button" class="secondary-button" data-action="clipboard#copy" data-clipboard-target="button" <%= "disabled" if @diagnostics.empty? %>>Copy diagnostics</button>
+  </div>
+  <% if @diagnostics.empty? %>
+    <p class="diagnostics-empty">No agent diagnostics reported yet.</p>
+  <% else %>
+    <div class="diagnostic-list">
+      <% @diagnostics.each do |diagnostic| %>
+        <% details = diagnostic.details.stringify_keys %>
+        <article class="diagnostic-entry" data-severity="<%= details["severity"] %>">
+          <div class="diagnostic-heading">
+            <span class="diagnostic-severity"><%= details["severity"] %></span>
+            <time datetime="<%= diagnostic.occurred_at.iso8601 %>"><%= l(diagnostic.occurred_at, format: :short) %></time>
+          </div>
+          <p><strong><%= details["component"] %> · <%= details["code"] %></strong></p>
+          <p><%= details["message"] %></p>
+          <% if details["context"].present? || details["exception"].present? %>
+            <code><%= { context: details["context"], exception: details["exception"] }.compact.to_json %></code>
+          <% end %>
+        </article>
+      <% end %>
+    </div>
+    <details class="diagnostic-export">
+      <summary>Plain-text diagnostic log</summary>
+      <pre data-clipboard-target="source"><%= @diagnostics.map(&:diagnostic_line).join("\n") %></pre>
+    </details>
+  <% end %>
+</section>
 <% if current_parent_profile && !@device.revoked_at? %>
   <section class="panel danger-zone" aria-labelledby="danger-title">
     <p class="eyebrow">Danger zone</p>

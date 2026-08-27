@@ -71,6 +71,27 @@ Request fields include `agent_version`, `overlay_active`, and optional diagnosti
 
 Posts a bounded batch of events. Each event has a client-generated UUID, type, occurred-at timestamp, and small JSON metadata object. Duplicate UUIDs are successful no-ops. Unknown event types are rejected rather than silently persisted.
 
+Agent troubleshooting uses the `agent_diagnostic` event type rather than uploading raw log files. Its metadata is structured and bounded to 4 KiB:
+
+```json
+{
+  "severity": "error",
+  "component": "audio",
+  "code": "cue_playback_failed",
+  "message": "The native Windows audio backend could not start the screen-time cue.",
+  "context": {
+    "cue": "one-minute.wav",
+    "backend": "SoundPlayer"
+  },
+  "exception": {
+    "type": "InvalidOperationException",
+    "hresult": "0x80131509"
+  }
+}
+```
+
+Severity is `info`, `warning`, or `error`. Diagnostic messages are fixed agent-authored text. Exception messages, stack traces, authorization headers, join codes, setup/session material, and device tokens are never included. The server retains the newest 250 diagnostic entries per device and presents them separately from ordinary activity on the parent-only PC details page.
+
 ### `POST /devices/:id/time_grants`
 
 This browser/session endpoint accepts a duration of 1, 5, 15, 30, or 60 minutes, a parent profile belonging to the current family, and an idempotency key. One- and five-minute grants can be repeated for small adjustments. It creates the audit record and authoritative state atomically, then broadcasts after commit.
