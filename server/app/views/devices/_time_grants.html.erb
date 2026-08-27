@@ -1,0 +1,4 @@
+<div class="record-list" id="grants-list">
+  <% if grants.empty? %><p>No time has been granted yet.</p><% end %>
+  <% grants.each do |grant| %><p data-record-id="<%= grant.id %>"><%= l(grant.created_at, format: :short) %> — <strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> minutes; deadline <%= l(grant.resulting_expires_at, format: :short) %>.</p><% end %>
+</div>

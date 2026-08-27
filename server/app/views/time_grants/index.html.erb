@@ -1,0 +1,13 @@
+<% content_for :title, "Time grants · #{@device.name} · Sandy" %>
+<%= link_to "← #{@device.name}", device_path(@device), class: "back-link" %>
+<section class="panel history-page" aria-labelledby="history-title">
+  <div class="history-page-heading">
+    <div>
+      <p class="eyebrow"><%= @device.name %></p>
+      <h1 id="history-title">Time grants</h1>
+    </div>
+    <span class="panel-kicker"><%= pluralize(@total_count, "grant") %></span>
+  </div>
+  <%= render "devices/time_grants", grants: @grants %>
+  <%= render "shared/pagination", page: @page, total_pages: @total_pages, label: "Time grants" %>
+</section>

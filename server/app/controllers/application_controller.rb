@@ -34,4 +34,13 @@ class ApplicationController < ActionController::Base
 
     redirect_to root_path, alert: "Choose who is using this phone before granting time."
   end
+
+  def paginate(scope, per_page:)
+    total_count = scope.count
+    total_pages = [ (total_count.to_f / per_page).ceil, 1 ].max
+    page = params[:page].to_i.clamp(1, total_pages)
+    records = scope.offset((page - 1) * per_page).limit(per_page)
+
+    [ records, page, total_pages, total_count ]
+  end
 end

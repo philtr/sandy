@@ -1,0 +1,17 @@
+<% content_for :title, "Agent diagnostics · #{@device.name} · Sandy" %>
+<%= link_to "← #{@device.name}", device_path(@device), class: "back-link" %>
+<section class="panel diagnostics history-page" aria-labelledby="history-title" data-controller="clipboard">
+  <div class="history-page-heading">
+    <div>
+      <p class="eyebrow"><%= @device.name %></p>
+      <h1 id="history-title">Agent diagnostics</h1>
+    </div>
+    <span class="panel-kicker"><%= pluralize(@total_count, "entry") %></span>
+  </div>
+  <div class="diagnostics-toolbar">
+    <p>Structured agent reports only. Copy includes the current page.</p>
+    <button type="button" class="secondary-button" data-action="clipboard#copy" data-clipboard-target="button" <%= "disabled" if @diagnostics.empty? %>>Copy diagnostics</button>
+  </div>
+  <%= render "devices/diagnostics", diagnostics: @diagnostics %>
+  <%= render "shared/pagination", page: @page, total_pages: @total_pages, label: "Agent diagnostics" %>
+</section>

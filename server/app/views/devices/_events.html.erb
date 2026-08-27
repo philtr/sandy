@@ -1,0 +1,4 @@
+<div class="record-list" id="events-list">
+  <% if events.empty? %><p>No agent events recorded yet.</p><% end %>
+  <% events.each do |event| %><p><%= l(event.occurred_at, format: :short) %> — <strong><%= event.kind.humanize %></strong><% if event.details.present? %>: <%= event.details.to_json %><% end %></p><% end %>
+</div>

@@ -12,53 +12,39 @@
 </section>
 <div class="content-grid">
   <section class="panel history" aria-labelledby="grants-title">
-    <div class="panel-heading"><h2 id="grants-title">Time grants</h2><span class="panel-kicker"><%= pluralize(@grants.size, "grant") %></span></div>
-    <div class="record-list">
-      <% if @grants.empty? %><p>No time has been granted yet.</p><% end %>
-      <% @grants.each do |grant| %><p><%= l(grant.created_at, format: :short) %> — <strong><%= grant.parent_profile.name %></strong> added <%= grant.duration_seconds / 60 %> minutes; deadline <%= l(grant.resulting_expires_at, format: :short) %>.</p><% end %>
+    <div class="panel-heading">
+      <h2 id="grants-title">Time grants</h2>
+      <div class="panel-actions">
+        <span class="panel-kicker"><%= pluralize(@grant_count, "grant") %></span>
+        <% if @grant_count > DevicesController::HISTORY_PREVIEW_SIZE %><%= link_to "View all", device_time_grants_path(@device), class: "history-link" %><% end %>
+      </div>
     </div>
+    <%= render "time_grants", grants: @grants %>
   </section>
   <section class="panel history" aria-labelledby="events-title">
-    <div class="panel-heading"><h2 id="events-title">Events</h2><span class="panel-kicker"><%= pluralize(@events.size, "event") %></span></div>
-    <div class="record-list" id="events-list">
-      <% if @events.empty? %><p>No agent events recorded yet.</p><% end %>
-      <% @events.each do |event| %><p><%= l(event.occurred_at, format: :short) %> — <strong><%= event.kind.humanize %></strong><% if event.details.present? %>: <%= event.details.to_json %><% end %></p><% end %>
+    <div class="panel-heading">
+      <h2 id="events-title">Events</h2>
+      <div class="panel-actions">
+        <span class="panel-kicker"><%= pluralize(@event_count, "event") %></span>
+        <% if @event_count > DevicesController::HISTORY_PREVIEW_SIZE %><%= link_to "View all", device_events_path(@device), class: "history-link" %><% end %>
+      </div>
     </div>
+    <%= render "events", events: @events %>
   </section>
 </div>
 <section class="panel diagnostics" aria-labelledby="diagnostics-title" data-controller="clipboard">
   <div class="panel-heading">
     <div><p class="eyebrow">Troubleshooting</p><h2 id="diagnostics-title">Agent diagnostics</h2></div>
-    <span class="panel-kicker"><%= pluralize(@diagnostics.size, "entry") %></span>
+    <div class="panel-actions">
+      <span class="panel-kicker"><%= pluralize(@diagnostic_count, "entry") %></span>
+      <% if @diagnostic_count > DevicesController::HISTORY_PREVIEW_SIZE %><%= link_to "View all", device_diagnostics_path(@device), class: "history-link" %><% end %>
+    </div>
   </div>
   <div class="diagnostics-toolbar">
     <p>Structured agent reports only. Credentials, raw exception messages, and stack traces are not uploaded.</p>
     <button type="button" class="secondary-button" data-action="clipboard#copy" data-clipboard-target="button" <%= "disabled" if @diagnostics.empty? %>>Copy diagnostics</button>
   </div>
-  <% if @diagnostics.empty? %>
-    <p class="diagnostics-empty">No agent diagnostics reported yet.</p>
-  <% else %>
-    <div class="diagnostic-list">
-      <% @diagnostics.each do |diagnostic| %>
-        <% details = diagnostic.details.stringify_keys %>
-        <article class="diagnostic-entry" data-severity="<%= details["severity"] %>">
-          <div class="diagnostic-heading">
-            <span class="diagnostic-severity"><%= details["severity"] %></span>
-            <time datetime="<%= diagnostic.occurred_at.iso8601 %>"><%= l(diagnostic.occurred_at, format: :short) %></time>
-          </div>
-          <p><strong><%= details["component"] %> · <%= details["code"] %></strong></p>
-          <p><%= details["message"] %></p>
-          <% if details["context"].present? || details["exception"].present? %>
-            <code><%= { context: details["context"], exception: details["exception"] }.compact.to_json %></code>
-          <% end %>
-        </article>
-      <% end %>
-    </div>
-    <details class="diagnostic-export">
-      <summary>Plain-text diagnostic log</summary>
-      <pre data-clipboard-target="source"><%= @diagnostics.map(&:diagnostic_line).join("\n") %></pre>
-    </details>
-  <% end %>
+  <%= render "diagnostics", diagnostics: @diagnostics %>
 </section>
 <% if current_parent_profile && !@device.revoked_at? %>
   <section class="panel danger-zone" aria-labelledby="danger-title">

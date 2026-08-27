@@ -1,0 +1,11 @@
+<% if total_pages > 1 %>
+  <nav class="pagination" aria-label="<%= label %> pages">
+    <span>
+      <% if page > 1 %><%= link_to "Previous", url_for(page: page - 1), class: "secondary-button" %><% end %>
+    </span>
+    <span class="pagination-status">Page <%= page %> of <%= total_pages %></span>
+    <span>
+      <% if page < total_pages %><%= link_to "Next", url_for(page: page + 1), class: "secondary-button" %><% end %>
+    </span>
+  </nav>
+<% end %>

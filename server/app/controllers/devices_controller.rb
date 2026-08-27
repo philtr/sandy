@@ -1,12 +1,20 @@
 class DevicesController < ApplicationController
+  HISTORY_PREVIEW_SIZE = 10
+
   before_action :require_authentication
   before_action :require_parent_profile, only: [ :destroy, :archive ]
 
   def show
     @device = current_family.devices.find(params[:id])
-    @grants = @device.time_grants.includes(:parent_profile).order(created_at: :desc).limit(100)
-    @events = @device.device_events.where.not(kind: DeviceEvent::AGENT_DIAGNOSTIC_KIND).order(occurred_at: :desc).limit(100)
-    @diagnostics = @device.device_events.agent_diagnostics.order(occurred_at: :desc, id: :desc).limit(DeviceEvent::AGENT_DIAGNOSTIC_RETENTION)
+    grants = @device.time_grants.includes(:parent_profile).order(created_at: :desc, id: :desc)
+    events = @device.device_events.where.not(kind: DeviceEvent::AGENT_DIAGNOSTIC_KIND).order(occurred_at: :desc, id: :desc)
+    diagnostics = @device.device_events.agent_diagnostics.order(occurred_at: :desc, id: :desc)
+    @grant_count = grants.count
+    @event_count = events.count
+    @diagnostic_count = diagnostics.count
+    @grants = grants.limit(HISTORY_PREVIEW_SIZE)
+    @events = events.limit(HISTORY_PREVIEW_SIZE)
+    @diagnostics = diagnostics.limit(HISTORY_PREVIEW_SIZE)
   end
 
   def destroy

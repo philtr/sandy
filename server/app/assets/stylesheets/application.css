@@ -176,7 +176,9 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
 .setting-warning { padding: .8rem; border: 1px solid var(--danger-border); border-radius: .8rem; background: var(--danger-soft); color: var(--danger) !important; }
 .content-grid .history, .content-grid .family-tools { margin-top: 0; }
 .panel-heading { margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.panel-actions { display: flex; align-items: center; gap: .75rem; }
 .panel-kicker { color: var(--faint); font-size: .8rem; font-weight: 750; }
+.history-link { min-height: 44px; display: inline-flex; align-items: center; color: var(--secondary); font-size: .85rem; font-weight: 850; text-underline-offset: 3px; }
 .activity-list { display: grid; }
 .activity-item { position: relative; margin: 0; padding: .8rem 0 .8rem 1.35rem; border-bottom: 1px solid var(--border); color: var(--muted); }
 .activity-item:last-child { border-bottom: 0; }
@@ -202,6 +204,13 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
 .record-list p { margin: 0; padding: .75rem 0; border-bottom: 1px solid var(--border); color: var(--muted); }
 .record-list p:last-child { border-bottom: 0; }
 .record-list strong { color: var(--ink); }
+.history-page { margin-top: 0; }
+.diagnostics.history-page { margin-top: 0; }
+.history-page-heading { margin-bottom: 1.25rem; display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+.history-page-heading h1 { font-size: clamp(2rem, 6vw, 3.4rem); }
+.pagination { margin-top: 1.5rem; padding-top: 1.25rem; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; border-top: 1px solid var(--border); }
+.pagination > span:last-child { justify-self: end; }
+.pagination-status { color: var(--muted); font-size: .9rem; font-weight: 800; }
 .diagnostics { margin-top: 1.25rem; }
 .diagnostics-toolbar { margin: 1rem 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .diagnostics-toolbar p, .diagnostics-empty { margin: 0; color: var(--muted); }
@@ -237,6 +246,9 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
   .settings-device form, .settings-device button { width: 100%; }
   .diagnostics-toolbar { align-items: stretch; flex-direction: column; }
   .diagnostics-toolbar button { width: 100%; }
+  .history-page-heading { align-items: flex-start; flex-direction: column; }
+  .pagination { grid-template-columns: 1fr 1fr; }
+  .pagination-status { grid-column: 1 / -1; grid-row: 1; justify-self: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

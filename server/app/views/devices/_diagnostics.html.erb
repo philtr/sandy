@@ -1,0 +1,24 @@
+<% if diagnostics.empty? %>
+  <p class="diagnostics-empty">No agent diagnostics reported yet.</p>
+<% else %>
+  <div class="diagnostic-list">
+    <% diagnostics.each do |diagnostic| %>
+      <% details = diagnostic.details.stringify_keys %>
+      <article class="diagnostic-entry" data-severity="<%= details["severity"] %>">
+        <div class="diagnostic-heading">
+          <span class="diagnostic-severity"><%= details["severity"] %></span>
+          <time datetime="<%= diagnostic.occurred_at.iso8601 %>"><%= l(diagnostic.occurred_at, format: :short) %></time>
+        </div>
+        <p><strong><%= details["component"] %> · <%= details["code"] %></strong></p>
+        <p><%= details["message"] %></p>
+        <% if details["context"].present? || details["exception"].present? %>
+          <code><%= { context: details["context"], exception: details["exception"] }.compact.to_json %></code>
+        <% end %>
+      </article>
+    <% end %>
+  </div>
+  <details class="diagnostic-export">
+    <summary>Plain-text diagnostic log</summary>
+    <pre data-clipboard-target="source"><%= diagnostics.map(&:diagnostic_line).join("\n") %></pre>
+  </details>
+<% end %>

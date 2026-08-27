@@ -1,6 +1,14 @@
 class TimeGrantsController < ApplicationController
+  PAGE_SIZE = 100
+
   before_action :require_authentication
-  before_action :require_parent_profile
+  before_action :require_parent_profile, only: :create
+
+  def index
+    @device = current_family.devices.find(params[:device_id])
+    grants = @device.time_grants.includes(:parent_profile).order(created_at: :desc, id: :desc)
+    @grants, @page, @total_pages, @total_count = paginate(grants, per_page: PAGE_SIZE)
+  end
 
   def create
     device = current_family.devices.not_revoked.find(params[:device_id])

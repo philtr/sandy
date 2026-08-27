@@ -8,7 +8,9 @@ Rails.application.routes.draw do
   resource :enrollment_code, only: [ :show, :update ]
   resources :devices, only: [ :show, :destroy ] do
     patch :archive, on: :member
-    resources :time_grants, only: :create
+    resources :time_grants, only: [ :index, :create ]
+    resources :events, only: :index, controller: "device_events"
+    resources :diagnostics, only: :index, controller: "device_diagnostics"
     resource :screen_time_revocation, only: :create
     resource :launcher_edit_unlock, only: [ :create, :destroy ]
   end
