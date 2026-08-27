@@ -32,9 +32,12 @@ jobs:
         shell: pwsh
         run: |
           $cueAssets = @(
-            "artifacts/agent/Resources/Audio/fifteen-minutes.wav",
-            "artifacts/agent/Resources/Audio/five-minutes.wav",
-            "artifacts/agent/Resources/Audio/one-minute.wav"
+            "artifacts/agent/Resources/Audio/blondie-fifteen-minutes.wav",
+            "artifacts/agent/Resources/Audio/blondie-five-minutes.wav",
+            "artifacts/agent/Resources/Audio/blondie-one-minute.wav",
+            "artifacts/agent/Resources/Audio/stella-fifteen-minutes.wav",
+            "artifacts/agent/Resources/Audio/stella-five-minutes.wav",
+            "artifacts/agent/Resources/Audio/stella-one-minute.wav"
           )
           $missing = @($cueAssets | Where-Object { -not (Test-Path -LiteralPath $_) })
           if ($missing.Count -gt 0) { throw "Published agent is missing cue assets: $($missing -join ', ')" }
