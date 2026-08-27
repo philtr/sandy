@@ -15,6 +15,7 @@ public sealed class LauncherDesktopManager : IDisposable
     private readonly ILauncherPinStore _pinStore;
     private readonly TaskbarGuardianLease _guardian;
     private readonly LauncherIconCache _iconCache;
+    private readonly string _agentVersion;
     private readonly TopLevelWindowTracker _windowTracker = new();
     private readonly DispatcherTimer _refreshTimer = new() { Interval = TimeSpan.FromMilliseconds(500) };
     private readonly List<LauncherWindow> _launchers = [];
@@ -39,12 +40,14 @@ public sealed class LauncherDesktopManager : IDisposable
         ILauncherPinStore pinStore,
         IReadOnlyList<LauncherPin> pins,
         TaskbarGuardianLease guardian,
-        LauncherIconCache iconCache)
+        LauncherIconCache iconCache,
+        string agentVersion)
     {
         _pinStore = pinStore;
         _pins = pins;
         _guardian = guardian;
         _iconCache = iconCache;
+        _agentVersion = agentVersion;
         SystemEvents.DisplaySettingsChanged += DisplaySettingsChanged;
         BuildWindows();
         _refreshTimer.Tick += RefreshTimer_Tick;
@@ -153,7 +156,8 @@ public sealed class LauncherDesktopManager : IDisposable
             launcher.Show();
             _launchers.Add(launcher);
 
-            var taskbar = new SandyTaskbarWindow(screen, ShowHome, ShowWindowsDesktop, PrepareForSessionExit);
+            var taskbar = new SandyTaskbarWindow(
+                screen, ShowHome, ShowWindowsDesktop, PrepareForSessionExit, _agentVersion);
             taskbar.ExplorerTaskbarCreated += Taskbar_ExplorerTaskbarCreated;
             taskbar.Ready += Taskbar_Ready;
             taskbar.SetPins(_pins);

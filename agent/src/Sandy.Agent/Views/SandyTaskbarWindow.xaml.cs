@@ -29,6 +29,7 @@ public partial class SandyTaskbarWindow : Window
     private readonly Action _home;
     private readonly Action _showWindowsDesktop;
     private readonly Action _prepareForSessionExit;
+    private readonly string _agentVersion;
     private AppBarRegistration? _appBar;
     private HwndSource? _source;
     private uint _taskbarCreatedMessage;
@@ -41,13 +42,15 @@ public partial class SandyTaskbarWindow : Window
         Forms.Screen screen,
         Action home,
         Action showWindowsDesktop,
-        Action prepareForSessionExit)
+        Action prepareForSessionExit,
+        string agentVersion)
     {
         InitializeComponent();
         _screen = screen;
         _home = home;
         _showWindowsDesktop = showWindowsDesktop;
         _prepareForSessionExit = prepareForSessionExit;
+        _agentVersion = agentVersion;
         SourceInitialized += OnSourceInitialized;
         ContentRendered += OnContentRendered;
     }
@@ -334,6 +337,8 @@ public partial class SandyTaskbarWindow : Window
             Process.Start(new ProcessStartInfo("shutdown.exe", "/r /t 0") { UseShellExecute = false })));
         AddPowerItem(menu, "Shut down", () => RunSessionAction(() =>
             Process.Start(new ProcessStartInfo("shutdown.exe", "/s /t 0") { UseShellExecute = false })));
+        menu.Items.Add(new Separator());
+        menu.Items.Add(new MenuItem { Header = $"Sandy Agent {_agentVersion}", IsEnabled = false });
         menu.IsOpen = true;
     }
 

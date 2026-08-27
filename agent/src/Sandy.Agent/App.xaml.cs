@@ -126,7 +126,7 @@ public partial class App : System.Windows.Application
         var pinStore = new LauncherPinStore(_paths.LauncherPinsFile);
         var pins = await pinStore.LoadAsync(sessionToken);
         var launcher = new LauncherDesktopManager(
-            pinStore, pins, _guardian, new LauncherIconCache(_paths.LauncherIconCacheDirectory));
+            pinStore, pins, _guardian, new LauncherIconCache(_paths.LauncherIconCacheDirectory), AgentVersion());
         _controller = new AgentController(
             timer, synchronization, eventQueue, updateService, options.UpdateCheckInterval, launcher);
         _controller.Start();
