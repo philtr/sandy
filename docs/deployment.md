@@ -44,6 +44,19 @@ Windows releases are published from `agent-v*` Git tags. Set the installed agent
 
 For the launcher/unenrollment migration, publish and allow uptake of the recovery-capable Windows agent before operators begin relying on revoked-token tombstone responses. Old rows whose token digest was already cleared cannot be identified retroactively; those agents use the generic unauthorized, current-join-code recovery flow. Existing installations retain credentials and cached timer state, begin with an empty manual pin grid, and keep app editing locked until a parent grants a lease.
 
+## iOS parent app
+
+Deploy the server image containing the versioned iOS path configuration and
+Hotwire Native page adaptations before distributing the corresponding iOS
+build. On first launch, enter the deployment's `APP_ORIGIN`; the app verifies
+its `/up` endpoint before opening the Rails parent interface.
+
+Internal TestFlight releases are built from `ios-vX.Y.Z` tags. See
+[`ios/README.md`](../ios/README.md) for local development, signing variables and
+secrets, privacy-report validation, and the physical-device acceptance
+checklist. Changing a deployment hostname requires choosing **Change Sandy
+Server** in the app and signing in at the new origin.
+
 ## Operations
 
 - A successful parent sign-in creates a persistent session for 30 days. Signing out, clearing browser/PWA site data, using private browsing, changing the public hostname, or changing `SECRET_KEY_BASE` requires a new sign-in.
