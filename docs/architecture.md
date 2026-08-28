@@ -19,10 +19,11 @@ Architecture decision records capture Sandy's durable choices and their tradeoff
 | [ADR 0011: Device capabilities and explicit revocation](adr/0011-device-capabilities-and-explicit-revocation.md) | Scope device credentials to agent access and distinguish confirmed unenrollment from connection failures. |
 | [ADR 0012: Local launcher state and online edit lease](adr/0012-local-launcher-state-and-online-edit-lease.md) | Keep pins local while using a server-authorized, online edit lease for changes. |
 | [ADR 0013: Single-household tenancy and parent attribution](adr/0013-single-household-tenancy-and-parent-attribution.md) | Model one household with a shared parent account and two attribution profiles. |
+| [ADR 0014: Use Hotwire Native for the iOS parent app](adr/0014-use-hotwire-native-for-ios.md) | Wrap the Rails parent interface in a configurable native iPhone and iPad shell without duplicating domain APIs. |
 
 ## System boundary
 
-Sandy has one authoritative Rails deployment and one or more enrolled Windows agents in a single family. Parent phones use the Rails PWA over HTTPS. Agents initiate HTTPS and WebSocket connections to the same public origin; the managed PC never listens on an internet-facing port.
+Sandy has one authoritative Rails deployment and one or more enrolled Windows agents in a single family. Parent phones use the Rails PWA or Hotwire Native iOS app over HTTPS. The iOS app connects to a parent-configured deployment origin and continues to use the Rails HTML, session, and action endpoints. Agents initiate HTTPS and WebSocket connections to the same public origin; the managed PC never listens on an internet-facing port.
 
 Rails stores durable application, audit, job, cache, and Action Cable data in SQLite. Production is a single-node Rails/Puma deployment using Solid Cable and one persistent Docker volume. See [ADR 0009](adr/0009-single-node-sqlite-and-solid-cable.md).
 
