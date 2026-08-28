@@ -1,0 +1,32 @@
+name: iOS CI
+
+on:
+  pull_request:
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-ci.yml"
+  push:
+    branches: [main, master]
+    paths:
+      - "ios/**"
+      - ".github/workflows/ios-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v6
+      - name: Resolve Swift packages
+        working-directory: ios
+        run: xcodebuild -resolvePackageDependencies -project Sandy.xcodeproj -scheme Sandy
+      - name: Run iOS tests
+        working-directory: ios
+        run: >-
+          xcodebuild test
+          -project Sandy.xcodeproj
+          -scheme Sandy
+          -destination 'platform=iOS Simulator,name=iPhone 16e,OS=latest'
+          CODE_SIGNING_ALLOWED=NO
