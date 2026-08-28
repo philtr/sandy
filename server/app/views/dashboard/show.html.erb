@@ -78,6 +78,20 @@
   <%= link_to "Switch user", parent_profile_path, class: "inline-link-button", data: { turbo_method: :delete } %>
 </div>
 
+<% if hotwire_native_app? %>
+  <section class="panel native-account-tools" aria-labelledby="native-account-title">
+    <div>
+      <p class="eyebrow">Sandy account</p>
+      <h2 id="native-account-title">Account &amp; family</h2>
+      <p>Manage household settings or finish this parent session.</p>
+    </div>
+    <div class="button-row">
+      <%= link_to "Family Settings", settings_path, class: "secondary-button" %>
+      <%= button_to "Sign Out", session_path, method: :delete, class: "secondary-button" %>
+    </div>
+  </section>
+<% end %>
+
 <div class="content-grid">
   <section class="panel history" aria-labelledby="activity-title">
     <div class="panel-heading"><h2 id="activity-title">Recent activity</h2><span class="panel-kicker">Newest first</span></div>

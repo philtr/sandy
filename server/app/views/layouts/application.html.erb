@@ -26,9 +26,10 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
-    <header class="site-header">
+  <body class="<%= "hotwire-native" if hotwire_native_app? %>">
+    <% unless hotwire_native_app? %>
+      <a class="skip-link" href="#main-content">Skip to content</a>
+      <header class="site-header">
       <div class="header-inner">
         <%= link_to root_path, class: "brand", aria: { label: "Sandy home" } do %>
           <span class="brand-mark" aria-hidden="true">S</span>
@@ -44,13 +45,14 @@
           </div>
         <% end %>
       </div>
-    </header>
+      </header>
+    <% end %>
     <main class="page-shell" id="main-content">
       <% flash.each do |type, message| %>
         <div class="flash <%= type %>"><%= message %></div>
       <% end %>
       <%= yield %>
     </main>
-    <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("<%= pwa_service_worker_path %>");</script>
+    <% unless hotwire_native_app? %><script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("<%= pwa_service_worker_path %>");</script><% end %>
   </body>
 </html>

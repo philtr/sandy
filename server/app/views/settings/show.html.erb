@@ -1,10 +1,20 @@
 <% content_for :title, "Settings · Sandy" %>
-<%= link_to "← Dashboard", root_path, class: "back-link" %>
+<% unless hotwire_native_app? %><%= link_to "← Dashboard", root_path, class: "back-link" %><% end %>
 
 <section class="panel narrow" aria-labelledby="settings-title">
   <p class="eyebrow">Family settings</p>
   <h1 id="settings-title">Settings</h1>
   <p class="settings-note">Archive unenrolled PCs to remove them from the family dashboard and its recent activity.</p>
+
+  <% if hotwire_native_app? %>
+    <section class="release-setting native-connection-tools" aria-labelledby="native-connection-title">
+      <div>
+        <div class="panel-heading"><h2 id="native-connection-title">App connection</h2></div>
+        <p>Connect this app to a different Sandy household server.</p>
+        <%= link_to "Change Sandy Server", settings_path(native_screen: "server"), class: "secondary-button" %>
+      </div>
+    </section>
+  <% end %>
 
   <section class="release-setting" aria-labelledby="voice-theme-title">
     <div>

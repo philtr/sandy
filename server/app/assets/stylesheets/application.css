@@ -63,6 +63,7 @@ button, [type="submit"], .button { touch-action: manipulation; }
 .header-action:hover { border-color: var(--primary-border); background: rgba(32, 41, 54, .92); color: #ffffff; }
 .visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
 .page-shell { position: relative; z-index: 1; width: min(1120px, 92vw); margin: clamp(1.5rem, 4vw, 3.5rem) auto 5rem; }
+.hotwire-native .page-shell { width: min(1120px, calc(100% - max(1.25rem, env(safe-area-inset-left)) - max(1.25rem, env(safe-area-inset-right)))); margin-top: 1rem; padding-top: env(safe-area-inset-top); }
 
 .panel, .device-card { position: relative; border: 1px solid var(--border); border-radius: 1.25rem; background: var(--surface); box-shadow: var(--shadow-card); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
 .panel { padding: clamp(1.25rem, 3vw, 2rem); }
@@ -113,6 +114,10 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
 .profile-status { margin: .85rem .25rem 0; display: flex; min-height: 44px; align-items: center; justify-content: flex-end; gap: .4rem; color: var(--muted); font-size: .9rem; }
 .profile-status strong { color: var(--ink); }
 .profile-status .inline-link-button { display: inline-flex; align-items: center; }
+.native-account-tools { margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.native-account-tools p:not(.eyebrow) { margin: .35rem 0 0; color: var(--muted); }
+.native-account-tools .button-row { flex: 0 0 auto; margin-top: 0; }
+.native-account-tools .button-row form { display: inline-flex; }
 .profile-gate { position: fixed; z-index: 100; inset: 0; min-height: 100dvh; padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); display: grid; place-items: center; background: var(--overlay); backdrop-filter: blur(14px); }
 .profile-gate-card { width: min(560px, 100%); text-align: center; box-shadow: 0 30px 90px -30px rgba(2, 6, 23, .85); }
 .profile-gate-card h1 { font-size: clamp(2rem, 7vw, 3.2rem); }
@@ -249,6 +254,8 @@ button, .primary-button, .secondary-button, .danger-button, .grant-button, .back
   .history-page-heading { align-items: flex-start; flex-direction: column; }
   .pagination { grid-template-columns: 1fr 1fr; }
   .pagination-status { grid-column: 1 / -1; grid-row: 1; justify-self: center; }
+  .native-account-tools { align-items: stretch; flex-direction: column; }
+  .native-account-tools .button-row, .native-account-tools .button-row form, .native-account-tools .button-row a, .native-account-tools .button-row button { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

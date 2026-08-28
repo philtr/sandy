@@ -1,5 +1,5 @@
 <% content_for :title, "Events · #{@device.name} · Sandy" %>
-<%= link_to "← #{@device.name}", device_path(@device), class: "back-link" %>
+<% unless hotwire_native_app? %><%= link_to "← #{@device.name}", device_path(@device), class: "back-link" %><% end %>
 <section class="panel history-page" aria-labelledby="history-title">
   <div class="history-page-heading">
     <div>
