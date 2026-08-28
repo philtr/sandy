@@ -1,0 +1,35 @@
+{
+  "settings": {},
+  "rules": [
+    {
+      "patterns": [".*"],
+      "properties": {
+        "context": "default",
+        "pull_to_refresh_enabled": true
+      }
+    },
+    {
+      "patterns": ["^/$"],
+      "properties": {
+        "context": "default",
+        "presentation": "replace_root"
+      }
+    },
+    {
+      "patterns": ["^/session/new$"],
+      "properties": {
+        "context": "default",
+        "presentation": "replace_root"
+      }
+    },
+    {
+      "patterns": [".*[?&]native_screen=server(?:&.*)?$"],
+      "properties": {
+        "context": "default",
+        "presentation": "push",
+        "view_controller": "server_configuration",
+        "pull_to_refresh_enabled": false
+      }
+    }
+  ]
+}
