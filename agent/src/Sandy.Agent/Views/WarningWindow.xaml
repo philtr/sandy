@@ -16,11 +16,7 @@
         <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
       <StackPanel Orientation="Horizontal">
-        <Border Width="26" Height="26" CornerRadius="8" Background="#173A6A"
-                BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
-          <TextBlock Text="S" FontSize="15" FontWeight="Black" Foreground="{StaticResource AccentBrush}"
-                     HorizontalAlignment="Center" VerticalAlignment="Center" />
-        </Border>
+        <Image Width="26" Height="26" Source="{StaticResource SandyLogoImage}" />
         <TextBlock Margin="9,0,0,0" Text="Sandy · Screen time" FontSize="14" FontWeight="SemiBold"
                    Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
       </StackPanel>

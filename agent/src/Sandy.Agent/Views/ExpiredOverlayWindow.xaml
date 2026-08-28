@@ -6,11 +6,7 @@
   <Grid Background="{StaticResource PageGradientBrush}">
     <StackPanel Margin="28,24,0,0" Orientation="Horizontal"
                 HorizontalAlignment="Left" VerticalAlignment="Top">
-      <Border Width="32" Height="32" CornerRadius="9" Background="#173A6A"
-              BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
-        <TextBlock Text="S" FontSize="19" FontWeight="Black" HorizontalAlignment="Center"
-                   VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
-      </Border>
+      <Image Width="32" Height="32" Source="{StaticResource SandyLogoImage}" />
       <TextBlock Margin="10,0,0,0" Text="Sandy" FontSize="22" FontWeight="SemiBold"
                  VerticalAlignment="Center" />
     </StackPanel>
@@ -19,11 +15,8 @@
             BorderBrush="#805A9FF5" BorderThickness="1" CornerRadius="24"
             HorizontalAlignment="Center" VerticalAlignment="Center">
       <StackPanel>
-        <Border Width="64" Height="64" CornerRadius="20" Background="#2A67A8FF"
-                BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" HorizontalAlignment="Center">
-          <TextBlock Text="S" FontSize="36" FontWeight="Black" HorizontalAlignment="Center"
-                     VerticalAlignment="Center" Foreground="{StaticResource AccentBrush}" />
-        </Border>
+        <Image Width="64" Height="64" HorizontalAlignment="Center"
+               Source="{StaticResource SandyLogoImage}" />
         <TextBlock Margin="0,20,0,0" FontSize="66" Text="Time’s up" FontWeight="Bold"
                    TextAlignment="Center" />
         <TextBlock Margin="0,16,0,0" FontSize="24" Foreground="{StaticResource MutedBrush}"

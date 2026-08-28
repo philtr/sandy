@@ -1,10 +1,9 @@
-const CACHE = "sandy-shell-v3"
+const CACHE = "sandy-shell-v4"
 const APP_ASSETS = [
-  "/apple-touch-icon.png",
-  "/favicon-32.png",
-  "/icon.svg",
-  "/icon-192.png",
-  "/icon-512.png"
+  "/apple-touch-icon.png?v=2",
+  "/favicon-32.png?v=2",
+  "/icon-192.png?v=2",
+  "/icon-512.png?v=2"
 ]
 
 self.addEventListener("install", event => {
