@@ -1,5 +1,5 @@
 <% content_for :title, "#{@device.name} · Sandy" %>
-<%= link_to "← Dashboard", root_path, class: "back-link" %>
+<% unless hotwire_native_app? %><%= link_to "← Dashboard", root_path, class: "back-link" %><% end %>
 <section class="panel detail-hero" aria-labelledby="device-title">
   <p class="eyebrow">PC details</p>
   <h1 id="device-title"><%= @device.name %></h1>
