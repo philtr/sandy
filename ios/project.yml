@@ -1,0 +1,69 @@
+name: Sandy
+options:
+  createIntermediateGroups: true
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "26.0"
+packages:
+  HotwireNative:
+    url: https://github.com/hotwired/hotwire-native-ios
+    exactVersion: 1.3.0
+settings:
+  base:
+    CURRENT_PROJECT_VERSION: 1
+    IPHONEOS_DEPLOYMENT_TARGET: 18.0
+    MARKETING_VERSION: 1.0
+    SWIFT_VERSION: 6.0
+targets:
+  Sandy:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sandy
+        excludes:
+          - Info.plist
+    dependencies:
+      - package: HotwireNative
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: false
+        INFOPLIST_FILE: Sandy/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: net.rdln.sandy
+        PRODUCT_NAME: Sandy
+        TARGETED_DEVICE_FAMILY: "1,2"
+  SandyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SandyTests
+    dependencies:
+      - target: Sandy
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: net.rdln.sandy.tests
+  SandyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: SandyUITests
+    dependencies:
+      - target: Sandy
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: true
+        PRODUCT_BUNDLE_IDENTIFIER: net.rdln.sandy.uitests
+schemes:
+  Sandy:
+    build:
+      targets:
+        Sandy: all
+        SandyTests: [test]
+        SandyUITests: [test]
+    test:
+      gatherCoverageData: true
+      targets:
+        - SandyTests
+        - SandyUITests
