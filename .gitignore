@@ -28,3 +28,6 @@ artifacts/
 Releases/
 *.user
 *.suo
+
+# Python script cache
+__pycache__/
