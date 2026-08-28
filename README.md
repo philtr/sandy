@@ -10,8 +10,9 @@ This is a visibility and consistency tool, not hardened parental-control softwar
 
 ## Repository
 
-- [`server/`](server/) — Rails 8.1 control plane, parent PWA, JSON API, and Action Cable endpoint.
+- [`server/`](server/) — Rails 8.1 control plane, parent PWA/Hotwire interface, JSON API, and Action Cable endpoint.
 - [`agent/`](agent/) — .NET 10 WPF launcher, taskbar, enforcement UI, and platform-independent timer/synchronization core.
+- [`ios/`](ios/) — Hotwire Native iPhone and iPad parent app.
 - [`deploy/`](deploy/) — homelab Docker Compose deployment.
 - [Architecture and ADR index](docs/architecture.md#architecture-decision-records) — boundaries, domain model, and recorded design decisions.
 - [`docs/protocol.md`](docs/protocol.md) — device HTTP/WebSocket synchronization contract.
