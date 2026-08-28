@@ -28,13 +28,19 @@ jobs:
       - name: Resolve Swift packages
         working-directory: ios
         run: xcodebuild -resolvePackageDependencies -project "$IOS_PROJECT" -scheme "$IOS_SCHEME"
+      - name: Select iPhone simulator
+        working-directory: ios
+        shell: bash
+        run: |
+          simulator_udid="$(python3 ci/select_simulator.py --preferred-name 'iPhone 16e')"
+          echo "IOS_SIMULATOR_UDID=$simulator_udid" >> "$GITHUB_ENV"
       - name: Run iOS tests
         working-directory: ios
         run: >-
           xcodebuild test
           -project "$IOS_PROJECT"
           -scheme "$IOS_SCHEME"
-          -destination 'platform=iOS Simulator,name=iPhone 16e,OS=latest'
+          -destination "platform=iOS Simulator,id=$IOS_SIMULATOR_UDID"
           CODE_SIGNING_ALLOWED=NO
 
   upload:
