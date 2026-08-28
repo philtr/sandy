@@ -18,9 +18,7 @@
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-          <Border Width="32" Height="32" CornerRadius="9" Background="#173A6A" BorderBrush="#67A8FF" BorderThickness="1">
-            <TextBlock Text="S" FontSize="19" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#67A8FF" />
-          </Border>
+          <Image Width="32" Height="32" Source="{StaticResource SandyLogoImage}" />
           <TextBlock Margin="10,0,0,0" Text="Sandy" FontSize="22" FontWeight="SemiBold" VerticalAlignment="Center" />
         </StackPanel>
         <TextBlock x:Name="ClockText" Grid.Column="1" Text="8:42 PM" FontSize="20"

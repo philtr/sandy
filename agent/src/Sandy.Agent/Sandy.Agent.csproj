@@ -23,6 +23,7 @@
     <PackageReference Include="Velopack" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources/Sandy.png" />
     <Content Include="Resources/Audio/*.wav" CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

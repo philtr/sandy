@@ -15,9 +15,7 @@
 
       <Button x:Name="HomeButton" Style="{StaticResource TaskbarHomeButtonStyle}"
               Width="42" Height="40" ToolTip="Sandy Home" Click="Home_Click">
-        <Viewbox Width="21" Height="21">
-          <Path Fill="#67A8FF" Data="M 2,10 L 12,2 L 22,10 L 20,10 L 20,22 L 14,22 L 14,15 L 10,15 L 10,22 L 4,22 L 4,10 Z" />
-        </Viewbox>
+        <Image Width="24" Height="24" Source="{StaticResource SandyLogoImage}" />
       </Button>
       <StackPanel x:Name="PinnedPanel" Grid.Column="1" Margin="8,0,0,0" Orientation="Horizontal" />
       <Border Grid.Column="2" Width="1" Margin="10,6" Background="#6671808F" />
