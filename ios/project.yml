@@ -33,6 +33,13 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: net.rdln.sandy
         PRODUCT_NAME: Sandy
         TARGETED_DEVICE_FAMILY: "1,2"
+      configs:
+        Release:
+          CODE_SIGN_IDENTITY: Apple Distribution
+          CODE_SIGN_STYLE: Manual
+          DEVELOPMENT_TEAM: $(SANDY_DEVELOPMENT_TEAM)
+          OTHER_CODE_SIGN_FLAGS: $(inherited) $(SANDY_OTHER_CODE_SIGN_FLAGS)
+          PROVISIONING_PROFILE_SPECIFIER: $(SANDY_PROVISIONING_PROFILE_SPECIFIER)
   SandyTests:
     type: bundle.unit-test
     platform: iOS

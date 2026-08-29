@@ -217,9 +217,6 @@
 					201C3C22D5CA1383D1EFD2F3 = {
 						TestTargetID = 725E015AB9A31F1BA8EAB525;
 					};
-					725E015AB9A31F1BA8EAB525 = {
-						ProvisioningStyle = Automatic;
-					};
 				};
 			};
 			buildConfigurationList = 19BA40C9D089C1C5CEC0E556 /* Build configuration list for PBXProject "Sandy" */;
@@ -463,16 +460,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				DEVELOPMENT_TEAM = "$(SANDY_DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sandy/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				OTHER_CODE_SIGN_FLAGS = "$(inherited) $(SANDY_OTHER_CODE_SIGN_FLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = net.rdln.sandy;
 				PRODUCT_NAME = Sandy;
+				PROVISIONING_PROFILE_SPECIFIER = "$(SANDY_PROVISIONING_PROFILE_SPECIFIER)";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
