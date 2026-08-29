@@ -109,7 +109,11 @@ jobs:
             echo "::error::IOS_DISTRIBUTION_CERTIFICATE_BASE64 is not valid Base64."
             exit 1
           fi
-          if ! openssl pkcs12 -in "$certificate_path" -passin env:CERTIFICATE_PASSWORD -noout >/dev/null 2>&1; then
+          pkcs12_options=()
+          if openssl pkcs12 -help 2>&1 | grep -q -- '-legacy'; then
+            pkcs12_options+=(-legacy)
+          fi
+          if ! openssl pkcs12 "${pkcs12_options[@]}" -in "$certificate_path" -passin env:CERTIFICATE_PASSWORD -noout >/dev/null 2>&1; then
             echo "::error::The distribution certificate is not a valid PKCS#12 file for IOS_DISTRIBUTION_CERTIFICATE_PASSWORD. Export the Apple Distribution certificate and private key as a password-protected .p12, then Base64-encode that binary file."
             exit 1
           fi

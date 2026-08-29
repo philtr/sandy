@@ -62,9 +62,13 @@ sufficient. Verify the password before creating the GitHub secret:
 
 ```sh
 CERTIFICATE_PASSWORD='the export password' \
-  openssl pkcs12 -in SandyDistribution.p12 \
+  openssl pkcs12 -legacy -in SandyDistribution.p12 \
   -passin env:CERTIFICATE_PASSWORD -noout
 ```
+
+Keychain Access exports may use RC2 encryption. OpenSSL 3 requires `-legacy`
+to read those files; the release workflow detects and enables that option when
+the installed OpenSSL supports it.
 
 Encode the binary signing files without line breaks, then save the output in
 the matching `testflight` environment secret:
