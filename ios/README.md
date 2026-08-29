@@ -48,12 +48,36 @@ Secrets:
 - `APP_STORE_CONNECT_ISSUER_ID`
 - `APP_STORE_CONNECT_API_KEY_BASE64` — base64-encoded `.p8` private key
 - `IOS_DISTRIBUTION_CERTIFICATE_BASE64` — base64-encoded distribution `.p12`
-- `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD`
+- `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` — the non-empty password assigned
+  while exporting the `.p12`
 - `IOS_PROVISIONING_PROFILE_BASE64` — base64-encoded App Store profile
 
 The App Store Connect key needs permission to upload builds. The certificate
 and provisioning profile must belong to `APPLE_TEAM_ID`, and the profile name
 must exactly match `IOS_PROVISIONING_PROFILE_NAME`.
+
+Export the Apple Distribution certificate **with its private key** from
+Keychain Access as a password-protected `.p12`; a downloaded `.cer` file is not
+sufficient. Verify the password before creating the GitHub secret:
+
+```sh
+CERTIFICATE_PASSWORD='the export password' \
+  openssl pkcs12 -in SandyDistribution.p12 \
+  -passin env:CERTIFICATE_PASSWORD -noout
+```
+
+Encode the binary signing files without line breaks, then save the output in
+the matching `testflight` environment secret:
+
+```sh
+base64 < SandyDistribution.p12 | tr -d '\n' | pbcopy
+base64 < Sandy_AppStore.mobileprovision | tr -d '\n' | pbcopy
+base64 < AuthKey_KEYID.p8 | tr -d '\n' | pbcopy
+```
+
+The release workflow validates all required variables and secrets before
+creating a temporary keychain. If certificate validation fails, re-export the
+certificate/private-key pair and update both certificate secrets together.
 
 Push a stable semantic-version tag to test and upload an internal-only build:
 
