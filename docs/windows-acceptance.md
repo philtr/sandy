@@ -36,6 +36,7 @@ Run this checklist on actual x64 Windows 11 hardware or a VM before a stable rel
 
 - Verify normal maximized windows respect each Sandy AppBar's reserved work area.
 - Launch desktop and packaged apps; verify pinned/run indicators, MRU activation, active-click minimize, and the multiple-instance chooser.
+- Right-click single running-window buttons and verify state-appropriate minimize, maximize/restore, and close actions. For grouped buttons, verify minimize all, restore all, and close all windows.
 - Move representative windows across one to three monitors and confirm their running button follows the representative window.
 - Verify Home button, either Windows-key tap, and `Ctrl`+`Alt`+`S` all restore/focus the existing launcher without duplicate windows or flicker.
 - Verify Windows-key shell chords do not open Start, Search, Run, Settings, Explorer, or the Power User menu; a chord must not invoke Home on key-up.

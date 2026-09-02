@@ -67,7 +67,7 @@ public partial class SandyTaskbarWindow : Window
     {
         var monitoredWindows = windows.Where(window => window.MonitorName == MonitorName).ToArray();
         var signature = string.Join("|", monitoredWindows.Select(window =>
-            $"{window.Identity}:{window.Handle}:{window.Title}:{window.Active}:{window.Minimized}"));
+            $"{window.Identity}:{window.Handle}:{window.Title}:{window.Active}:{window.Minimized}:{window.Maximized}"));
         if (signature == _runningWindowsSignature)
             return;
 
@@ -149,7 +149,54 @@ public partial class SandyTaskbarWindow : Window
             }
             OpenWindowMenu(button, group);
         };
+        button.ContextMenu = CreateWindowContextMenu(group);
         return button;
+    }
+
+    private static ContextMenu CreateWindowContextMenu(IReadOnlyList<TrackedWindow> windows)
+    {
+        var commands = windows.Count == 1
+            ? TaskbarWindowMenu.ForSingle(GetWindowState(windows[0]))
+            : TaskbarWindowMenu.ForGroup();
+        var menu = new ContextMenu();
+        foreach (var command in commands)
+        {
+            if (command.Kind == TaskbarWindowCommandKind.Close)
+                menu.Items.Add(new Separator());
+            var item = new MenuItem { Header = command.Label };
+            item.Click += (_, _) => ApplyWindowCommand(windows, command.Kind);
+            menu.Items.Add(item);
+        }
+        return menu;
+    }
+
+    private static TaskbarWindowState GetWindowState(TrackedWindow window) =>
+        window.Minimized
+            ? TaskbarWindowState.Minimized
+            : window.Maximized ? TaskbarWindowState.Maximized : TaskbarWindowState.Normal;
+
+    private static void ApplyWindowCommand(
+        IReadOnlyList<TrackedWindow> windows,
+        TaskbarWindowCommandKind command)
+    {
+        foreach (var window in windows)
+        {
+            switch (command)
+            {
+                case TaskbarWindowCommandKind.Minimize:
+                    TopLevelWindowTracker.Minimize(window.Handle);
+                    break;
+                case TaskbarWindowCommandKind.Maximize:
+                    TopLevelWindowTracker.Maximize(window.Handle);
+                    break;
+                case TaskbarWindowCommandKind.Restore:
+                    TopLevelWindowTracker.Restore(window.Handle);
+                    break;
+                case TaskbarWindowCommandKind.Close:
+                    TopLevelWindowTracker.Close(window.Handle);
+                    break;
+            }
+        }
     }
 
     private Button CreateOverflowButton(IReadOnlyList<TrackedWindow> windows, double width)

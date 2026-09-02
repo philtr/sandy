@@ -11,12 +11,17 @@ public sealed record TrackedWindow(
     string Identity,
     uint ProcessId,
     bool Minimized,
+    bool Maximized,
     bool Active,
     string MonitorName);
 
 public sealed class TopLevelWindowTracker
 {
     private const int GwlExStyle = -20;
+    private const int SwMaximize = 3;
+    private const int SwMinimize = 6;
+    private const int SwRestore = 9;
+    private const uint WmClose = 0x0010;
     private const long WsExToolWindow = 0x00000080L;
     private const long WsExNoActivate = 0x08000000L;
     private const uint ProcessQueryLimitedInformation = 0x1000;
@@ -66,7 +71,8 @@ public sealed class TopLevelWindowTracker
                 title = Path.GetFileNameWithoutExtension(identity);
             var screen = System.Windows.Forms.Screen.FromHandle(handle);
             windows.Add(new TrackedWindow(
-                handle, title, identity, processId, IsIconic(handle), GetForegroundWindow() == handle, screen.DeviceName));
+                handle, title, identity, processId, IsIconic(handle), IsZoomed(handle),
+                GetForegroundWindow() == handle, screen.DeviceName));
             return true;
         }, nint.Zero);
         return windows;
@@ -76,11 +82,11 @@ public sealed class TopLevelWindowTracker
     {
         if (GetForegroundWindow() == window.Handle)
         {
-            ShowWindowAsync(window.Handle, 6);
+            Minimize(window.Handle);
             return;
         }
         if (window.Minimized)
-            ShowWindowAsync(window.Handle, 9);
+            Restore(window.Handle);
         SetForegroundWindow(window.Handle);
     }
 
@@ -119,7 +125,25 @@ public sealed class TopLevelWindowTracker
     public static void Minimize(nint handle)
     {
         if (handle != nint.Zero)
-            ShowWindowAsync(handle, 6);
+            ShowWindowAsync(handle, SwMinimize);
+    }
+
+    public static void Maximize(nint handle)
+    {
+        if (handle != nint.Zero)
+            ShowWindowAsync(handle, SwMaximize);
+    }
+
+    public static void Restore(nint handle)
+    {
+        if (handle != nint.Zero)
+            ShowWindowAsync(handle, SwRestore);
+    }
+
+    public static void Close(nint handle)
+    {
+        if (handle != nint.Zero)
+            PostMessage(handle, WmClose, nint.Zero, nint.Zero);
     }
 
     public static (nint OwnerHandle, System.Windows.Forms.Screen Screen) ForegroundNoticeTarget()
@@ -219,6 +243,8 @@ public sealed class TopLevelWindowTracker
     [DllImport("user32.dll")]
     private static extern bool IsIconic(nint handle);
     [DllImport("user32.dll")]
+    private static extern bool IsZoomed(nint handle);
+    [DllImport("user32.dll")]
     private static extern nint GetShellWindow();
     [DllImport("user32.dll")]
     private static extern nint GetForegroundWindow();
@@ -226,6 +252,8 @@ public sealed class TopLevelWindowTracker
     private static extern bool SetForegroundWindow(nint handle);
     [DllImport("user32.dll")]
     private static extern bool ShowWindowAsync(nint handle, int command);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern bool PostMessage(nint handle, uint message, nint wParam, nint lParam);
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(nint handle, out Rect rect);
     [DllImport("user32.dll")]
