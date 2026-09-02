@@ -7,8 +7,6 @@
     <Grid Margin="10,3">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
@@ -17,13 +15,11 @@
               Width="42" Height="40" ToolTip="Sandy Home" Click="Home_Click">
         <Image Width="24" Height="24" Source="{StaticResource SandyLogoImage}" />
       </Button>
-      <StackPanel x:Name="PinnedPanel" Grid.Column="1" Margin="8,0,0,0" Orientation="Horizontal" />
-      <Border Grid.Column="2" Width="1" Margin="10,6" Background="#6671808F" />
-      <Grid Grid.Column="3" ClipToBounds="True">
+      <Grid x:Name="RunningHost" Grid.Column="1" Margin="5,0,0,0" ClipToBounds="True">
         <StackPanel x:Name="RunningPanel" Orientation="Horizontal" HorizontalAlignment="Left" />
       </Grid>
 
-      <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
         <Border x:Name="NetworkStatusIcon" Width="34" Height="34" ToolTip="Checking network status">
           <Viewbox Width="18" Height="18">
             <Canvas Width="24" Height="24">

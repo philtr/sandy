@@ -160,7 +160,6 @@ public sealed class LauncherDesktopManager : IDisposable
                 screen, ShowHome, ShowWindowsDesktop, PrepareForSessionExit, _agentVersion);
             taskbar.ExplorerTaskbarCreated += Taskbar_ExplorerTaskbarCreated;
             taskbar.Ready += Taskbar_Ready;
-            taskbar.SetPins(_pins);
             taskbar.Show();
             _taskbars.Add(taskbar);
         }
@@ -210,7 +209,6 @@ public sealed class LauncherDesktopManager : IDisposable
     {
         _pins = pins;
         foreach (var launcher in _launchers) launcher.SetPins(pins);
-        foreach (var taskbar in _taskbars) taskbar.SetPins(pins);
     }
 
     private void RefreshTimer_Tick(object? sender, EventArgs e)
