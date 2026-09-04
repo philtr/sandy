@@ -11,12 +11,13 @@ public sealed class LauncherIconCache(string directory)
     {
         if (pin.Kind is LauncherPinKind.Uri or LauncherPinKind.PackagedApp)
             return pin;
-        if (!string.IsNullOrWhiteSpace(pin.IconPath)
+        if (pin.Kind != LauncherPinKind.Shortcut
+            && !string.IsNullOrWhiteSpace(pin.IconPath)
             && Path.GetDirectoryName(pin.IconPath)?.Equals(directory, StringComparison.OrdinalIgnoreCase) == true
             && File.Exists(pin.IconPath))
             return pin;
 
-        var source = pin.IconPath ?? pin.Target;
+        var source = ShortcutIconSource.Resolve(pin) ?? pin.IconPath ?? pin.Target;
         if (!File.Exists(source))
             return pin;
         try

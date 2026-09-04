@@ -7,8 +7,29 @@
     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <TextBlock FontSize="28" FontWeight="SemiBold" Text="Choose from Start" />
     <TextBox x:Name="FilterText" Grid.Row="1" Margin="0,14" Padding="10" TextChanged="FilterText_Changed" />
-    <ListBox x:Name="ApplicationsList" Grid.Row="2" DisplayMemberPath="Name" Background="#99161D27" Foreground="White"
-             MouseDoubleClick="ApplicationsList_MouseDoubleClick" />
+    <ListBox x:Name="ApplicationsList" Grid.Row="2" Background="#99161D27" Foreground="White"
+             MouseDoubleClick="ApplicationsList_MouseDoubleClick">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <StackPanel Margin="2">
+            <TextBlock Text="{Binding Name}" />
+            <TextBlock Text="{Binding Disambiguation}" FontSize="11" Foreground="#AAB7C8"
+                       TextTrimming="CharacterEllipsis">
+              <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                  <Setter Property="Visibility" Value="Visible" />
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding Disambiguation}" Value="{x:Null}">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </TextBlock.Style>
+            </TextBlock>
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
     <StackPanel Grid.Row="3" Margin="0,14,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
       <Button Margin="0,0,10,0" Padding="18,9" Content="Cancel" Click="Cancel_Click" />
       <Button Padding="18,9" Content="Pin app" IsDefault="True" Click="Select_Click" />

@@ -44,7 +44,7 @@
         </StackPanel>
         <TextBlock x:Name="TaskbarClockText" Width="48" Margin="2,0,6,0" Text="8:42" FontSize="14"
                    TextAlignment="Center" VerticalAlignment="Center" />
-        <Button Style="{StaticResource TaskbarButtonStyle}" Width="34" Height="34" ToolTip="Account" Click="Account_Click">
+        <Button Style="{StaticResource TaskbarButtonStyle}" Width="34" Height="34" ToolTip="Settings" Click="Account_Click">
           <Viewbox Width="17" Height="17">
             <Canvas Width="24" Height="24">
               <Ellipse Canvas.Left="8" Canvas.Top="3" Width="8" Height="8" Fill="#DCE5F2" />

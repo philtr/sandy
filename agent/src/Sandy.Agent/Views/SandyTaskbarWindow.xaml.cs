@@ -26,6 +26,7 @@ public partial class SandyTaskbarWindow : Window
     private const double RunningButtonSpacing = 5;
     private readonly Forms.Screen _screen;
     private readonly Action _home;
+    private readonly Action _showEditor;
     private readonly Action _showWindowsDesktop;
     private readonly Action _prepareForSessionExit;
     private readonly string _agentVersion;
@@ -42,6 +43,7 @@ public partial class SandyTaskbarWindow : Window
     public SandyTaskbarWindow(
         Forms.Screen screen,
         Action home,
+        Action showEditor,
         Action showWindowsDesktop,
         Action prepareForSessionExit,
         string agentVersion)
@@ -49,6 +51,7 @@ public partial class SandyTaskbarWindow : Window
         InitializeComponent();
         _screen = screen;
         _home = home;
+        _showEditor = showEditor;
         _showWindowsDesktop = showWindowsDesktop;
         _prepareForSessionExit = prepareForSessionExit;
         _agentVersion = agentVersion;
@@ -366,6 +369,9 @@ public partial class SandyTaskbarWindow : Window
     {
         var menu = new ContextMenu();
         menu.Items.Add(new MenuItem { Header = Environment.UserName, IsEnabled = false });
+        var editApps = new MenuItem { Header = "Edit apps", IsEnabled = _editingAllowed };
+        editApps.Click += (_, _) => _showEditor();
+        menu.Items.Add(editApps);
         if (_editingAllowed)
         {
             var windowsDesktop = new MenuItem { Header = "Open Windows desktop" };

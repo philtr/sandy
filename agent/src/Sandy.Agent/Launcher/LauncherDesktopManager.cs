@@ -44,7 +44,7 @@ public sealed class LauncherDesktopManager : IDisposable
         string agentVersion)
     {
         _pinStore = pinStore;
-        _pins = pins;
+        _pins = pins.Select(iconCache.Cache).ToArray();
         _guardian = guardian;
         _iconCache = iconCache;
         _agentVersion = agentVersion;
@@ -149,7 +149,7 @@ public sealed class LauncherDesktopManager : IDisposable
     {
         foreach (var screen in Forms.Screen.AllScreens.OrderByDescending(screen => screen.Primary))
         {
-            var launcher = new LauncherWindow(screen.Bounds, screen.Primary, ShowEditor, QueueTaskbarRaise);
+            var launcher = new LauncherWindow(screen.Bounds, screen.Primary, QueueTaskbarRaise);
             launcher.SetPins(_pins);
             launcher.UpdateTimer(_reading);
             launcher.UpdateConnection(_connection);
@@ -157,7 +157,7 @@ public sealed class LauncherDesktopManager : IDisposable
             _launchers.Add(launcher);
 
             var taskbar = new SandyTaskbarWindow(
-                screen, ShowHome, ShowWindowsDesktop, PrepareForSessionExit, _agentVersion);
+                screen, ShowHome, ShowEditor, ShowWindowsDesktop, PrepareForSessionExit, _agentVersion);
             taskbar.ExplorerTaskbarCreated += Taskbar_ExplorerTaskbarCreated;
             taskbar.Ready += Taskbar_Ready;
             taskbar.Show();

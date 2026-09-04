@@ -4,27 +4,16 @@ using Sandy.Core.Launcher;
 
 namespace Sandy.Agent.Launcher;
 
-public sealed record ManualApplicationChoice(
-    string Name,
-    LauncherPinKind Kind,
-    string Target,
-    string? IconPath = null,
-    string? MatchIdentity = null);
-
 public static class ManualApplicationSource
 {
-    public static IReadOnlyList<ManualApplicationChoice> EnumerateStartApplications()
+    public static IReadOnlyList<LauncherApplicationChoice> EnumerateStartApplications()
     {
-        var choices = new List<ManualApplicationChoice>();
+        var choices = new List<LauncherApplicationChoice>();
         AddStartFolder(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), choices);
         AddStartFolder(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu), choices);
         AddPackagedApps(choices);
 
-        return choices
-            .GroupBy(item => $"{item.Kind}:{item.Target}", StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
-            .OrderBy(item => item.Name, StringComparer.CurrentCultureIgnoreCase)
-            .ToArray();
+        return LauncherApplicationChoices.DistinctByDisplayName(choices);
     }
 
     public static LauncherPin FromFile(string path)
@@ -41,7 +30,7 @@ public static class ManualApplicationSource
             string.Equals(Path.GetExtension(fullPath), ".exe", StringComparison.OrdinalIgnoreCase) ? fullPath : null).Validate();
     }
 
-    private static void AddStartFolder(string root, ICollection<ManualApplicationChoice> choices)
+    private static void AddStartFolder(string root, ICollection<LauncherApplicationChoice> choices)
     {
         if (string.IsNullOrWhiteSpace(root) || !Directory.Exists(root))
             return;
@@ -50,8 +39,9 @@ public static class ManualApplicationSource
             foreach (var path in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
                          .Where(LauncherPin.IsSupportedFile))
             {
-                choices.Add(new ManualApplicationChoice(
-                    Path.GetFileNameWithoutExtension(path), LauncherPin.KindForFile(path), path, path));
+                choices.Add(new LauncherApplicationChoice(
+                    Path.GetFileNameWithoutExtension(path), LauncherPin.KindForFile(path), path, path,
+                    StartApplicationIdentity.ForFile(path)));
             }
         }
         catch (UnauthorizedAccessException)
@@ -64,7 +54,7 @@ public static class ManualApplicationSource
         }
     }
 
-    private static void AddPackagedApps(ICollection<ManualApplicationChoice> choices)
+    private static void AddPackagedApps(ICollection<LauncherApplicationChoice> choices)
     {
         object? shell = null;
         object? folder = null;
@@ -94,8 +84,8 @@ public static class ManualApplicationSource
                     var name = (string?)dynamicItem.Name;
                     var appId = (string?)dynamicItem.ExtendedProperty("System.AppUserModel.ID");
                     if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(appId))
-                        choices.Add(new ManualApplicationChoice(
-                            name, LauncherPinKind.PackagedApp, appId, MatchIdentity: appId));
+                        choices.Add(new LauncherApplicationChoice(
+                            name, LauncherPinKind.PackagedApp, appId, MatchIdentity: $"app:{appId}"));
                 }
                 catch (COMException)
                 {

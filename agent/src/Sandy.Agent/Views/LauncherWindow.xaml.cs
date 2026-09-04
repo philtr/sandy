@@ -21,14 +21,12 @@ public partial class LauncherWindow : Window
 {
     private const uint SwpShowWindow = 0x0040;
     private readonly DrawingRectangle _bounds;
-    private readonly Action _showEditor;
     private readonly Action _raiseTaskbars;
 
-    public LauncherWindow(DrawingRectangle bounds, bool primary, Action showEditor, Action raiseTaskbars)
+    public LauncherWindow(DrawingRectangle bounds, bool primary, Action raiseTaskbars)
     {
         InitializeComponent();
         _bounds = bounds;
-        _showEditor = showEditor;
         _raiseTaskbars = raiseTaskbars;
         PrimaryContent.Visibility = primary ? Visibility.Visible : Visibility.Collapsed;
         SourceInitialized += PositionOnMonitor;
@@ -39,12 +37,11 @@ public partial class LauncherWindow : Window
     public void SetPins(IReadOnlyList<LauncherPin> pins)
     {
         AppsGrid.Children.Clear();
-        var rows = Math.Max(1, (int)Math.Ceiling((pins.Count + 1) / 4d));
+        var rows = Math.Max(1, (int)Math.Ceiling(pins.Count / 4d));
         AppsGrid.Rows = rows;
         AppsGrid.Height = rows * 148;
         foreach (var pin in pins)
             AppsGrid.Children.Add(CreatePinButton(pin));
-        AppsGrid.Children.Add(CreateMoreButton());
     }
 
     public void UpdateTimer(TimerReading reading)
@@ -126,27 +123,6 @@ public partial class LauncherWindow : Window
                 MessageBox.Show(exception.Message, "Could not open app", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         };
-        return button;
-    }
-
-    private System.Windows.Controls.Button CreateMoreButton()
-    {
-        var panel = new StackPanel { HorizontalAlignment = System.Windows.HorizontalAlignment.Center };
-        panel.Children.Add(new TextBlock
-        {
-            Text = "•••",
-            FontSize = 40,
-            Foreground = (MediaBrush)FindResource("MutedBrush"),
-            HorizontalAlignment = System.Windows.HorizontalAlignment.Center
-        });
-        panel.Children.Add(new TextBlock { Text = "More", FontSize = 16, HorizontalAlignment = System.Windows.HorizontalAlignment.Center });
-        var button = new System.Windows.Controls.Button
-        {
-            Style = (Style)FindResource("LauncherTileStyle"),
-            Content = panel,
-            Margin = new Thickness(6)
-        };
-        button.Click += (_, _) => _showEditor();
         return button;
     }
 

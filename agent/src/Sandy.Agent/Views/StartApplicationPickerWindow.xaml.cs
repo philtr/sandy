@@ -1,21 +1,22 @@
 using System.Windows;
 using System.Windows.Input;
 using Sandy.Agent.Launcher;
+using Sandy.Core.Launcher;
 
 namespace Sandy.Agent.Views;
 
 public partial class StartApplicationPickerWindow : Window
 {
-    private readonly IReadOnlyList<ManualApplicationChoice> _applications;
+    private readonly IReadOnlyList<LauncherApplicationChoice> _applications;
 
-    public StartApplicationPickerWindow(IReadOnlyList<ManualApplicationChoice> applications)
+    public StartApplicationPickerWindow(IReadOnlyList<LauncherApplicationChoice> applications)
     {
         InitializeComponent();
         _applications = applications;
         ApplicationsList.ItemsSource = _applications;
     }
 
-    public ManualApplicationChoice? SelectedApplication { get; private set; }
+    public LauncherApplicationChoice? SelectedApplication { get; private set; }
 
     private void FilterText_Changed(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
@@ -31,7 +32,7 @@ public partial class StartApplicationPickerWindow : Window
 
     private void Select()
     {
-        if (ApplicationsList.SelectedItem is not ManualApplicationChoice selected)
+        if (ApplicationsList.SelectedItem is not LauncherApplicationChoice selected)
             return;
         SelectedApplication = selected;
         DialogResult = true;
