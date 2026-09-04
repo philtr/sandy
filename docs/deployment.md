@@ -1,15 +1,15 @@
-# Homelab Deployment
+# Homelab deployment
 
 ## Prerequisites
 
 - Docker Engine with Compose v2.
-- A DNS name and HTTPS reverse proxy capable of forwarding WebSocket upgrade headers.
+- A DNS name and an HTTPS reverse proxy that forwards WebSocket upgrade headers.
 - Permission to pull the server image from GHCR. Make the package public or authenticate Docker on the host.
 - A password manager for the Rails master key and setup token.
 
 ## First installation
 
-1. Copy `deploy/.env.example` to `deploy/.env` and set `SANDY_IMAGE` to `ghcr.io/<owner>/<repository>-server:latest`.
+1. Copy `deploy/.env.example` to `deploy/.env`. Set `SANDY_IMAGE` to `ghcr.io/<owner>/<repository>-server:latest`.
 2. Generate independent secrets with `openssl rand -hex 64` for `SECRET_KEY_BASE` and `openssl rand -hex 32` for `SETUP_TOKEN`.
 3. Set `APP_HOST` to the public hostname and `APP_ORIGIN` to its externally reachable HTTPS origin, without a trailing path.
 4. Start the container from the repository root:
@@ -24,11 +24,12 @@
 6. Confirm `https://<host>/up` returns success, then open the setup page and supply `SETUP_TOKEN`. Create the family, shared parent account, two parent profiles, and initial join code. Setup is disabled after this succeeds.
 7. Install the Windows release, enter the public server URL and family join code, and verify the device appears online.
 
-Keep `WEB_CONCURRENCY=1` for the initial deployment. SQLite and Solid Cable can coordinate multiple processes, but one family does not benefit enough to justify the extra concurrency and operational testing.
+Keep `WEB_CONCURRENCY=1` for the first deployment. SQLite and Solid Cable can
+coordinate multiple processes, but one family usually does not need them.
 
 ## Upgrade
 
-Server images are immutable. Back up first, then pull and recreate the app:
+Server images are immutable. Back up first. Then pull and recreate the app:
 
 ```sh
 docker compose --env-file deploy/.env -f deploy/compose.yml pull app
@@ -36,7 +37,9 @@ docker compose --env-file deploy/.env -f deploy/compose.yml up -d app
 docker compose --env-file deploy/.env -f deploy/compose.yml ps
 ```
 
-The Rails image entrypoint prepares databases before boot. Review release notes for exceptional migration instructions. Do not run two app versions against the same SQLite volume during an upgrade.
+The Rails image entrypoint prepares the database before startup. Read the
+release notes for special migration steps. Do not run two app versions against
+the same SQLite volume.
 
 Server images are released from `server-vX.Y.Z` Git tags or a manual workflow run with an `X.Y.Z` version. Each release publishes the exact `X.Y.Z` image tag, the moving `latest` tag, and the moving `vX-latest` tag for consumers that want updates within one major version. Default-branch builds publish only an immutable `sha-*` tag.
 

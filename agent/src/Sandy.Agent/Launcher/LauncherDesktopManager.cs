@@ -119,8 +119,8 @@ public sealed class LauncherDesktopManager : IDisposable
         foreach (var launcher in _launchers.Where(window => window != _launchers.FirstOrDefault()))
             launcher.ShowBackdrop();
         _launchers.FirstOrDefault()?.ShowHome();
-        // The full-monitor launcher is activated above ordinary windows. Reposition the
-        // AppBars afterwards so the Sandy taskbar is not left behind the launcher.
+        // The full-monitor launcher is above ordinary windows. Reposition the
+        // AppBars after activation so the taskbar stays visible.
         RestoreAllTaskbars();
         HideNativeIfHealthy();
     }

@@ -1,5 +1,12 @@
 # Sandy contributor guidance
 
+## Writing style
+
+Write new and updated README files, non-ADR documentation, and code comments
+in clear, concise 8th-grade English. Use simple sentence structures. Technical
+information must be understandable on the first read. Do not rewrite existing
+ADRs unless a new ADR supersedes them.
+
 ## Start with the architecture
 
 Read [the repository overview](README.md) and the relevant product and technical

@@ -110,8 +110,8 @@ class Device < ApplicationRecord
       )
     end
 
-    # Legacy agents only understand timer snapshots, while current agents can
-    # immediately discard their credential and return to enrollment.
+    # Legacy agents only understand timer snapshots. Current agents can discard
+    # their credential and return to enrollment once revoked.
     broadcast_timer_state! if family.allow_revoked_devices?
     DeviceChannel.broadcast_to(self, type: "device_revoked")
   end

@@ -19,8 +19,8 @@ public sealed class OverlayManager : IDisposable
             return;
         _audioMute.Mute();
         _active = true;
-        // Once time has expired, preserve the fullscreen app's process and state
-        // but move its surface out of the way before raising the blocking UI.
+        // When time expires, keep the fullscreen app running but move its window
+        // away before showing the blocking UI.
         if (TopLevelWindowTracker.IsForegroundFullscreen(out var fullscreenWindow, out _))
             TopLevelWindowTracker.Minimize(fullscreenWindow);
         CreateWindows();
@@ -31,8 +31,7 @@ public sealed class OverlayManager : IDisposable
         }
         catch (System.ComponentModel.Win32Exception)
         {
-            // Keep the blocking overlay visible even if Windows refuses the
-            // best-effort keyboard hook in this session.
+            // Keep the blocking overlay visible if Windows rejects the keyboard hook.
         }
     }
 

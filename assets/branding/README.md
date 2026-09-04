@@ -1,8 +1,8 @@
 # Sandy branding assets
 
-`sandy-app-icon-master.png` is the canonical 1024×1024 raster master for the
-Sandy timer mark. Keep the `Sandy` wordmark as live text in the platform's
-default UI font rather than baking it into image assets.
+`sandy-app-icon-master.png` is the 1024×1024 source image for the Sandy timer
+mark. Keep the `Sandy` wordmark as live text in each platform's default UI font.
+Do not bake the wordmark into image assets.
 
 Derived application assets:
 
@@ -14,6 +14,6 @@ Derived application assets:
 - `agent/src/Sandy.Agent/Resources/Sandy.ico` — Windows executable icon with
   16, 24, 32, 48, 64, 128, and 256 px frames
 
-When replacing the master, regenerate every derived asset together and bump
-the icon URL revision in the Rails layout, PWA manifest, service worker, and
-metadata test so existing installations do not retain stale artwork.
+When you replace the master, regenerate every derived asset. Then update the
+icon URL revision in the Rails layout, PWA manifest, service worker, and
+metadata test. This prevents old installations from keeping stale artwork.

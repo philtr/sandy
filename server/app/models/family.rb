@@ -22,8 +22,8 @@ class Family < ApplicationRecord
   end
 
   def revoked_device_release_snapshot(at: Time.current, state_version: nil)
-    # Agent 1.1.0 only understands active/expired, so release with a normal
-    # schema-1 active snapshot instead of introducing a new timer status.
+    # Agent 1.1.0 only understands active and expired. Return a normal schema-1
+    # active snapshot instead of adding another timer status.
     expires_at = at + REVOKED_RELEASE_DURATION
     {
       schema_version: 1,

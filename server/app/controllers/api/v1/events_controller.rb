@@ -22,7 +22,7 @@ module Api
               )
               accepted += 1
             rescue ActiveRecord::RecordNotUnique
-              # A retried event is already accepted.
+              # A retry means this event was already accepted.
             end
           end
           prune_agent_diagnostics!

@@ -1,9 +1,9 @@
 # Sandy Windows agent
 
 The agent is a per-user .NET 10 WPF application. `Sandy.Core` contains the
-platform-neutral protocol, timer, persistence, and synchronization logic;
-`Sandy.Agent` owns WPF, DPAPI, registry startup, the launcher desktop and AppBars,
-Win32 keyboard hooks, monitor overlays, taskbar recovery, and Velopack integration.
+shared protocol, timer, storage, and sync logic. `Sandy.Agent` owns WPF, DPAPI,
+startup, launcher windows, AppBars, keyboard hooks, overlays, taskbar recovery,
+and Velopack integration.
 
 While time is available, Sandy displays its launcher on every monitor and uses a
 Sandy-owned bottom AppBar instead of Explorer's visible taskbar. A child guardian
@@ -11,11 +11,11 @@ process restores Explorer taskbars if the UI process exits or stops renewing its
 lease. Explorer remains the shell and no persistent shell/auto-hide setting is
 changed.
 
-Pins are intentionally manual. With a parent-issued 30-minute edit lease and a
-current online connection, **More** can enumerate Start shortcuts or AppsFolder
-on demand, select or drop `.lnk`, `.url`, and `.exe` files, or accept a validated
-absolute URI. Sandy performs no startup application scan, Steam parsing, catalog
-watching, or application allowlisting. Up to 15 pins are stored atomically in
+Pins are added by hand. With a parent-issued 30-minute edit lease and an online
+connection, **More** can find Start shortcuts or AppsFolder items on demand. It
+can also select `.lnk`, `.url`, and `.exe` files or accept a valid absolute URI.
+Sandy does not scan apps at startup, parse Steam, watch catalogs, or maintain an
+allowlist. Up to 15 pins are stored atomically in
 `%LocalAppData%\Sandy\launcher-pins.json`; icons extracted from explicitly chosen
 files are kept in the adjacent `launcher-icons` directory so stale targets can
 still render recognizably.
@@ -62,9 +62,9 @@ docker run --rm \
 ```
 
 These commands verify timer tests, C# and XAML compilation, and Windows publish
-output. macOS cannot launch the WPF host or exercise DPAPI, registry startup,
-keyboard hooks, overlays, monitor handling, or Velopack installation. Run the
-Windows acceptance checklist before publishing a stable agent release.
+output. macOS cannot run the WPF host or test DPAPI, startup, keyboard hooks,
+overlays, monitor handling, or Velopack installation. Run the Windows
+acceptance checklist before publishing a stable release.
 
 ### Windows with the .NET SDK
 

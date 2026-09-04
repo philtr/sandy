@@ -46,8 +46,8 @@ internal sealed class SystemAudioMute : IDisposable
         }
         catch (COMException)
         {
-            // Audio devices can disappear at any time. Expiration enforcement
-            // must continue even when Windows cannot mute the current endpoint.
+            // Audio devices can disappear. Continue expiration enforcement even
+            // when Windows cannot mute the current endpoint.
             _restoreToUnmuted = false;
         }
         finally

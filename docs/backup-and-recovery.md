@@ -1,6 +1,8 @@
 # Backup and Recovery
 
-All production SQLite databases live in the named Docker volume `sandy_storage`. A consistent cold backup briefly stops the application and archives the entire volume, including SQLite WAL/SHM files.
+All production SQLite data is in the Docker volume `sandy_storage`. A cold
+backup stops the app briefly and archives the full volume, including SQLite
+WAL/SHM files.
 
 ## Backup
 
@@ -16,13 +18,17 @@ docker run --rm \
 docker compose --env-file deploy/.env -f deploy/compose.yml start app
 ```
 
-Copy backups off the Docker host, encrypt them at rest, and retain more than one generation. The archive contains account and device-token digests plus family history, so treat it as private even though raw device tokens are not stored.
+Copy backups off the Docker host. Encrypt them at rest and keep more than one
+generation. Archives contain account and device-token digests and family
+history. Treat them as private. Raw device tokens are not stored.
 
-Regularly verify an archive with `tar -tzf <archive>` and conduct a restore drill on a separate Docker volume/host.
+Verify archives with `tar -tzf <archive>`. Run restore drills on a separate
+Docker volume or host.
 
 ## Restore
 
-Restoration replaces current state. Preserve a copy of the current volume first and confirm the exact archive name before continuing.
+Restoring replaces the current state. Save the current volume first. Confirm
+the exact archive name before you continue.
 
 ```sh
 docker compose --env-file deploy/.env -f deploy/compose.yml stop app
@@ -34,7 +40,11 @@ docker compose --env-file deploy/.env -f deploy/compose.yml start app
 docker compose --env-file deploy/.env -f deploy/compose.yml ps
 ```
 
-Then sign in, inspect the audit history, and verify the Windows agent reconnects and receives the authoritative state. Restoring an older backup can lower the server's `state_version`; enrolled agents should resolve this by treating the freshly authenticated startup/reconnect fetch as the new authority, but may need their local cache cleared if the restored server predates enrollment.
+Then sign in, inspect the audit history, and verify that the Windows agent
+reconnects and receives current state. An older backup can lower
+`state_version`. Agents should accept the authenticated startup or reconnect
+response as the new authority. Clear the local cache if the backup predates
+the device enrollment.
 
 ## Lost secrets
 

@@ -149,9 +149,8 @@ public sealed class TopLevelWindowTracker
     public static (nint OwnerHandle, System.Windows.Forms.Screen Screen) ForegroundNoticeTarget()
     {
         var handle = GetForegroundWindow();
-        // A fullscreen window can occupy the topmost band itself. Making the
-        // passive notice its owned window keeps the notice above that one app;
-        // ordinary windows do not need the ownership relationship.
+        // A fullscreen window can occupy the topmost band. Make the passive
+        // notice its owned window so the notice stays above that app.
         return (
             IsFullscreen(handle, out _) ? handle : nint.Zero,
             System.Windows.Forms.Screen.FromHandle(handle));

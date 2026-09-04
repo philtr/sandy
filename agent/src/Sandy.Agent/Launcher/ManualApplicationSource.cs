@@ -56,11 +56,11 @@ public static class ManualApplicationSource
         }
         catch (UnauthorizedAccessException)
         {
-            // Skip inaccessible folders without failing the explicit picker.
+            // Skip folders that cannot be read. The picker should still work.
         }
         catch (IOException)
         {
-            // A Start Menu folder can change while being enumerated.
+            // A Start Menu folder can change during enumeration.
         }
     }
 
@@ -99,7 +99,7 @@ public static class ManualApplicationSource
                 }
                 catch (COMException)
                 {
-                    // Skip malformed shell entries.
+                    // Skip shell entries that cannot be read.
                 }
                 finally
                 {
@@ -109,7 +109,7 @@ public static class ManualApplicationSource
         }
         catch (COMException)
         {
-            // Packaged-app selection is best effort; file selection remains available.
+            // Packaged-app selection is best effort. File selection remains available.
         }
         finally
         {

@@ -28,8 +28,8 @@ public sealed class EnrollmentService(
             new EnrollmentRequest(joinCode.Trim(), deviceName.Trim(), agentVersion),
             cancellationToken);
 
-        // The token and authoritative state are saved before UI transitions. If the
-        // process stops between these writes, startup fails closed and fetches state.
+        // Save the token and current state before changing the UI. If the process
+        // stops between these writes, startup fails closed and fetches state.
         var generation = Guid.NewGuid();
         await credentialStore.SaveAsync(
             new DeviceCredential(response.DeviceId, serverUri, response.DeviceToken, generation), cancellationToken);

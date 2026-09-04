@@ -4,6 +4,8 @@ Sandy is a family-focused Windows launcher with remotely managed screen time. Wh
 
 A Rails PWA lets parents grant or revoke time and temporarily unlock launcher editing. The server owns the authoritative deadline, while the Windows agent keeps counting through short network outages and returns to the normal launcher as soon as more time is available. Explorer remains the Windows shell, and parents can temporarily expose the regular desktop during an editing session.
 
+> **AI disclaimer:** Generative AI was used extensively in the development of this project. Most of the code has not been reviewed for correctness, safety, or security.
+
 ![Sandy Windows agent showing the remaining time and available applications](docs/images/sandy.png)
 
 This is a visibility and consistency tool, not hardened parental-control software. A technically determined local user, elevated applications, and the Windows secure desktop are outside its threat model. `Ctrl`+`Alt`+`Delete` intentionally remains an escape hatch.

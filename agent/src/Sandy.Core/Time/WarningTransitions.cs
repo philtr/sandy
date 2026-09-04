@@ -26,10 +26,8 @@ public sealed class WarningTransitions
         if (resumed)
             notifications.Add(TimerNotification.Resumed);
 
-        // When a sleep or delayed sync skips several thresholds, show only the most
-        // urgent warning instead of stacking multiple dialogs at once.
-        // Treat a new allowance as starting from Active so a short grant emits its
-        // matching warning instead of inheriting the prior expired phase.
+        // If sleep or delayed sync skips thresholds, show only the most urgent
+        // warning. A new allowance starts in Active so short grants warn correctly.
         var warningPrior = resumed ? TimerPhase.Active : prior;
         if (reading.Phase == TimerPhase.Expired && prior != TimerPhase.Expired)
             notifications.Add(TimerNotification.Expired);

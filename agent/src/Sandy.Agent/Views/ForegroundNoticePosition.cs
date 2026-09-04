@@ -19,8 +19,8 @@ internal static class ForegroundNoticePosition
         var width = (int)Math.Ceiling(window.Width * scale);
         var height = (int)Math.Ceiling(window.Height * scale);
         var workArea = screen.WorkingArea;
-        // A topmost notice must not become the foreground window. Activating it can
-        // force exclusive-fullscreen games to minimize or leave fullscreen mode.
+        // Do not make a topmost notice the foreground window. That can minimize
+        // an exclusive-fullscreen game or make it leave fullscreen mode.
         SetWindowPos(
             handle,
             new nint(-1),

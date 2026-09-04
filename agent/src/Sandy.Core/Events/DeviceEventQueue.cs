@@ -45,8 +45,8 @@ public sealed class DeviceEventQueue(
             }
             catch (Exception) when (!cancellationToken.IsCancellationRequested)
             {
-                // Keep the queue deliberately lightweight. Idempotent UUIDs make replay safe;
-                // requeue best-effort and let heartbeat diagnostics show prolonged failures.
+                // Keep the queue small. Stable UUIDs make retries safe.
+                // Requeue when possible and report long failures in heartbeat diagnostics.
                 foreach (var item in batch)
                     _events.Writer.TryWrite(item);
                 await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);

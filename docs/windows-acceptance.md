@@ -1,6 +1,8 @@
 # Windows Release Acceptance
 
-Run this checklist on actual x64 Windows 11 hardware or a VM before a stable release. Repeat the compatibility subset on the supported Windows 10 build. Record OS/build, display topology, DPI, agent version, server version, and results.
+Run this checklist on x64 Windows 11 hardware or a VM before a stable release.
+Repeat the compatibility checks on the supported Windows 10 build. Record the
+OS/build, display layout, DPI, agent version, server version, and results.
 
 ## Install, startup, and recovery
 

@@ -1,7 +1,7 @@
 # Sandy for iOS
 
 Sandy's iPhone and iPad app is a Hotwire Native shell around the Rails parent
-interface. It targets iOS 18 and uses the bundle identifier `net.rdln.sandy`.
+interface. It supports iOS 18 and uses the bundle identifier `net.rdln.sandy`.
 
 ## Development
 
@@ -24,9 +24,8 @@ xcodebuild test \
   CODE_SIGNING_ALLOWED=NO
 ```
 
-The committed Xcode project is generated from `project.yml`. When changing the
-project structure, regenerate it with XcodeGen 2.46.0 and commit both the spec
-and generated project.
+The Xcode project is generated from `project.yml`. After changing the project
+structure, regenerate it with XcodeGen 2.46.0. Commit both files.
 
 For a development device, select the Sandy target in Xcode, choose the local
 Apple Developer team with automatic signing, and run. Do not commit a team ID,

@@ -99,7 +99,7 @@ internal sealed class AudioSessionDucker : IDisposable
         }
         catch (Exception exception) when (exception is COMException or InvalidCastException)
         {
-            // Audio sessions can vanish or change state while they are enumerated.
+            // Audio sessions can disappear or change while they are enumerated.
         }
         finally
         {
@@ -125,8 +125,7 @@ internal sealed class AudioSessionDucker : IDisposable
             }
             catch (Exception exception) when (exception is COMException or InvalidCastException)
             {
-                // Session/device removal and a user's volume adjustment are both safe
-                // reasons not to restore this individual session.
+                // Do not restore a session that was removed or changed by the user.
             }
             finally
             {
@@ -144,8 +143,8 @@ internal sealed class AudioSessionDucker : IDisposable
         }
         catch (InvalidComObjectException)
         {
-            // A queried interface can share its runtime callable wrapper with
-            // another interface that has already been released.
+            // A queried interface can share a runtime wrapper with an interface
+            // that has already been released.
         }
     }
 

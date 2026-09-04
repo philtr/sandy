@@ -31,8 +31,8 @@ module Api
       def legacy_revoked_release_family(token)
         return if token.blank? || !legacy_agent? || !timer_endpoint?
 
-        # Agent 1.1 cannot understand device_revoked. Recovery mode deliberately
-        # releases a pre-tombstone credential even when its record is gone.
+        # Agent 1.1 cannot understand device_revoked. Recovery mode releases an
+        # older credential even when its device record is gone.
         Family.find_by(allow_revoked_devices: true)
       end
 

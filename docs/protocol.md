@@ -1,16 +1,21 @@
 # Device Protocol
 
-All timestamps are ISO 8601 UTC values. All JSON responses use `Content-Type: application/json`. The initial protocol has `schema_version: 1`; additive fields may be ignored, while breaking changes require a new schema version.
+All timestamps use ISO 8601 UTC. All JSON responses use
+`Content-Type: application/json`. The first protocol has `schema_version: 1`.
+Clients may ignore added fields. Breaking changes require a new schema version.
 
 ## Authentication
 
-Enrollment is unauthenticated but requires the family join code. On success, the response includes the device token exactly once. Subsequent HTTP calls send:
+Enrollment does not use a device credential, but it requires the family join
+code. The successful response includes the device token once. Later HTTP calls
+send:
 
 ```http
 Authorization: Bearer <device-token>
 ```
 
-Action Cable authenticates with the same token in the WebSocket connection URL or its negotiated connection parameters. The production URL must use `wss://`. Tokens must never be written to logs.
+Action Cable uses the same token in the WebSocket URL or connection parameters.
+Production connections must use `wss://`. Never write tokens to logs.
 
 Common responses are `401` for an absent, invalid, or denied unenrolled-device token, `409` for an idempotency conflict, `422` for invalid input, and `429` for enrollment/login throttling.
 
@@ -18,7 +23,8 @@ An unenrolled device's token receives `403` with `{ "error": "device_revoked" }`
 
 ## Authoritative snapshot
 
-Every state fetch, heartbeat response, enrollment response, and `timer_state` broadcast carries a complete snapshot:
+Every state fetch, heartbeat response, enrollment response, and `timer_state`
+broadcast contains a complete snapshot:
 
 ```json
 {

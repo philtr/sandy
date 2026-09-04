@@ -88,9 +88,8 @@ public sealed class SynchronizedTimer(IMonotonicClock clock)
 
         var monotonicElapsed = clock.Elapsed(_receivedTimestamp, timestamp);
         var wallElapsed = localNow - _localReceivedAt;
-        // A backwards local clock change must not extend either screen time or the
-        // launcher-edit lease. Wall time can still advance farther across sleep on
-        // platforms whose monotonic source pauses while suspended.
+        // A backwards local clock change must not extend screen time or the edit
+        // lease. Wall time can advance across sleep when monotonic time pauses.
         var correctedElapsed = monotonicElapsed >= wallElapsed ? monotonicElapsed : wallElapsed;
         var projectedServerNow = _snapshot.ServerTime + correctedElapsed;
 
@@ -107,9 +106,8 @@ public sealed class SynchronizedTimer(IMonotonicClock clock)
 
         var monotonicRemaining = TimeSpan.FromSeconds(_snapshot.RemainingSeconds) - monotonicElapsed;
 
-        // Project server time using local wall time so suspend/resume is reflected even
-        // on platforms whose monotonic source pauses during sleep. Taking the minimum
-        // prevents a backwards wall-clock change from granting extra time.
+        // Project server time with local wall time so sleep and resume are reflected.
+        // Use the smaller value so a backwards clock change cannot grant extra time.
         var wallRemaining = _snapshot.ExpiresAt.Value - projectedServerNow;
         var remaining = monotonicRemaining <= wallRemaining ? monotonicRemaining : wallRemaining;
 

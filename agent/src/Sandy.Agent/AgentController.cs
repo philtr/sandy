@@ -139,8 +139,8 @@ public sealed class AgentController : IDisposable
             }
             catch
             {
-                // An update must never be applied when the authoritative state cannot
-                // be rechecked; retry on a later tick.
+                // Do not apply an update until the server state is checked again.
+                // Retry on a later tick if the check fails.
             }
             finally
             {
