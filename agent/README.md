@@ -8,8 +8,12 @@ and Velopack integration.
 While time is available, Sandy displays its launcher on every monitor and uses a
 Sandy-owned bottom AppBar instead of Explorer's visible taskbar. A child guardian
 process restores Explorer taskbars if the UI process exits or stops renewing its
-lease. Explorer remains the shell and no persistent shell/auto-hide setting is
-changed.
+lease. After an unexpected process exit, it also restarts Sandy so the cached
+deadline is enforced while offline. Recovery allows three consecutive launches;
+one minute of uptime resets that limit. A hung process is not killed or replaced.
+Normal shutdown and update handoff stop recovery. Explorer remains the shell and
+no persistent shell/auto-hide setting is changed. See
+[ADR 0015](../docs/adr/0015-restart-the-agent-after-an-unexpected-exit.md).
 
 Pins are added by hand. With a parent-issued 30-minute edit lease and an online
 connection, **More** can find Start shortcuts or AppsFolder items on demand. It

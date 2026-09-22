@@ -22,6 +22,7 @@ behavior. Create a new ADR when a change would replace an existing decision.
 | [ADR 0012: Local launcher state and online edit lease](adr/0012-local-launcher-state-and-online-edit-lease.md) | Keep pins local and require an online parent-approved edit lease. |
 | [ADR 0013: Single-household tenancy and parent attribution](adr/0013-single-household-tenancy-and-parent-attribution.md) | Model one household with a shared parent account and two profiles. |
 | [ADR 0014: Use Hotwire Native for the iOS parent app](adr/0014-use-hotwire-native-for-ios.md) | Use a native iPhone and iPad shell around the Rails parent interface. |
+| [ADR 0015: Restart the agent after an unexpected exit](adr/0015-restart-the-agent-after-an-unexpected-exit.md) | Use the taskbar guardian for bounded crash recovery and cached offline enforcement. |
 
 ## System boundary
 
@@ -75,7 +76,8 @@ While time is available, Sandy shows a launcher and bottom AppBar on each
 monitor. The primary launcher shows the timer and local pins. Secondary
 launchers show status. Sandy releases its AppBars for fullscreen apps and
 restores them through Sandy Home. A guardian restores Explorer's taskbar after
-an unexpected main-process exit.
+an unexpected main-process exit, then restarts Sandy with a bounded retry count.
+See [ADR 0015](adr/0015-restart-the-agent-after-an-unexpected-exit.md).
 
 Pins are local per-user data. A parent-approved online edit lease allows pin
 changes and temporarily shows the normal Windows desktop. It does not stop

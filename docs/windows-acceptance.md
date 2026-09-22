@@ -14,6 +14,9 @@ OS/build, display layout, DPI, agent version, server version, and results.
 - Verify invalid server URL, invalid join code, TLS error, unknown credential, and an explicitly unenrolled PC produce the intended recovery state without leaking credentials.
 - Restart Explorer and verify Sandy re-registers its AppBars and hides recreated Explorer taskbars only after it is healthy.
 - Crash, hang, kill, update, uninstall, and disable Sandy startup in separate trials; verify Explorer taskbars return and the user is never left without either taskbar.
+- While offline, terminate only the main agent process before its cached deadline. Verify its guardian restores Explorer, restarts Sandy, and Sandy blocks at the saved deadline. Repeat after the deadline and verify the restarted agent blocks before any server response.
+- Force repeated startup crashes after the guardian starts; verify recovery stops after three launches. Let one recovered agent run for a minute, then crash it and verify recovery is available again.
+- Hang the main process and verify Explorer returns without a duplicate agent. Then terminate the hung process and verify the guardian restarts Sandy. Cancel re-enrollment after explicit revocation, sign out, and shut down Windows; verify those intentional exits do not restart Sandy.
 - Confirm `Ctrl`+`Alt`+`Delete`, sign-out, and restarting Explorer remain deliberate recovery paths.
 
 ## Launcher and app editing
@@ -57,7 +60,8 @@ OS/build, display layout, DPI, agent version, server version, and results.
 - Grant 1, 5, 15, 30, and 60 minutes from each parent's installed PWA and verify attribution/history, live launcher/taskbar countdown, and allowance progress.
 - Send two distinct grants concurrently; verify both accumulate. Retry the same idempotency key; verify it applies once.
 - Confirm a normal WebSocket grant reaches the PC within two seconds.
-- Disconnect the network while active; confirm monotonic local countdown continues. Reconnect and confirm authoritative convergence.
+- Disconnect the network while active and stay offline past the last received deadline. Confirm the countdown continues and the blocking overlay appears at that deadline on every monitor. Repeat with a full-screen game and with an HTTP request that stalls instead of failing at once.
+- Restart Sandy while offline, both before and after the cached deadline. Confirm it blocks at that deadline without waiting for a server response. Reconnect and confirm authoritative convergence.
 - Block WebSockets but allow HTTPS; confirm a heartbeat repairs state within one interval.
 - Exercise sleep/wake, manual wall-clock changes, server restart, agent restart, and corrupt/missing local cache.
 - Cross 15-minute and 5-minute thresholds normally and by reconciliation; verify each warning is shown once for that countdown epoch.
@@ -80,6 +84,7 @@ OS/build, display layout, DPI, agent version, server version, and results.
 - Confirm startup and 15-minute update checks against the configured public GitHub release source.
 - While active, verify an update downloads without prompting and does not restart the agent.
 - After at least 60 seconds expired, verify the agent refreshes state before applying, restores Explorer during handoff, restarts, restores cache/launcher, and reconnects.
+- Verify update handoff stops the old guardian and starts only one updated agent. Force update handoff to fail and verify the current agent gets a new guardian and still enforces its timer.
 - Grant time during the update boundary and confirm application is deferred.
 - Interrupt a download and simulate an unreachable/corrupt release; verify the installed version keeps working and Explorer taskbars recover if Sandy fails.
 - Verify Authenticode signatures on the executable/installer, including the guardian entry path, and inspect SmartScreen on a clean machine.

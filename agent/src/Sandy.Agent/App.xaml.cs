@@ -94,7 +94,10 @@ public partial class App : System.Windows.Application
         }
 
         credential = await UpgradeLegacyEnrollmentAsync(credential, _shutdown.Token);
-        _guardian = new TaskbarGuardianLease(_paths.Root);
+        var recoveryAttempt = e.Args.Length == 2 && e.Args[0] == "--recovery-attempt"
+            && int.TryParse(e.Args[1], out var attempt) && attempt is >= 1 and <= 3
+                ? attempt : 0;
+        _guardian = new TaskbarGuardianLease(_paths.Root, recoveryAttempt);
         await StartEnrolledSessionAsync(credential, _shutdown.Token);
     }
 
@@ -121,7 +124,7 @@ public partial class App : System.Windows.Application
         var updateUrl = Environment.GetEnvironmentVariable("SANDY_UPDATE_URL");
         IUpdateService updateService = new VelopackUpdateService(
             string.IsNullOrWhiteSpace(updateUrl) ? DefaultUpdateRepository : updateUrl,
-            AcceptPrereleaseUpdates());
+            AcceptPrereleaseUpdates(), _guardian.RunWithoutRecovery);
 
         var pinStore = new LauncherPinStore(_paths.LauncherPinsFile);
         var pins = await pinStore.LoadAsync(sessionToken);
@@ -193,8 +196,16 @@ public partial class App : System.Windows.Application
         }
     }
 
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        base.OnSessionEnding(e);
+        if (!e.Cancel)
+            _guardian?.PrepareForExit();
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
+        _guardian?.PrepareForExit();
         _shutdown.Cancel();
         _sessionShutdown?.Cancel();
         _controller?.Dispose();

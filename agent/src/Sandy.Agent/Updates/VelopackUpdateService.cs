@@ -6,9 +6,11 @@ namespace Sandy.Agent.Updates;
 public sealed class VelopackUpdateService : IUpdateService
 {
     private readonly UpdateManager _manager;
+    private readonly Action<Action> _runWithoutRecovery;
 
-    public VelopackUpdateService(string publicGitHubRepositoryUrl, bool prerelease)
+    public VelopackUpdateService(string publicGitHubRepositoryUrl, bool prerelease, Action<Action> runWithoutRecovery)
     {
+        _runWithoutRecovery = runWithoutRecovery;
         var source = new GithubSource(publicGitHubRepositoryUrl, accessToken: null, prerelease);
         _manager = new UpdateManager(source);
     }
@@ -27,5 +29,6 @@ public sealed class VelopackUpdateService : IUpdateService
         return true;
     }
 
-    public void ApplyAndRestart() => _manager.ApplyUpdatesAndRestart(_manager.UpdatePendingRestart);
+    public void ApplyAndRestart() =>
+        _runWithoutRecovery(() => _manager.ApplyUpdatesAndRestart(_manager.UpdatePendingRestart));
 }
