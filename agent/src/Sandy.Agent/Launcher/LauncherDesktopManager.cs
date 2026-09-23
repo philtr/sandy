@@ -49,7 +49,6 @@ public sealed class LauncherDesktopManager : IDisposable
         _iconCache = iconCache;
         _agentVersion = agentVersion;
         SystemEvents.DisplaySettingsChanged += DisplaySettingsChanged;
-        BuildWindows();
         _refreshTimer.Tick += RefreshTimer_Tick;
         _refreshTimer.Start();
     }
@@ -65,6 +64,10 @@ public sealed class LauncherDesktopManager : IDisposable
         _available = available;
         if (available)
         {
+            // Leave the foreground app in place until the timer decides whether
+            // to show the launcher or minimize that app for expiration.
+            if (_launchers.Count == 0)
+                BuildWindows();
             foreach (var launcher in _launchers)
                 if (!launcher.IsVisible) launcher.Show();
             RestoreAllTaskbars();
@@ -176,6 +179,8 @@ public sealed class LauncherDesktopManager : IDisposable
         foreach (var launcher in _launchers) launcher.Close();
         _taskbars.Clear();
         _launchers.Clear();
+        if (!_available)
+            return;
         BuildWindows();
         if (_nativeDesktopVisible)
         {
@@ -213,6 +218,8 @@ public sealed class LauncherDesktopManager : IDisposable
 
     private void RefreshTimer_Tick(object? sender, EventArgs e)
     {
+        if (!_available)
+            return;
         foreach (var launcher in _launchers) launcher.UpdateClock(DateTimeOffset.Now);
         var windows = _windowTracker.Enumerate();
         foreach (var taskbar in _taskbars) taskbar.SetRunning(windows);

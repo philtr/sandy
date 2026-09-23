@@ -96,6 +96,9 @@ public sealed class TopLevelWindowTracker
         return IsFullscreen(handle, out monitorName);
     }
 
+    public static bool IsForegroundWindow(nint handle) =>
+        handle != nint.Zero && handle == GetForegroundWindow();
+
     private static bool IsFullscreen(nint handle, out string monitorName)
     {
         monitorName = string.Empty;

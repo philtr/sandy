@@ -11,6 +11,7 @@ OS/build, display layout, DPI, agent version, server version, and results.
 - Confirm only one agent instance runs and it starts at that user's next interactive logon.
 - Verify no Start Menu, AppsFolder, Steam, or filesystem application enumeration occurs during ordinary startup.
 - Reboot and verify cached state is enforced before network reconciliation completes.
+- With a cached expired allowance, sign out and back in, then launch an exclusive-fullscreen game during the desktop startup delay. Verify Sandy minimizes it and shows **Time's up** as soon as enforcement starts, without requiring keyboard input. Repeat offline, on a secondary monitor, and with a game that briefly retakes focus after minimization.
 - Verify invalid server URL, invalid join code, TLS error, unknown credential, and an explicitly unenrolled PC produce the intended recovery state without leaking credentials.
 - Restart Explorer and verify Sandy re-registers its AppBars and hides recreated Explorer taskbars only after it is healthy.
 - Crash, hang, kill, update, uninstall, and disable Sandy startup in separate trials; verify Explorer taskbars return and the user is never left without either taskbar.
@@ -74,6 +75,8 @@ OS/build, display layout, DPI, agent version, server version, and results.
 - Connect/disconnect/rearrange monitors while expired; verify overlays follow the topology.
 - While expired, verify Win, Alt-Tab, Alt-Esc, Alt-F4, Ctrl-Esc, and Ctrl-Shift-Esc are suppressed and Home only refocuses the overlay.
 - Grant new time while overlays are visible; verify overlays/hooks disappear, audio returns, launcher/AppBars restore, and no logout/restart is needed.
+- Start Sandy while already expired and then grant time; verify the launcher and taskbars are created on every monitor. Repeat after changing monitor topology while expired.
+- While expired, trigger generic unauthorized credential recovery and verify the reconnect dialog keeps focus and accepts input. Close it and verify the expired overlay regains focus.
 - Confirm countdown and synchronization continue while Sandy taskbars are hidden by full-screen applications.
 
 ## Revocation, updates, and release

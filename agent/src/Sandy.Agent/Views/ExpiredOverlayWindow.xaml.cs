@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using Sandy.Agent.Shell;
 using DrawingRectangle = System.Drawing.Rectangle;
 
 namespace Sandy.Agent.Views;
@@ -26,8 +27,13 @@ public partial class ExpiredOverlayWindow : Window
         Close();
     }
 
+    public bool HasForeground =>
+        TopLevelWindowTracker.IsForegroundWindow(new WindowInteropHelper(this).Handle);
+
     public void BringToFront()
     {
+        if (WindowState == WindowState.Minimized)
+            WindowState = WindowState.Normal;
         var handle = new WindowInteropHelper(this).Handle;
         SetWindowPos(handle, HwndTopmost, _bounds.X, _bounds.Y, _bounds.Width, _bounds.Height, SwpShowWindow);
         Activate();

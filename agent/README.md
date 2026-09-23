@@ -112,6 +112,12 @@ snapshots are atomically replaced under `%LocalAppData%\Sandy`. A missing or
 invalid cache produces an unknown state, which the WPF host treats as expired
 until an authenticated server response arrives.
 
+At startup, launcher windows stay hidden until the timer permits use. While time
+is expired, each timer tick checks for a foreground fullscreen app, requests
+minimization, and restores overlay focus when needed. This also covers games
+launched before Sandy starts and games that retake focus after the first request.
+The game keeps running so it can resume after a parent grants more time.
+
 The keyboard hook is intentionally non-hardened. While time is available, a
 Windows-key tap invokes Sandy Home and Windows-key chords are consumed; Alt-Tab
 and ordinary non-Windows-key shortcuts remain available. While expired, the
